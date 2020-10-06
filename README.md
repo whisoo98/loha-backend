@@ -1,7 +1,5 @@
 # loha-backend
 
-# loha-backend
-
 ## Docker 사용법 
 
 
@@ -18,7 +16,9 @@ AWS에서 계정을 만들어 EC2 Ubuntu 18.04 Free tier로 설치하여도 된�
 ### 1. Docker 설치 
 
 [초보를 위한 docker 설명1](https://subicura.com/2017/01/19/docker-guide-for-beginners-1.html)
+
 [초보를 위한 docker 설명2](https://subicura.com/2017/01/19/docker-guide-for-beginners-2.html)
+
 [초보를 위한 docker 설명3](https://subicura.com/2017/02/10/docker-guide-for-beginners-create-image-and-deploy.html)
 
 위 사이트를 참고하여 작성했다. 정리하자면 다음 명령어를 ubuntu에서 실행시면 된다. 
