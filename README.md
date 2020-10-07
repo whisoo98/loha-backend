@@ -127,4 +127,11 @@ $ sudo docker-compose build
 $ sudo docker-compose up -d 
 ```
 
+설치 도중 해시 합이 맞지 않다는 오류 문구가 뜨면
+
+```
+$ sudo apt install python3.8
+```
+위의 명령어를 실행하세요(문제의 이유는 추후 적도록 하겠습니다.)
+
 ### 웹 브라우저로 자기 ip로 접속하면 django 메인화면이 뜰 것입니다.
