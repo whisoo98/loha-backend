@@ -27,17 +27,17 @@ AWS에서 계정을 만들어 EC2 Ubuntu 18.04 Free tier로 설치하여도 된�
 
 ```
 #(도커를 설치하는 명령어)
-curl -fsSL https://get.docker.com/ | sudo sh 
+$ curl -fsSL https://get.docker.com/ | sudo sh 
 
 # 현재 접속중인 사용자에게 권한주기 
 # docker 명령어는 원래 root 권한으로 실행해야 되는데 현재 사용자에서 사용 가능하게 한다.
-sudo usermod -aG docker $USER 
+$ sudo usermod -aG docker $USER 
 ```
 
 다음을 실행해 Docker가 설치되었는지 확인해 보자 
 
 ```
-docker -v
+$ docker -v
 ```
 
 정상적으로 설치되었으면 다음과 같이 출력된다.
@@ -54,19 +54,19 @@ Docker version 19.03.13, build {적당한 id}
 
 ```
 #compose 설치 
-sudo curl -L "https://github.com/docker/compose/releases/download/1.27.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+$ sudo curl -L "https://github.com/docker/compose/releases/download/1.27.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
 
 #권한설정
-sudo chmod +x /usr/local/bin/docker-compose
+$ sudo chmod +x /usr/local/bin/docker-compose
 
 #환경변수 설정 
-sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
+$ sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
 ```
 
 다음을 실행해 Docker가 설치되었는지 확인해 보자 
 
 ```
-docker-compose -v
+$ docker-compose -v
 ```
 
 정상적으로 설치되었으면 다음과 같이 출력된다.
@@ -86,7 +86,7 @@ AWS를 사용한다면 이미 깔려 있을 것이니 통과해도 된다.
 git 설치 확인 
 
 ```
-git --version
+$ git --version
 ```
 
 다음이 뜰 것이다.
@@ -98,8 +98,23 @@ git version 2.17.1
 ### 4. 현재 github를 git clone 
 
 ```
-git clone https://github.com/AhnByungkyu/loha-backend.git
+$ git clone https://github.com/AhnByungkyu/loha-backend.git
 ```
 
+### 5. 개발환경 구성
+
+아래 두 명령어만 실행하면 개발환경이 자동으로 만들어집니다.
+
+```
+$ docker-compose build 
+$ docker-compose up -d 
+```
+
+실행시 오류가 나면 이렇게도 해보세요
+
+```
+$ sudo docker-compose build 
+$ sudo docker-compose up -d 
+```
 
 
