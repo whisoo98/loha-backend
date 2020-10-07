@@ -15,13 +15,19 @@ AWS에서 계정을 만들어 EC2 Ubuntu 18.04 Free tier로 설치하여도 된�
 
 ### 1. Docker 설치 
 
+- AWS Unbuntu 
+
 [초보를 위한 docker 설명1](https://subicura.com/2017/01/19/docker-guide-for-beginners-1.html)
 
 [초보를 위한 docker 설명2](https://subicura.com/2017/01/19/docker-guide-for-beginners-2.html)
 
 [초보를 위한 docker 설명3](https://subicura.com/2017/02/10/docker-guide-for-beginners-create-image-and-deploy.html)
 
-위 사이트를 참고하여 작성했다. 정리하자면 다음 명령어를 ubuntu에서 실행시면 된다. 
+- Virtual Box 
+
+[Virtual Box Docker 설치](https://m.blog.naver.com/todoskr/221278546103)
+
+위 사이트를 참고하여 작성했다. 정리하자면 다음 명령어를 ubuntu에서 실행시면 된다. (Virtual Box에서는 오류가 나는 것 같으니 위 링크를 
 
 (사용자가 root가 아닌 기본 사용자 ubuntu를 기준으로 작성했다.)
 
@@ -117,4 +123,4 @@ $ sudo docker-compose build
 $ sudo docker-compose up -d 
 ```
 
-
+### 웹 브라우저로 자기 ip로 접속하면 django 메인화면이 뜰 것입니다.
