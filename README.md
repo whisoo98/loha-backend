@@ -111,6 +111,12 @@ git version 2.17.1
 $ git clone https://github.com/AhnByungkyu/loha-backend.git
 ```
 
+git clone 후 그 폴더로 이동 
+
+```
+$ cd loha-backend
+```
+
 ### 5. 개발환경 구성
 
 아래 두 명령어만 실행하면 개발환경이 자동으로 만들어집니다.
@@ -127,13 +133,7 @@ $ sudo docker-compose build
 $ sudo docker-compose up -d 
 ```
 
-설치 도중 해시 합이 맞지 않다는 오류 문구가 뜨면
 
-```
-$ sudo apt install python3.8
-```
-위의 명령어를 실행하세요
-
-### 웹 브라우저로 자기 ip로 접속하면 django 메인화면이 뜰 것입니다.
+### 6. 웹 브라우저로 자기 ip로 접속하면 django 메인화면이 뜰 것입니다.
 
 ### gunicorn은 추후에 추가하겠습니다.
