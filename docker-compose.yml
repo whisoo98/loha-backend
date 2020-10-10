@@ -10,3 +10,4 @@ services:
       - 80:8000
     env_file:
       - ./.env.dev
+

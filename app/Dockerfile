@@ -1,6 +1,7 @@
-#pull official base image
-FROM python:3.8.0-alpine
+# pull official base image
+FROM python:3.8.6-alpine
 
+RUN apk update && apk add bash
 # set work directory
 WORKDIR /usr/src/app
 
