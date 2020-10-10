@@ -128,7 +128,7 @@ $ docker-compose -f docker-compose.prod.yml up -d --build
 실행시 오류가 나면 이렇게도 해보세요
 
 ``` 
-$ docker-compose -f docker-compose.prod.yml up -d --build
+$ sudo docker-compose -f docker-compose.prod.yml up -d --build
 ```
 
 
@@ -144,4 +144,4 @@ $ docker-compose -f docker-compose.prod.yml up -d --build
 
 ### 7. django 파일 변경할 때
 
-django 파일을 변경하려면 올라와 있는 파일안의 내용만 수정해주면 됩니다.
+django 파일을 변경하려면 올라와 있는 app 폴더안의 내용만 수정해주면 됩니다.
