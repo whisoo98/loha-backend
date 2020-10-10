@@ -1,0 +1,10 @@
+version: '3.7'
+
+services:
+  web:
+    build: ./app
+    command: gunicorn loha.wsgi:application --bind 0.0.0.0:8000
+    ports:
+      - 80:8000
+    env_file:
+      - ./.env.prod
