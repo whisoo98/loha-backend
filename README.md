@@ -122,18 +122,22 @@ $ cd loha-backend
 아래 두 명령어만 실행하면 개발환경이 자동으로 만들어집니다.
 
 ```
-$ docker-compose build 
-$ docker-compose up -d 
+$ docker-compose -f docker-compose.prod.yml up -d --build
 ```
 
 실행시 오류가 나면 이렇게도 해보세요
 
+``` 
+$ docker-compose -f docker-compose.prod.yml up -d --build
 ```
-$ sudo docker-compose build 
-$ sudo docker-compose up -d 
+
+
+### 6. 웹 브라우저로 자기 ip/admin 으로 접속하면 django 화면이 뜰 것입니다.
+
+개발 환경은 아래와 같습니다.
 ```
-
-
-### 6. 웹 브라우저로 자기 ip로 접속하면 django 메인화면이 뜰 것입니다.
-
-### gunicorn은 추후에 추가하겠습니다.
+  python 3.8.6
+  django 2.2.16 
+  djangorestframework 3.12.1
+  gunicorn 20.0.4
+```
