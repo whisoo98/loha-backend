@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 
 import os
 
-SECRET_KEY = os.environ.get("SECRET_KEY")
+# SECRET_KEY = os.environ.get("SECRET_KEY")
 
 DEBUG = int(os.environ.get("DEBUG", default=0))
 
@@ -24,7 +24,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-#SECRET_KEY = '=v^h@)$nwmhieg5%s*t_-q1d*7f2d)!0ucmc*(!0l#3wk66(4j'
+SECRET_KEY = '=v^h@)$nwmhieg5%s*t_-q1d*7f2d)!0ucmc*(!0l#3wk66(4j'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 #DEBUG = True
@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'user',
 ]
 
 MIDDLEWARE = [
