@@ -133,7 +133,7 @@ $ sudo docker-compose -f docker-compose.prod.yml up -d --build
 
 
 ### 6. 웹 브라우저로 자기 ip/admin 으로 접속하면 django 화면이 뜰 것입니다.
-
+    
 개발 환경은 아래와 같습니다.
 ```
   python 3.8.6
