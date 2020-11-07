@@ -4,7 +4,7 @@ from django.views.generic.edit import FormView
 from rest_framework import generics
 from rest_framework import mixins
 
-from .serializers import ListCategorySerializer
+from .serializers import ListAllCategoriesSerializer
 
 class ProductListAPI(generics.GenericAPIView, mixins.ListModelMixin):
     serializer_class = ListCategorySerializer

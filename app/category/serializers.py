@@ -3,7 +3,7 @@ from .models import Categories
 from django.core.validators import MaxValueValidator, MinValueValidator
 
 
-class ListCategorySerializer(serializers.Serializer): #ALL from cafe 24
+class ListAllCategoriesSerializer(serializers.Serializer): #ALL from cafe 24
     shop_no = serializers.IntegerField(default=1, verbose = '멀티쇼핑몰 번호')
     category_depth = serializers.IntegerField(validators=[
             MaxValueValidator(4),

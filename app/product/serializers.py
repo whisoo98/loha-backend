@@ -2,7 +2,7 @@ from rest_framework import serializers
 from .models import Product
 from django.core.validators import MaxValueValidator,MinValueValidator
 
-class ListCategoryProductSerializer(serializers.Serializer):
+class ListAllCategoriesSerializer(serializers.Serializer):
     shop_no = serializers.IntegerField(default=1, verbose='멀티쇼핑몰 번호')
     category_no = serializers.IntegerField(verbose='분류 번호')
     display_group = serializers.IntegerField(validators=[
