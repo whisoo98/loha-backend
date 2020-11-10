@@ -9,7 +9,7 @@ class ListAllCategoriesSerializer(serializers.Serializer): #ALL from cafe 24
             MaxValueValidator(4),
             MinValueValidator(1)
         ], verbose='분류 Depth') #최소: [1]    ~최대: [4]
-    category_no = serializers.IntegerField(verbose='분류 번호')
+    category_no = serializers.IntegerField(verbose='분류 번호'  )
     parent_category_no = serializers.IntegerField(default=1, verbose='부모 분류 번호')
     category_name = serializers.CharField(max_length=50, verbose='분류명')
     limit =serializers.IntegerField(validators=[
