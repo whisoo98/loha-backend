@@ -9,18 +9,16 @@ from rest_framework import mixins
 import json
 import requests
 
-class ListAllCategoriesAPI(generics.GenericAPIView, mixins.ListModelMixin):
+class ListAllCategoriesAPI():
     def get_from_cafe24(self, request):
         #{}는 직접 따로 설정해야함
-        url = "https://{mallid}.cafe24api.com/api/v2/admin/categories"
-
+        url = "https://{mallid}.cafe24api.com/api/v2/categories"
         headers = {
-            'Authorization': "Bearer {access_token}",
             'Content-Type': "application/json",
-            'X-Cafe24-Api-Version': "{version}"
+            'X-Cafe24-Api-Version': "{version}",
+            'X-Cafe24-Client-Id': "{client_id}"
         }
-        
         response = requests.request("GET", url, headers=headers)
-        return JsonResponse(response,status=200)
+        return JsonResponse(response, status=200)
 
 
