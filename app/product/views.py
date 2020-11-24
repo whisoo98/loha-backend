@@ -11,7 +11,7 @@ from django.http import JsonResponse, HttpResponse
 # Create your views here.
 
 
-def list_all_products():
+def list_all_products(request):
     url = "https://mekind.cafe24api.com/api/v2/products"
 
     headers = {
@@ -20,10 +20,10 @@ def list_all_products():
         'X-Cafe24-Client-Id': "ehSKOHqFTiAKp4coWMTCaH"
     }
     response = requests.request("GET", url, headers=headers)
-    #return JsonResponse(response)
-    return HttpResponse(response)
+    return JsonResponse(response.json())
 
-def get_a_product(self, request, product_no):
+
+def get_a_product(request, product_no):
     url = "https://mekind.cafe24api.com/api/v2/products/"+product_no
 
     headers = {
@@ -32,5 +32,4 @@ def get_a_product(self, request, product_no):
         'X-Cafe24-Client-Id': "ehSKOHqFTiAKp4coWMTCaH"
     }
     response = requests.request("GET", url, headers=headers)
-    #return JsonResponse(response)
-    return HttpResponse(response)
+    return JsonResponse(response.json())
