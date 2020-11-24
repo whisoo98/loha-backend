@@ -24,7 +24,7 @@ def list_all_products(request):
 
 
 def get_a_product(request, product_no):
-    url = "https://mekind.cafe24api.com/api/v2/products/"+product_no
+    url = "https://mekind.cafe24api.com/api/v2/products/"+str(product_no)
 
     headers = {
         'Content-Type': "application/json",
