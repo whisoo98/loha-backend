@@ -18,6 +18,6 @@ from django.urls import path, include
 from .views import *
 
 urlpatterns = [
-    path('/', list_all_products()),
-    path('/<string:product_no>/', get_a_product())
+    path('', list_all_products),
+    path('<string:product_no>/', get_a_product)
 ]
