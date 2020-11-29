@@ -21,5 +21,5 @@ def list_all_categories(request):
 
     response = requests.request("GET", url, headers=headers)
 
-    return JsonResponse(response.json)
+    return JsonResponse(response.json())
 
