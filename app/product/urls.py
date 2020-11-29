@@ -19,5 +19,7 @@ from .views import *
 
 urlpatterns = [
     path('', list_all_products),
-    path('<int:product_no>/', get_a_product)
+    path('<int:product_no>/', get_a_product),
+    path('<int:category_no>/', list_all_categories_products),
+
 ]

@@ -32,6 +32,19 @@ def get_a_product(request, product_no):
     response = requests.request("GET", url, headers=headers)
     return JsonResponse(response.json())
 
-#POST https://{mallid}.cafe24api.com/api/v2/admin/products
+#GET https://{mallid}.cafe24api.com/api/v2/admin/categories/42/products?display_group=1
+def list_all_categories_products(request, category_no):
+    url = "https://mekind.cafe24api.com/api/v2/categories/" +str(category_no)
+    url += "/products?display_group=1"
+
+    headers = {
+        'Content-Type': "application/json",
+        'X-Cafe24-Api-Version': "",
+        'X-Cafe24-Client-Id': "ehSKOHqFTiAKp4coWMTCaH"
+    }
+
+    response = requests.request("GET", url, headers=headers)
+
+    return JsonResponse(response.json())
 
 
