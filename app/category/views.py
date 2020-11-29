@@ -8,9 +8,8 @@ from rest_framework import generics
 from rest_framework import mixins
 import json
 import requests
-import requests
 
-def list_all_categories():
+def list_all_categories(request):
     url = "https://mekind.cafe24api.com/api/v2/categories"
 
     headers = {
