@@ -18,8 +18,10 @@ from django.urls import path, include
 from .views import *
 
 urlpatterns = [
-    path('', list_all_products),
-    path('<int:product_no>/', get_a_product),
-    path('<int:category_no>/', list_all_categories_products),
+    path('collection/', product_list),
+    path('collection/<str:collection_id>/', product_list),
+    path('<str:product_id>/', product),
+    path('',product_create)
+
 
 ]
