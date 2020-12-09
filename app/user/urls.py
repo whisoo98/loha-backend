@@ -15,9 +15,9 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from .views import *
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('product/', include('product.urls')),
-    path('user/', include('user.urls')),
+    path('', User.as_view()),
+    path('<int:update>/', User.as_view()),
 ]
