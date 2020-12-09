@@ -21,6 +21,7 @@ def product_list(request,collection_id='any'):
         'client': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6Ijc3MGYzMDA2MTlkYjRhMjBiOGYyY2E5MzZlMDU5YzBmMjE4ZTFjNTE2YmI2ZmQzOWQxN2MyZTE0NTIzN2MzMzAiLCJyb2xlIjoiY2xpZW50IiwiaWF0IjoxNjAwNjc5ODY3LCJzdG9yZSI6IjQ1VEdYQjhYTEFLSi45NzMzQTRLRDkyWkUiLCJzdWIiOiJSTUM4WldVUTRFWkUifQ.tcG30RcADqDIj73fRbcIi8b2_u3LlhtXWVaL3SawHRs'
     })
     try:
+
         Product = Clayful.Product
 
         options = {
@@ -44,13 +45,13 @@ def product_list(request,collection_id='any'):
 
 
 
-@api_view(['GET'],['POST'])
+@api_view(['GET','POST'])
 @parser_classes((JSONParser,))
 def product(request,product_id):
     Clayful.config({
         'client': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6Ijc3MGYzMDA2MTlkYjRhMjBiOGYyY2E5MzZlMDU5YzBmMjE4ZTFjNTE2YmI2ZmQzOWQxN2MyZTE0NTIzN2MzMzAiLCJyb2xlIjoiY2xpZW50IiwiaWF0IjoxNjAwNjc5ODY3LCJzdG9yZSI6IjQ1VEdYQjhYTEFLSi45NzMzQTRLRDkyWkUiLCJzdWIiOiJSTUM4WldVUTRFWkUifQ.tcG30RcADqDIj73fRbcIi8b2_u3LlhtXWVaL3SawHRs'
     })
-    if(request.method=='GET'):
+    if(request.method=='GET'): #product_get
         try:
 
             Product = Clayful.Product
@@ -71,7 +72,7 @@ def product(request,product_id):
         except Exception as e:
             return Response(e.code)
 
-    elif(request.method=='POST'):
+    elif(request.method=='POST'): #product_update
         try:
             Product = Clayful.Product
 
