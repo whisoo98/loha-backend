@@ -63,7 +63,7 @@ class CartItem(APIView):
         'time_zone': 'Asia/Seoul',
         'debug_language': 'ko',
     })
-    def get(self, request):
+    def post(self, request):
         try:
             Cart = Clayful.Cart
             payload = json.loads(request.body)
