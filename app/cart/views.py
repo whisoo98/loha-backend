@@ -68,7 +68,7 @@ class CartItem(APIView):
             Cart = Clayful.Cart
             payload = json.loads(request.body)
             options = {
-                'customer': request.session['token'],
+                'customer': request.session.get('custom_token'),
             }
 
             result = Cart.add_item_for_me(payload, options)
@@ -84,7 +84,7 @@ class CartItem(APIView):
         try:
             Cart = Clayful.Cart
             options = {
-                'customer': request.session['token'],
+                'customer': request.session.get('custom_token'),
             }
             result = Cart.empty_for_me(options)
             headers = result.headers
@@ -99,7 +99,7 @@ class CartItem(APIView):
             Cart = Clayful.Cart
             payload = json.loads(request.body)
             options = {
-                'customer': request.session['token'],
+                'customer': request.session.get('custom_token'),
             }
             result = Cart.update_item_for_me(items_id, payload, options)
             headers = result.headers
@@ -113,7 +113,7 @@ class CartItem(APIView):
         try:
             Cart = Clayful.Cart
             options = {
-                'customer': request.session['token'],
+                'customer': request.session.get('custom_token'),
             }
             result = Cart.delete_item_for_me(items_id, options)
             headers = result.headers
@@ -136,7 +136,7 @@ class CartCheckout(APIView):
             Cart = Clayful.Cart
             payload = json.loads(request.body)
             options = {
-                'customer': request.session['token'],
+                'customer': request.session.get('custom_token'),
                 'query' : {
 
                 }
