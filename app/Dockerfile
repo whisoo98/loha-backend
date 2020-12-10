@@ -15,6 +15,7 @@ ENV PYTHONUNBUFFERED 1
 # install dependencies
 RUN pip install --upgrade pip
 RUN pip install requests
+RUN pip install clayful
 RUN apk add tk
 
 COPY ./requirements.txt .
