@@ -10,10 +10,14 @@ ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
 # install git into container
-RUN apt-get install git -y
+#RUN apt-get install git -y
 
 # install dependencies
 RUN pip install --upgrade pip
+RUN pip install requests
+RUN pip install clayful
+RUN apk add tk
+
 COPY ./requirements.txt .
 RUN pip install -r requirements.txt
 
