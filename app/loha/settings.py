@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 
 import os
 
+
 # SECRET_KEY = os.environ.get("SECRET_KEY")
 
 #DEBUG = int(os.environ.get("DEBUG", default=0))
@@ -76,7 +77,7 @@ TEMPLATES = [
 WSGI_APPLICATION = 'loha.wsgi.application'
 
 
-# Database
+# development settings
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 
 DATABASES = {
