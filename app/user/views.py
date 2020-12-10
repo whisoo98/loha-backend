@@ -43,20 +43,28 @@ class User(APIView):
     # 현재 회원정보 출력
     # 로그인 되어 있는 상태
     # @require_login 데코 추가 예정
-    def get(self,request):
-        '''
-        Customer = Clayful.Customer
+    def get(self, request):
+        if request.session.get('custom_token'):
+            try:
+                Customer = Clayful.Customer
 
-        options = {
-            'customer': ''
-            #'query': {...},
-        }
+                options = {
+                    'customer': request.session.get('custom_token')
+                }
 
-        result = Customer.get_me(options)
+                result = Customer.get_me(options)
 
-        return Response(result.data)
-        '''
-        return Response("hihi")
+                return Response(result.data)
+
+            except Exception as e:
+                # Error case
+                self.print_error(request, e)
+                return Response("error")
+
+
+        else:
+            return Response('not login yet')
+
     # 회원가입
     # 로그인이 안 되어 있는 상태
     def put(self, request):
@@ -101,7 +109,7 @@ class User(APIView):
             }
 
             options = {
-                'customer': '<customer-auth-token>'
+                'customer': request.session.get('custom_token')
             }
 
             response = Customer.update_credentials_for_me(payload, options)
@@ -123,7 +131,7 @@ class User(APIView):
 
             #세션에서 토큰을 관리하고
             options = {
-                'customer': '<customer-token>'
+                'customer': request.session.get('custom_token')
             }
 
             result = Customer.delete_me(options)
@@ -159,6 +167,29 @@ class Auth(APIView):
             'debug_language': 'ko',
         })
 
+    # 로그인 상태 확인
+    def get(self, request):
+        if request.session.get('custom_token'):
+            try:
+                Customer = Clayful.Customer
+
+                options = {
+                    'customer': request.session.get('custom_token')
+                }
+
+                result = Customer.get_me(options)
+
+                return Response(result.data)
+
+            except Exception as e:
+                # Error case
+                self.print_error(request, e)
+                return Response("error")
+
+
+        else:
+            return Response('not login yet')
+
     # 로그인 함수
     # 로그인 안 되어 있는 상탱
     def post(self, request):
@@ -172,6 +203,10 @@ class Auth(APIView):
             }
 
             response = Customer.authenticate(payload)
+
+            request.session['custom'] = response.data['customer']
+            request.session['custom_token'] = response.data['token']
+            request.session['expiresIn'] = response.data['expiresIn']
 
             return Response(response.data)
 
@@ -194,30 +229,3 @@ class Auth(APIView):
         print(e.code)
         print(e.message)
 
-
-def is_login(request):
-    Clayful.config({
-        'client': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6IjQ0YmE3ZWI3NTk1MDk3ZmM2ODIwNTEzNDc3YzE5ZGRlZWRmMTgzMjEwYjg1NmJiOGQ2NzRkNWU0M2U5MTg0NTgiLCJyb2xlIjoiY2xpZW50IiwiaWF0IjoxNjA3MzQ2NjM2LCJzdG9yZSI6IjQ1VEdYQjhYTEFLSi45NzMzQTRLRDkyWkUiLCJzdWIiOiJFVTNIQ1g4M1dWNjcifQ.fJkMXfdphEdVA6o4j0wAFl1eOQ5uarJx21AIejrDKlg',
-        'customer': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6IjQ1NmI4YWM2OWVkMDUyNjQ5ZmRlYzg5ZWZlMzhmNWU2ODNkNmM5ZDYyYmNjMWRhNTBlMjUxY2YwMDgxMjExMDMiLCJyb2xlIjoiY3VzdG9tZXIiLCJpYXQiOjE2MDc1ODgyNjgsImV4cCI6MTYwODE5MzA2OCwic3ViIjoiNFVXRldBRzcyRkE5In0.4dpjj-5vwWXrl631W9cZI-SgPSR6FQoYRu5lBmc1CC8',
-        'language': 'ko',
-        'currency': 'KRW',
-        'time_zone': 'Asia/Seoul',
-        'debug_language': 'ko',
-    })
-    try:
-        Customer = Clayful.Customer
-        result = Customer.is_authenticated()
-        print("1")
-        print("1")
-        return JsonResponse(result.data)
-
-    except Exception as e:
-        # Error case
-        print("1")
-        print(e.is_clayful)
-        print(e.model)
-        print(e.method)
-        print(e.status)
-        print(e.headers)
-        print(e.code)
-        print(e.message)
