@@ -19,5 +19,7 @@ from .views import *
 
 urlpatterns = [
     path('', User.as_view()),
-    path('<int:update>/', User.as_view()),
+    path('auth/', Auth.as_view()),
+    path('isauth/', is_login),
 ]
+
