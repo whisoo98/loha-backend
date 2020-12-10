@@ -16,7 +16,6 @@ import os
 # SECRET_KEY = os.environ.get("SECRET_KEY")
 
 #DEBUG = int(os.environ.get("DEBUG", default=0))
-DEBUG = True
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -29,6 +28,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = '=v^h@)$nwmhieg5%s*t_-q1d*7f2d)!0ucmc*(!0l#3wk66(4j'
 
 # SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = True
 ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS")
 #ALLOWED_HOSTS = []
 
@@ -44,7 +44,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'user',
-    'product',
 ]
 
 MIDDLEWARE = [
