@@ -15,6 +15,10 @@ ENV PYTHONUNBUFFERED 1
 # install dependencies
 RUN pip install --upgrade pip
 RUN pip install requests
+RUN pip install clayful
+RUN pip install psycopg2
+RUN apk add tk
+
 COPY ./requirements.txt .
 RUN pip install -r requirements.txt
 
