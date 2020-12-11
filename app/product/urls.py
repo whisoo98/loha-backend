@@ -22,6 +22,4 @@ urlpatterns = [
     path('collection/<str:collection_id>/', ProductCollectionAPI.as_view()),
     path('', ProductAPI.as_view()),
     path('<str:product_id>/', ProductAPI.as_view()),
-
-
 ]
