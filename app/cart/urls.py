@@ -21,8 +21,6 @@ urlpatterns = [
     path('', Cart.as_view()),
     path('<str:customer_id>/', Cart.as_view()),
     path('items/',CartItem.as_view()),
-    path('items/empty/', CartItem.as_view()),
-    path('items/delete/<str:items_id>/', CartItem.as_view()),
-    path('items/update/<str:items_id>/', CartItem.as_view()),
+    path('items/<str:items_id>/', CartItem.as_view()),
     path('checkout/',CartCheckout.as_view()),
 ]
