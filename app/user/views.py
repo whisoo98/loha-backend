@@ -72,6 +72,7 @@ class User(APIView):
             Customer = Clayful.Customer
 
             #body에서 데이터를 적절하게 뽑아온다.
+            '''
             payload = {
                 "userId": request.data['userId'],
                 "email": request.data['email'],
@@ -80,6 +81,9 @@ class User(APIView):
                     'full': request.data['name']['full']
                 }
             }
+            '''
+            print(request.body)
+            payload = json.loads(request.body)
 
             result = Customer.create_me(payload)
 
