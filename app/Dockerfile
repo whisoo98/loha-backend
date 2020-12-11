@@ -16,6 +16,7 @@ ENV PYTHONUNBUFFERED 1
 RUN pip install --upgrade pip
 RUN pip install requests
 RUN pip install clayful
+RUN apk update && apk add postgresql-dev gcc python3-dev musl-dev
 RUN pip install psycopg2
 RUN apk add tk
 
