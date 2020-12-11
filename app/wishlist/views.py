@@ -90,7 +90,7 @@ class WishList(APIView):
         }
 
         is_exist_wishlist = WishList.list_for_me(options)
-        result = WishList.delete_item_for_me(is_exist_wishlist.data[0]['_id'], json.loads(request.body), options)
+        result = WishList.delete_item_for_me(is_exist_wishlist.data[0]['_id'], request.data['product'], options)
 
         return Response(result.data)
 
