@@ -35,7 +35,7 @@ class CollectionAPI(APIView):
             return Response(data)
 
         except Exception as e:
-            return HttpResponse(e.code)
+            return Response(e.code)
 
     def post(self, request):
         try:
