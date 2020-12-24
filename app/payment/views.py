@@ -14,16 +14,6 @@ from iamporter import *
 import json
 
 
-
-# Create your views here.
-'''
-find_payment
-cancel_payment
-create_billkey
-find_billkey
-delete_billkey
-create_payment
-'''
 @api_view(['POST'])
 def create_payment(request):
     client = Iamporter(imp_key="8605712299401734",
@@ -128,7 +118,7 @@ def cancel_payment(request):
     except Exception as e:
         return Response(e.response)
 
-
+@api_view(['POST'])
 def find_payment(request):
     client = Iamporter(imp_key="8605712299401734",
                        imp_secret="VoICY5nRMtnvAENACdBM0UePAUtOZMiUb0x96V1TppoZ3bAFpbrq5FgGzJuzvNuGO1QUXROmgcmkoWZO")
