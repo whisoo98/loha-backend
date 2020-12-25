@@ -1,14 +1,12 @@
-from django.shortcuts import render
-from rest_framework.decorators import api_view,parser_classes
+from django.shortcuts import redirect
 from rest_framework.views import Response
-from rest_framework.parsers import JSONParser
-from rest_framework.authentication import SessionAuthentication
 from rest_framework.views import APIView
-from django.http.response import  HttpResponse, JsonResponse
-from django.utils.decorators import method_decorator
-from rest_framework.request import Request
+from rest_framework.decorators import api_view
 from clayful import Clayful
 import json
+import requests
+import datetime
+import urllib
 
 '''
 # Clayful 초기화 데코레이터
@@ -82,8 +80,8 @@ class User(APIView):
                 }
             }
             '''
-            print(request.body)
-            payload = json.loads(request.body)
+            #print(request.body)
+            payload = json.loads(request.data)
 
             result = Customer.create_me(payload)
 
@@ -232,4 +230,104 @@ class Auth(APIView):
         print(e.headers)
         print(e.code)
         print(e.message)
+
+
+
+# kakao 소셜 로그인
+
+# 코드 요청
+def kakao_login(request):
+    app_rest_api_key = "14465e198e48578e5e4afc11e37f48b6"
+    redirect_uri = "http://127.0.0.1:8000/user/auth/social/kakao/login/callback/"
+    return redirect(f"https://kauth.kakao.com/oauth/authorize?client_id={app_rest_api_key}&redirect_uri={redirect_uri}&response_type=code")
+
+# 토큰 요청 및 정보 처리
+
+def kakao_callback(request):
+    try:
+        app_rest_api_key = "14465e198e48578e5e4afc11e37f48b6"
+        redirect_uri = "http://127.0.0.1:8000/user/auth/social/kakao/login/callback/"
+        user_token = request.query_params['code']
+
+        #CSRF 공격을 받기위한 문자열, 나중에 추가?
+        #state = datetime.datetime.now().strftime()
+
+        # 토큰 획득
+        token_request = requests.get(
+            f"https://kauth.kakao.com/oauth/token?grant_type=authorization_code&client_id={app_rest_api_key}&redirect_uri={redirect_uri}&code={user_token}"
+        )
+
+        token_response = token_request.json()
+        error = token_response.get("error", None)
+
+        if error is not None:
+            # kakao api를 사용하다 오류
+            # 추후에
+            # 이를 위한 페이지 생성 or index로 이동
+            print(token_response)
+            return Response('kakao 오류 발생')
+
+        kakao_access_token = token_response.get("access_token")
+        #print(kakao_access_token)
+        # 토큰을 추후에 메세지 발송을 위해 따로 저장을 해야되나 ?
+        # 일단 따로 저장 안 하고 진행
+
+
+
+        # 사용자 정보 불러오기
+        profile_request = requests.post(
+            "https://kapi.kakao.com/v2/user/me",
+            headers={"Authorization": f"Bearer {kakao_access_token}"},
+        )
+        kakao_account = profile_request.json()
+
+        try:
+            # Clayful에 가입
+            Clayful.config({
+                'client': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6IjQ0YmE3ZWI3NTk1MDk3ZmM2ODIwNTEzNDc3YzE5ZGRlZWRmMTgzMjEwYjg1NmJiOGQ2NzRkNWU0M2U5MTg0NTgiLCJyb2xlIjoiY2xpZW50IiwiaWF0IjoxNjA3MzQ2NjM2LCJzdG9yZSI6IjQ1VEdYQjhYTEFLSi45NzMzQTRLRDkyWkUiLCJzdWIiOiJFVTNIQ1g4M1dWNjcifQ.fJkMXfdphEdVA6o4j0wAFl1eOQ5uarJx21AIejrDKlg',
+                'language': 'ko',
+                'currency': 'KRW',
+                'time_zone': 'Asia/Seoul',
+                'debug_language': 'ko',
+            })
+
+            Customer = Clayful.Customer
+
+            try:
+                payload = {
+                    'token': kakao_access_token
+                }
+
+                result = Customer.authenticate_by_3rd_party('kakao', payload)
+
+                if result.data['action'] == 'register':
+                    result = Customer.authenticate_by_3rd_party('kakao', payload)
+
+                request.session['custom'] = result.data['customer']
+                request.session['custom_token'] = result.data['token']
+                request.session['expiresIn'] = result.data['expiresIn']
+
+                return redirect("/user/auth/")
+
+            except Exception as e:
+
+                # Error case
+                print("kakao clay")
+                print(e.message)
+                print(e.code)
+                return redirect("/user/auth/")
+
+        except Exception as e:
+            print("error clayful")
+            print(e)
+            return redirect("/user/auth/")
+
+    except Exception as e:
+        print("error kakao")
+        return redirect("/user/auth/")
+
+
+
+
+# Naver 소셜 로그인
 
