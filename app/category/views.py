@@ -24,9 +24,10 @@ class CollectionAPI(APIView):
         try:
             Collection = Clayful.Collection
             options = {
-                'query': {
-                    'fields': 'name',
-                    'sort': 'createdAt',
+                'query' : {
+                    'fields' : 'name',
+                    'parent' : 'none'
+                    #'sort': 'createdAt',
                 },
             }
             result = Collection.list(options)
