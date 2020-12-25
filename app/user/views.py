@@ -331,3 +331,62 @@ def kakao_callback(request):
 
 # Naver 소셜 로그인
 
+# 코드 발급
+def naver_login(request):
+    client_id = "JIykLOc5AHOv_NmMGl7w"
+    redirect_uri = "http://localhost:8000/user/auth/naver/callback/"
+    state = hash(datetime.datetime.now().strftime('%Y%m%d%H%M%S'))
+    request.session['my_state'] = state
+
+    return redirect(f"https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id={client_id}&redirect_uri={redirect_uri}&response_type=code&state={state}")
+
+
+# 토큰 발급 및 정보 저장
+
+@api_view(['GET'])
+def naver_callback(request):
+    try :
+        client_id = "JIykLOc5AHOv_NmMGl7w"
+        client_secret = "hGNs9EzyMC"
+        code = request.query_params['code']
+        state = request.query_params['state']
+        my_state = str(request.session['my_state'])
+
+
+        if state != my_state:
+            return Response('No hack, Csrf')
+
+        # 토큰 발급
+        token_request = requests.get(f"https://nid.naver.com/oauth2.0/token?grant_type=authorization_code&client_id={client_id}&client_secret={client_secret}&code={code}")
+        token_response = token_request.json()
+        naver_access_token = token_response.get('access_token')
+
+        # Clayful에 가입
+        Clayful.config({
+            'client': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6IjQ0YmE3ZWI3NTk1MDk3ZmM2ODIwNTEzNDc3YzE5ZGRlZWRmMTgzMjEwYjg1NmJiOGQ2NzRkNWU0M2U5MTg0NTgiLCJyb2xlIjoiY2xpZW50IiwiaWF0IjoxNjA3MzQ2NjM2LCJzdG9yZSI6IjQ1VEdYQjhYTEFLSi45NzMzQTRLRDkyWkUiLCJzdWIiOiJFVTNIQ1g4M1dWNjcifQ.fJkMXfdphEdVA6o4j0wAFl1eOQ5uarJx21AIejrDKlg',
+            'language': 'ko',
+            'currency': 'KRW',
+            'time_zone': 'Asia/Seoul',
+            'debug_language': 'ko',
+        })
+
+        Customer = Clayful.Customer
+
+        payload = {
+            'token': naver_access_token
+        }
+
+        result = Customer.authenticate_by_3rd_party('naver', payload)
+
+        if result.data['action'] == 'register':
+            result = Customer.authenticate_by_3rd_party('naver', payload)
+
+        request.session['custom'] = result.data['customer']
+        request.session['custom_token'] = result.data['token']
+        request.session['expiresIn'] = result.data['expiresIn']
+
+        return redirect("/user/auth/")
+
+    except Exception as e:
+        print(e)
+        return Response('error naver token')
