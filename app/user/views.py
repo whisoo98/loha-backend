@@ -238,19 +238,29 @@ class Auth(APIView):
 # 코드 요청
 def kakao_login(request):
     app_rest_api_key = "14465e198e48578e5e4afc11e37f48b6"
-    redirect_uri = "http://127.0.0.1:8000/user/auth/social/kakao/login/callback/"
-    return redirect(f"https://kauth.kakao.com/oauth/authorize?client_id={app_rest_api_key}&redirect_uri={redirect_uri}&response_type=code")
+    local_host = "https://www.byeolshowco.com/"
+    #local_host = "http://127.0.0.1:8000/"
+    redirect_uri = local_host + "user/auth/kakao/callback/"
+    state = hash(datetime.datetime.now().strftime('%Y%m%d%H%M%S'))
+    request.session['my_state'] = state
+    return redirect(f"https://kauth.kakao.com/oauth/authorize?client_id={app_rest_api_key}&redirect_uri={redirect_uri}&response_type=code&state={state}")
 
 # 토큰 요청 및 정보 처리
-
+@api_view(['GET'])
 def kakao_callback(request):
     try:
         app_rest_api_key = "14465e198e48578e5e4afc11e37f48b6"
-        redirect_uri = "http://127.0.0.1:8000/user/auth/social/kakao/login/callback/"
+        local_host = "https://www.byeolshowco.com/"
+        #local_host = "http://127.0.0.1:8000/"
+        redirect_uri = local_host + "user/auth/kakao/callback/"
         user_token = request.query_params['code']
+        state = request.query_params['state']
+        my_state = str(request.session['my_state'])
 
-        #CSRF 공격을 받기위한 문자열, 나중에 추가?
-        #state = datetime.datetime.now().strftime()
+
+        #CSRF 방지
+        if state != my_state:
+            return Response('No hack, Csrf')
 
         # 토큰 획득
         token_request = requests.get(
@@ -273,13 +283,14 @@ def kakao_callback(request):
         # 일단 따로 저장 안 하고 진행
 
 
-
+        '''
         # 사용자 정보 불러오기
         profile_request = requests.post(
             "https://kapi.kakao.com/v2/user/me",
             headers={"Authorization": f"Bearer {kakao_access_token}"},
         )
         kakao_account = profile_request.json()
+        '''
 
         try:
             # Clayful에 가입
@@ -334,7 +345,9 @@ def kakao_callback(request):
 # 코드 발급
 def naver_login(request):
     client_id = "JIykLOc5AHOv_NmMGl7w"
-    redirect_uri = "http://localhost:8000/user/auth/naver/callback/"
+    local_host = "https://www.byeolshowco.com/"
+    #local_host = "http://localhost:8000/"
+    redirect_uri = local_host + "user/auth/naver/callback/"
     state = hash(datetime.datetime.now().strftime('%Y%m%d%H%M%S'))
     request.session['my_state'] = state
 
