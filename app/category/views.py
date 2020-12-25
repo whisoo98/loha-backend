@@ -14,7 +14,31 @@ import json
 import requests
 from clayful import Clayful
 
+@api_view(['GET'])
+@parser_classes((JSONParser,))
+def collection_list(reqeust):
+    Clayful.config({
+        'client': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6Ijc3MGYzMDA2MTlkYjRhMjBiOGYyY2E5MzZlMDU5YzBmMjE4ZTFjNTE2YmI2ZmQzOWQxN2MyZTE0NTIzN2MzMzAiLCJyb2xlIjoiY2xpZW50IiwiaWF0IjoxNjAwNjc5ODY3LCJzdG9yZSI6IjQ1VEdYQjhYTEFLSi45NzMzQTRLRDkyWkUiLCJzdWIiOiJSTUM4WldVUTRFWkUifQ.tcG30RcADqDIj73fRbcIi8b2_u3LlhtXWVaL3SawHRs'
+    })
+    try:
+        Collection = Clayful.Collection
 
+        options = {
+            'query': {
+                'fields': 'name',
+                'parent': 'none',
+            },
+        }
+        result = Collection.list(options)
+        data = result.data
+        return Response(data)
+    except Exception as e:
+        return Response(e.code)
+
+
+
+
+'''
 class CollectionAPI(APIView):
     Clayful.config({
         'client': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6Ijc3MGYzMDA2MTlkYjRhMjBiOGYyY2E5MzZlMDU5YzBmMjE4ZTFjNTE2YmI2ZmQzOWQxN2MyZTE0NTIzN2MzMzAiLCJyb2xlIjoiY2xpZW50IiwiaWF0IjoxNjAwNjc5ODY3LCJzdG9yZSI6IjQ1VEdYQjhYTEFLSi45NzMzQTRLRDkyWkUiLCJzdWIiOiJSTUM4WldVUTRFWkUifQ.tcG30RcADqDIj73fRbcIi8b2_u3LlhtXWVaL3SawHRs'
@@ -76,3 +100,5 @@ class CollectionAPI(APIView):
 
         except Exception as e:
             return Response(e.code)
+            
+'''

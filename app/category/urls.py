@@ -20,6 +20,7 @@ from .views import *
 
 
 urlpatterns = [
-    path('',CollectionAPI.as_view()),
-    path('<str:collection_id>/',CollectionAPI.as_view()),
+    path('',collection_list),
+    #path('',CollectionAPI.as_view()),
+    #path('<str:collection_id>/',CollectionAPI.as_view()),
 ]
