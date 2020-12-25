@@ -18,6 +18,7 @@ RUN pip install requests
 RUN pip install clayful
 RUN apk update && apk add postgresql-dev gcc python3-dev musl-dev
 RUN pip install psycopg2
+RUN pip install iamporter
 RUN apk add tk
 
 COPY ./requirements.txt .
