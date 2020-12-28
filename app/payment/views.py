@@ -137,7 +137,7 @@ def cancel_payment(request):
     except Exception as e:
         return Response(e.response)
 
-@api_view(['POST'])
+@api_view(['GET'])
 def find_payment(request):
     client = Iamporter(imp_key="8605712299401734",
                        imp_secret="VoICY5nRMtnvAENACdBM0UePAUtOZMiUb0x96V1TppoZ3bAFpbrq5FgGzJuzvNuGO1QUXROmgcmkoWZO")
