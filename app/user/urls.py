@@ -20,5 +20,9 @@ from .views import *
 urlpatterns = [
     path('', User.as_view()),
     path('auth/', Auth.as_view()),
+    path('auth/kakao/login/', kakao_login),
+    path('auth/kakao/callback/', kakao_callback),
+    path('auth/naver/login/', naver_login),
+    path('auth/naver/callback/', naver_callback),
 ]
 
