@@ -18,8 +18,9 @@ from django.urls import path, include
 from .views import *
 
 urlpatterns = [
+    path('', ProductAPI.as_view()),
     path('collection/', ProductCollectionAPI.as_view()),
     path('collection/<str:collection_id>/', ProductCollectionAPI.as_view()),
-    path('', ProductAPI.as_view()),
+    path('search/', product_searchAPI),
     path('<str:product_id>/', ProductAPI.as_view()),
 ]

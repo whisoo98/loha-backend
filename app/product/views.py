@@ -108,3 +108,40 @@ class ProductAPI(APIView):
 
         except Exception as e:
             return Response(e.code)
+
+
+@api_view(['GET'])
+@parser_classes((JSONParser,))
+def product_searchAPI(request):
+
+    Clayful.config({
+        'client': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6Ijc3MGYzMDA2MTlkYjRhMjBiOGYyY2E5MzZlMDU5YzBmMjE4ZTFjNTE2YmI2ZmQzOWQxN2MyZTE0NTIzN2MzMzAiLCJyb2xlIjoiY2xpZW50IiwiaWF0IjoxNjAwNjc5ODY3LCJzdG9yZSI6IjQ1VEdYQjhYTEFLSi45NzMzQTRLRDkyWkUiLCJzdWIiOiJSTUM4WldVUTRFWkUifQ.tcG30RcADqDIj73fRbcIi8b2_u3LlhtXWVaL3SawHRs',
+        'language': 'ko',
+        'time_zone': 'Asia/Seoul',
+        'debug_language': 'ko',
+    })
+
+    try:
+        Product = Clayful.Product
+        options = {
+            'query': {
+                'q': request.data['search'],
+                #'search': request.data['search'],
+                'search': {
+                    'name.ko' : '',
+                },
+                'searchMatch': 'partial',
+
+            },
+        }
+
+        result = Product.list(options)
+
+        headers = result.headers
+        data = result.data
+
+        return Response(data)
+
+    except Exception as e:
+
+        return Response("EX")
