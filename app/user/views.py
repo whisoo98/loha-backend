@@ -248,7 +248,7 @@ class Auth(APIView):
 def kakao_login(request):
     app_rest_api_key = "14465e198e48578e5e4afc11e37f48b6"
     local_host = "https://www.byeolshowco.com/"
-    #local_host = "http://127.0.0.1:8000/"
+    local_host = "http://127.0.0.1:8000/"
     redirect_uri = local_host + "user/auth/kakao/callback/"
     state = hash(datetime.datetime.now().strftime('%Y%m%d%H%M%S'))
     request.session['my_state'] = state
@@ -260,7 +260,7 @@ def kakao_callback(request):
     try:
         app_rest_api_key = "14465e198e48578e5e4afc11e37f48b6"
         local_host = "https://www.byeolshowco.com/"
-        #local_host = "http://127.0.0.1:8000/"
+        local_host = "http://127.0.0.1:8000/"
         redirect_uri = local_host + "user/auth/kakao/callback/"
         user_token = request.query_params['code']
         state = request.query_params['state']
@@ -291,10 +291,10 @@ def kakao_callback(request):
             Customer = Clayful.Customer
             payload = { 'token': kakao_access_token }
             result = Customer.authenticate_by_3rd_party('kakao', payload)
-
             # 가입과 동시 로그인
             if result.data['action'] == 'register':
                 result = Customer.authenticate_by_3rd_party('kakao', payload)
+                Customer.update(result.data['customer'], {'groups' : ['QS8YM3ECBUV4']})
             return result
 
         result = kakao_to_clayful()
@@ -302,7 +302,17 @@ def kakao_callback(request):
         header = {'custom_token': result.data['token']}
         return Response(content, headers=header)
     except Exception as e:
-        print("error kakao")
+        print(e)
+        try:
+            print(e.is_clayful)
+            print(e.model)
+            print(e.method)
+            print(e.status)
+            print(e.headers)
+            print(e.code)
+            print(e.message)
+        except Exception as er:
+            pass
         content = "로그인 실패"
         return Response(content, status=status.HTTP_400_BAD_REQUEST)
 
@@ -349,7 +359,7 @@ def naver_callback(request):
             # 가입과 동시에 로그인
             if result.data['action'] == 'register':
                 result = Customer.authenticate_by_3rd_party('naver', payload)
-
+                Customer.update(result.data['customer'], {'groups': ['QS8YM3ECBUV4']})
             return result
 
         result = naver_to_clayful()
@@ -359,5 +369,15 @@ def naver_callback(request):
 
     except Exception as e:
         print(e)
+        try:
+            print(e.is_clayful)
+            print(e.model)
+            print(e.method)
+            print(e.status)
+            print(e.headers)
+            print(e.code)
+            print(e.message)
+        except Exception as er:
+            pass
         content = "로그인 실패"
         return Response(content, status=status.HTTP_400_BAD_REQUEST)
