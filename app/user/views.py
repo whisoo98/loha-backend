@@ -19,10 +19,8 @@ def require_login(func):
                 'raw': True,
                 'fields': "userId,country,name,alias,email,groups,phone"
             }
-            test = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6IjQzM2Q2YzZlNDUxMzcyMzM3N2EyMzBhMTE3MGJlMzg3NDE1YmYyMzc4OTkwZDk1MDAxMWE1MDlmYTVhNDEwNzkiLCJyb2xlIjoiY3VzdG9tZXIiLCJpYXQiOjE2MDkyMzg2ODMsImV4cCI6MTYwOTg0MzQ4Mywic3ViIjoiWlpNUTk4UzlMTExOIn0.8Ofc9RsUrINDy4VYJ9-6nFzJKtZnHydJ_zK3g7i2uO8"
-            request.headers.get('custom_token')
             options = {
-                'customer': test,
+                'customer': request.headers.get('custom_token'),
                 'query': query
             }
             kwargs['result'] = Customer.get_me(options)
