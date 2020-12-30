@@ -3,157 +3,85 @@ from django.shortcuts import render
 # Create your views here.
 
 from rest_framework.views import Response
+from rest_framework import status
 from rest_framework.views import APIView
+from django.conf import settings
 from clayful import Clayful
+from user.views import require_login
 import json
 
-
-# @login_require
-# 로그인 여부를 확인해 비로그인 시 실행 X --> 데코레이터 추가 필요
-# 로그인 되어 있다고 가정
-class WishList(APIView):
+# 좋아요 상품 목록 확인
+class ProductWishList(APIView):
     # Clayful 초기화
     def __init__(self):
         Clayful.config({
-            'client': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6IjQ0YmE3ZWI3NTk1MDk3ZmM2ODIwNTEzNDc3YzE5ZGRlZWRmMTgzMjEwYjg1NmJiOGQ2NzRkNWU0M2U5MTg0NTgiLCJyb2xlIjoiY2xpZW50IiwiaWF0IjoxNjA3MzQ2NjM2LCJzdG9yZSI6IjQ1VEdYQjhYTEFLSi45NzMzQTRLRDkyWkUiLCJzdWIiOiJFVTNIQ1g4M1dWNjcifQ.fJkMXfdphEdVA6o4j0wAFl1eOQ5uarJx21AIejrDKlg',
+            'client': getattr(settings, 'CLAYFUL_SECRET_KEY', None),
             'language': 'ko',
             'currency': 'KRW',
             'time_zone': 'Asia/Seoul',
             'debug_language': 'ko',
         })
 
-    # WishList 불러오기
+    # ProductWishList 불러오기
+    @require_login
     def get(self, request):
         try:
-
             WishList = Clayful.WishList
-
-            payload = {
-                'name': 'default_wishlist',
-                'description': None
+            options = {'customer': request.headers.get('custom_token')}
+            result = WishList.list_for_me(options)
+            query = {
+                'limit': 15,
+                'page': int(request.GET.get('offset', 1))
             }
-
-            options = {
-               'customer': request.session.get('custom_token')
-            }
-
-            is_exist_wishlist = WishList.list_for_me(options)
-
-            # wishlist가 없으면 생성
-            # 첫 번째에만 실행
-            if not is_exist_wishlist.data:
-                is_exist_wishlist = WishList.create_for_me(payload, options)
-
-            result = WishList.list_products_for_me(is_exist_wishlist.data[0]['_id'], options)
-            return Response(result.data)
+            options['query'] = query
+            result2 = WishList.list_products_for_me(result.data[0]['_id'], options)
+            return Response(result2.data)
 
         except Exception as e:
-            self.print_error(request, e)
-            return Response("error")
-
+            self.print_error(e)
+            content = "잘못된 요청"
+            return Response(content, status=status.HTTP_400_BAD_REQUEST)
 
     # WishList 추가
-    # product_id String
+    @require_login
     def post(self, request):
-        WishList = Clayful.WishList
-
-        payload = {
-            'name': 'default_wishlist',
-            'description': None
-        }
-
-        options = {
-            'customer': request.session.get('custom_token')
-        }
-
-        is_exist_wishlist = WishList.list_for_me(options)
-
-        # wishlist가 없으면 생성
-        # 첫 번째에만 실행
-        if not is_exist_wishlist.data:
-            is_exist_wishlist = WishList.create_for_me(payload, options)
-
-        # 아이템 추가
-        # name
-        payload = json.loads(request.body)
-
-        result = WishList.add_item_for_me(is_exist_wishlist.data[0]['_id'], json.loads(request.body), options)
-        return Response(result.data)
+        try:
+            WishList = Clayful.WishList
+            options = {'customer': request.headers.get('custom_token')}
+            result = WishList.list_for_me(options)
+            payload = {'product': request.data['product']}
+            WishList.add_item_for_me(result.data[0]['_id'], payload, options)
+            content = '추가 완료'
+            return Response(content, status=status.HTTP_202_ACCEPTED)
+        except Exception as e:
+            self.print_error(e)
+            content = "잘못된 요청"
+            return Response(content, status=status.HTTP_400_BAD_REQUEST)
 
     # WishList 삭제
-    # product_id String
-    def delete(self, request):
-        WishList = Clayful.WishList
+    @require_login
+    def delete(self, request, result):
+        try:
+            WishList = Clayful.WishList
+            options = {'customer': request.headers.get('custom_token')}
+            result = WishList.list_for_me(options)
+            result = WishList.delete_item_for_me(result.data[0]['_id'], request.data['product'], options)
+            return Response(result.data)
+        except Exception as e:
+            self.print_error(e)
+            content = "잘못된 요청"
+            return Response(content, status=status.HTTP_400_BAD_REQUEST)
 
-        options = {
-            'customer': request.session.get('custom_token')
-        }
+    def print_error(request, e):
+        print(e)
+        try:
+            print(e.is_clayful)
+            print(e.model)
+            print(e.method)
+            print(e.status)
+            print(e.headers)
+            print(e.code)
+            print(e.message)
+        except Exception as er:
+            pass
 
-        is_exist_wishlist = WishList.list_for_me(options)
-        result = WishList.delete_item_for_me(is_exist_wishlist.data[0]['_id'], request.data['product'], options)
-
-        return Response(result.data)
-
-
-    def print_error(self, request, e):
-        print(e.is_clayful)
-        print(e.model)
-        print(e.method)
-        print(e.status)
-        print(e.headers)
-        print(e.code)
-        print(e.message)
-
-
-''' 디버깅용
-@api_view(['GET'])
-def get_wishlist(request):
-    Clayful.config({
-        'client': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6IjQ0YmE3ZWI3NTk1MDk3ZmM2ODIwNTEzNDc3YzE5ZGRlZWRmMTgzMjEwYjg1NmJiOGQ2NzRkNWU0M2U5MTg0NTgiLCJyb2xlIjoiY2xpZW50IiwiaWF0IjoxNjA3MzQ2NjM2LCJzdG9yZSI6IjQ1VEdYQjhYTEFLSi45NzMzQTRLRDkyWkUiLCJzdWIiOiJFVTNIQ1g4M1dWNjcifQ.fJkMXfdphEdVA6o4j0wAFl1eOQ5uarJx21AIejrDKlg',
-        'customer': request.session.get('custom_token'),
-        'language': 'ko',
-        'currency': 'KRW',
-        'time_zone': 'Asia/Seoul',
-        'debug_language': 'ko',
-    })
-    try:
-
-        WishList = Clayful.WishList
-
-        result = WishList.list_for_me()
-
-        return Response(result.data)
-
-    except Exception as e:
-
-        # Error case
-        print(e.code)
-
-
-@api_view(['GET'])
-def delete_wishlist(request):
-    Clayful.config({
-        'client': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6IjQ0YmE3ZWI3NTk1MDk3ZmM2ODIwNTEzNDc3YzE5ZGRlZWRmMTgzMjEwYjg1NmJiOGQ2NzRkNWU0M2U5MTg0NTgiLCJyb2xlIjoiY2xpZW50IiwiaWF0IjoxNjA3MzQ2NjM2LCJzdG9yZSI6IjQ1VEdYQjhYTEFLSi45NzMzQTRLRDkyWkUiLCJzdWIiOiJFVTNIQ1g4M1dWNjcifQ.fJkMXfdphEdVA6o4j0wAFl1eOQ5uarJx21AIejrDKlg',
-        'customer': request.session.get('custom_token'),
-        'language': 'ko',
-        'currency': 'KRW',
-        'time_zone': 'Asia/Seoul',
-        'debug_language': 'ko',
-    })
-
-    try:
-        WishList = Clayful.WishList
-
-        WishList.delete_for_me('DGFTMR7Q78MJ')
-        WishList.delete_for_me('MCMD85ERPYLX')
-        WishList.delete_for_me('6RQF8FJ4Y7HL')
-        result = WishList.delete_for_me('PTZ3J8AWVX36')
-
-
-        return Response(result.data)
-
-    except Exception as e:
-
-        # Error case
-        print(e.code)
-'''
