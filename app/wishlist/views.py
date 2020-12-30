@@ -29,12 +29,6 @@ class ProductWishList(APIView):
             WishList = Clayful.WishList
             options = {'customer': request.headers.get('custom_token')}
             result = WishList.list_for_me(options)
-
-            idx = -1
-            for i in range(3):
-                if result.data[i]['name'] == 'product_wishlist':
-                    idx=i
-                    break
             query = {
                 'raw': True,
                 'limit': 15,
@@ -42,7 +36,7 @@ class ProductWishList(APIView):
                 'fields': 'brand,bundled,bundles,vendor,thumbnail'
             }
             options['query'] = query
-            result2 = WishList.list_products_for_me(result.data[idx]['_id'], options)
+            result2 = WishList.list_products_for_me(result.data[0]['_id'], options)
             return Response(result2.data)
 
         except Exception as e:
