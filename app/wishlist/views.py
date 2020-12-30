@@ -24,16 +24,14 @@ class ProductWishList(APIView):
 
     # ProductWishList 불러오기
     @require_login
-    def get(self, request, result):
+    def get(self, request):
         try:
             WishList = Clayful.WishList
             options = {'customer': request.headers.get('custom_token')}
             result = WishList.list_for_me(options)
             query = {
-                'raw': True,
                 'limit': 15,
-                'page': int(request.GET.get('offset', 1)),
-                'fields': 'brand,bundled,bundles,vendor,thumbnail'
+                'page': int(request.GET.get('offset', 1))
             }
             options['query'] = query
             result2 = WishList.list_products_for_me(result.data[0]['_id'], options)
@@ -46,7 +44,7 @@ class ProductWishList(APIView):
 
     # WishList 추가
     @require_login
-    def post(self, request, result):
+    def post(self, request):
         try:
             WishList = Clayful.WishList
             options = {'customer': request.headers.get('custom_token')}
