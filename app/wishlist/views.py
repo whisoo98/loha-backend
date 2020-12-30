@@ -57,15 +57,9 @@ class ProductWishList(APIView):
             WishList = Clayful.WishList
             options = {'customer': request.headers.get('custom_token')}
             result = WishList.list_for_me(options)
-            idx = -1
-            for i in range(3):
-                if result.data[i]['name'] == 'product_wishlist':
-                    idx = i
-                    break
-
             # 상품 추가
             payload = {'product': request.data['product']}
-            WishList.add_item_for_me(result.data[idx]['_id'], payload, options)
+            WishList.add_item_for_me(result.data[0]['_id'], payload, options)
             content = '추가 완료'
             return Response(content, status=status.HTTP_202_ACCEPTED)
         except Exception as e:
