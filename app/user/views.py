@@ -4,9 +4,11 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view
 from clayful import Clayful
+from django.conf import settings
 import json
 import requests
 import datetime
+
 import urllib
 
 # 로그인 확인 decorator
@@ -48,7 +50,7 @@ def Init_Clayful(func):
         # Clayful 초기화
         try:
             Clayful.config({
-                'client': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6IjQ0YmE3ZWI3NTk1MDk3ZmM2ODIwNTEzNDc3YzE5ZGRlZWRmMTgzMjEwYjg1NmJiOGQ2NzRkNWU0M2U5MTg0NTgiLCJyb2xlIjoiY2xpZW50IiwiaWF0IjoxNjA3MzQ2NjM2LCJzdG9yZSI6IjQ1VEdYQjhYTEFLSi45NzMzQTRLRDkyWkUiLCJzdWIiOiJFVTNIQ1g4M1dWNjcifQ.fJkMXfdphEdVA6o4j0wAFl1eOQ5uarJx21AIejrDKlg',
+                'client':  getattr(settings, 'CLAYFUL_SECRET_KEY', None),
                 'language': 'ko',
                 'currency': 'KRW',
                 'time_zone': 'Asia/Seoul',
@@ -70,7 +72,7 @@ class User(APIView):
     # Clayful 초기화
     def __init__(self):
         Clayful.config({
-            'client': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6IjQ0YmE3ZWI3NTk1MDk3ZmM2ODIwNTEzNDc3YzE5ZGRlZWRmMTgzMjEwYjg1NmJiOGQ2NzRkNWU0M2U5MTg0NTgiLCJyb2xlIjoiY2xpZW50IiwiaWF0IjoxNjA3MzQ2NjM2LCJzdG9yZSI6IjQ1VEdYQjhYTEFLSi45NzMzQTRLRDkyWkUiLCJzdWIiOiJFVTNIQ1g4M1dWNjcifQ.fJkMXfdphEdVA6o4j0wAFl1eOQ5uarJx21AIejrDKlg',
+            'client': getattr(settings, 'CLAYFUL_SECRET_KEY', None),
             'language': 'ko',
             'currency': 'KRW',
             'time_zone': 'Asia/Seoul',
@@ -190,7 +192,7 @@ class User(APIView):
 class Auth(APIView):
     def __init__(self):
         Clayful.config({
-            'client': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6IjQ0YmE3ZWI3NTk1MDk3ZmM2ODIwNTEzNDc3YzE5ZGRlZWRmMTgzMjEwYjg1NmJiOGQ2NzRkNWU0M2U5MTg0NTgiLCJyb2xlIjoiY2xpZW50IiwiaWF0IjoxNjA3MzQ2NjM2LCJzdG9yZSI6IjQ1VEdYQjhYTEFLSi45NzMzQTRLRDkyWkUiLCJzdWIiOiJFVTNIQ1g4M1dWNjcifQ.fJkMXfdphEdVA6o4j0wAFl1eOQ5uarJx21AIejrDKlg',
+            'client': getattr(settings, 'CLAYFUL_SECRET_KEY', None),
             'language': 'ko',
             'currency': 'KRW',
             'time_zone': 'Asia/Seoul',
@@ -244,9 +246,9 @@ class Auth(APIView):
 
 # 코드 요청
 def kakao_login(request):
-    app_rest_api_key = "14465e198e48578e5e4afc11e37f48b6"
+    app_rest_api_key = getattr(settings, 'KAKAO_REST_API', None)
     local_host = "https://www.byeolshowco.com/"
-    local_host = "http://127.0.0.1:8000/"
+    #local_host = "http://127.0.0.1:8000/"
     redirect_uri = local_host + "user/auth/kakao/callback/"
     state = hash(datetime.datetime.now().strftime('%Y%m%d%H%M%S'))
     request.session['my_state'] = state
@@ -256,14 +258,14 @@ def kakao_login(request):
 @api_view(['GET'])
 def kakao_callback(request):
     try:
-        app_rest_api_key = "14465e198e48578e5e4afc11e37f48b6"
+        app_rest_api_key = getattr(settings, 'KAKAO_REST_API', None)
         local_host = "https://www.byeolshowco.com/"
-        local_host = "http://127.0.0.1:8000/"
+        #local_host = "http://127.0.0.1:8000/"
         redirect_uri = local_host + "user/auth/kakao/callback/"
         user_token = request.query_params['code']
         state = request.query_params['state']
         my_state = str(request.session['my_state'])
-
+        request.session.pop('my_state')
         #CSRF 방지
         if state != my_state:
             content = "잘못된 접근"
@@ -321,7 +323,7 @@ def kakao_callback(request):
 
 # 코드 발급
 def naver_login(request):
-    client_id = "JIykLOc5AHOv_NmMGl7w"
+    client_id = getattr(settings, 'NAVER_CLIENT_ID', None)
     local_host = "https://www.byeolshowco.com/"
     #local_host = "http://localhost:8000/"
     redirect_uri = local_host + "user/auth/naver/callback/"
@@ -334,8 +336,8 @@ def naver_login(request):
 # 토큰 발급 및 정보 저장
 def naver_callback(request):
     try :
-        client_id = "JIykLOc5AHOv_NmMGl7w"
-        client_secret = "hGNs9EzyMC"
+        client_id = getattr(settings, 'NAVER_CLIENT_ID', None)
+        client_secret = getattr(settings, 'NAVER_SECRET_KEY', None)
         code = request.query_params['code']
         state = request.query_params['state']
         my_state = str(request.session['my_state'])
