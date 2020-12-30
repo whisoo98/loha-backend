@@ -14,91 +14,37 @@ import json
 import requests
 from clayful import Clayful
 
+def config():
+    Clayful.config({
+        'client': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6IjM1MTUxMGVhM2IyYjkxMzllNmEwYzBiZDU5ODM1ZDg5OTBlYjFiZTY2NmVkYTcwNzgyNTRlOTdjZDQxZTI3N2IiLCJyb2xlIjoiY2xpZW50IiwiaWF0IjoxNjA5Mjk5MzM5LCJzdG9yZSI6IjQ1VEdYQjhYTEFLSi45NzMzQTRLRDkyWkUiLCJzdWIiOiJVM0dDTDZSWlVDVzMifQ.f6RndYqpY-ErnkYHq8EeP6Nkpg7bpcy1GGYeguKMtM0',
+        'language': 'ko',
+        'currency': 'KRW',
+        'time_zone': 'Asia/Seoul',
+        'debug_language': 'ko',
+    })
+
 @api_view(['GET'])
 @parser_classes((JSONParser,))
 def collection_list(reqeust):
-    Clayful.config({
-        'client': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6Ijc3MGYzMDA2MTlkYjRhMjBiOGYyY2E5MzZlMDU5YzBmMjE4ZTFjNTE2YmI2ZmQzOWQxN2MyZTE0NTIzN2MzMzAiLCJyb2xlIjoiY2xpZW50IiwiaWF0IjoxNjAwNjc5ODY3LCJzdG9yZSI6IjQ1VEdYQjhYTEFLSi45NzMzQTRLRDkyWkUiLCJzdWIiOiJSTUM4WldVUTRFWkUifQ.tcG30RcADqDIj73fRbcIi8b2_u3LlhtXWVaL3SawHRs'
-    })
+
+    config()
+
     try:
         Collection = Clayful.Collection
 
         options = {
             'query': {
                 'fields': 'name',
-                'parent': 'none',
+                'parent': 'none', # 최상위 카테고리만 가져옴
             },
         }
         result = Collection.list(options)
         data = result.data
         return Response(data)
+    
     except Exception as e:
         return Response(e.code)
 
 
 
 
-'''
-class CollectionAPI(APIView):
-    Clayful.config({
-        'client': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6Ijc3MGYzMDA2MTlkYjRhMjBiOGYyY2E5MzZlMDU5YzBmMjE4ZTFjNTE2YmI2ZmQzOWQxN2MyZTE0NTIzN2MzMzAiLCJyb2xlIjoiY2xpZW50IiwiaWF0IjoxNjAwNjc5ODY3LCJzdG9yZSI6IjQ1VEdYQjhYTEFLSi45NzMzQTRLRDkyWkUiLCJzdWIiOiJSTUM4WldVUTRFWkUifQ.tcG30RcADqDIj73fRbcIi8b2_u3LlhtXWVaL3SawHRs'
-    })
-
-    def get(self, request):
-        try:
-            Collection = Clayful.Collection
-            options = {
-                'query' : {
-                    'fields' : 'name',
-                    'parent' : 'none'
-                    #'sort': 'createdAt',
-                },
-            }
-            result = Collection.list(options)
-            headers = result.headers
-            data = result.data
-            return Response(data)
-
-        except Exception as e:
-            return Response(e.code)
-
-    def post(self, request):
-        try:
-            Collection = Clayful.Collection
-            payload = json.loads(request.body)
-            options = {}
-            result = Collection.create(payload, options)
-            headers = result.headers
-            data = result.data
-
-            return Response(data)
-
-        except Exception as e:
-            return Response(e.code)
-
-    def put(self, request, collection_id):
-        try:
-            Collection = Clayful.Collection
-            payload = json.loads(request.body)
-            options = {}
-            result = Collection.update(collection_id, payload, options)
-            headers = result.headers
-            data = result.data
-            return Response(data)
-
-        except Exception as e:
-            return Response(e.code)
-
-    def delete(self, request, collection_id):
-        try:
-            Collection = Clayful.Collection
-            options = {}
-            result = Collection.delete(collection_id, options)
-            headers = result.headers
-            data = result.data
-            return Response(data)
-
-        except Exception as e:
-            return Response(e.code)
-            
-'''
