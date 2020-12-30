@@ -18,9 +18,9 @@ from django.urls import path,include
 from .views import *
 
 urlpatterns = [
-    path('', Cart.as_view()),
-    path('<str:customer_id>/', Cart.as_view()),
-    path('items/',CartItem.as_view()),
-    path('items/<str:items_id>/', CartItem.as_view()),
-    path('checkout/',CartCheckout.as_view()),
+    path('', CartAPI.as_view()),
+    path('items/',CartItemAPI.as_view()),
+    path('items/<str:items_id>/', CartItemAPI.as_view()),
+    path('checkout/', CartCheckoutAPI.as_view()),
+    #path('<str:customer_id>/', CartAPI.as_view()),
 ]
