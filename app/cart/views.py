@@ -1,30 +1,34 @@
-from django.shortcuts import render
-
+from django.shortcuts import render,redirect
+from django.conf import settings
 
 from rest_framework.decorators import api_view,parser_classes
-from rest_framework.views import Response
 from rest_framework.parsers import JSONParser
 from rest_framework.authentication import SessionAuthentication
-from rest_framework.views import APIView
+from rest_framework.views import APIView,Response
+from rest_framework.status import *
+from rest_framework.request import Request
+
 from clayful import Clayful
 import json
+
 # Create your views here.
 
-class Cart(APIView):
+class CartAPI(APIView):
+
     Clayful.config({
-                  'client': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6IjhhNzc5NzY4NTlhOTZlMzI3N2NlZmRmNmU2M2MyMmE5Yzk0MGY3NTA2OTk5MDAwMzU4Y2ZlY2MyYzc0NzJhMTIiLCJyb2xlIjoiY2xpZW50IiwiaWF0IjoxNjA3NDkyMjc4LCJzdG9yZSI6IjQ1VEdYQjhYTEFLSi45NzMzQTRLRDkyWkUiLCJzdWIiOiJTNFdEVUxROVJLTEQifQ.k1TqaUQgs0hLb2DUygPHFApQKigTJnNIexUPq2Rdl4k',
-                  # CART
-                  'language': 'ko',
-                  'currency': 'KRW',
-                  'time_zone': 'Asia/Seoul',
-                  'debug_language': 'ko',
-                   }
-    )
-    def post(self, request):
+        'client': getattr(settings, 'CLAYFUL_SECRET_KEY', None),
+        'language': 'ko',
+        'currency': 'KRW',
+        'time_zone': 'Asia/Seoul',
+        'debug_language': 'ko',
+    })
+
+    def post(self, request): # 고객이 본인 장바구니 확인
         try:
             Cart = Clayful.Cart
-            payload = json.loads(request.body)
+            payload = json.dumps(request.data['payload'])
             options = {
+                'customer': request.headers.get('custom_token'),
                 'query': {
 
                 },
@@ -35,40 +39,25 @@ class Cart(APIView):
             return Response(data)
 
         except Exception as e:
-            return Response(e.code)
+            return Response(e.code, status=e.status)
 
-    def post(self, request, customer_id):
-        try:
-            Cart = Clayful.Cart
-            payload = json.loads(request.body)
-            options = {
-                'query' : {
+class CartItemAPI(APIView):
 
-                },
-            }
-            result = Cart.get(customer_id, payload, options)
-            headers = result.headers
-            data = result.data
-            return Response(data)
-
-        except Exception as e:
-            return Response(e.code)
-
-
-class CartItem(APIView):
     Clayful.config({
-        'client': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6IjhhNzc5NzY4NTlhOTZlMzI3N2NlZmRmNmU2M2MyMmE5Yzk0MGY3NTA2OTk5MDAwMzU4Y2ZlY2MyYzc0NzJhMTIiLCJyb2xlIjoiY2xpZW50IiwiaWF0IjoxNjA3NDkyMjc4LCJzdG9yZSI6IjQ1VEdYQjhYTEFLSi45NzMzQTRLRDkyWkUiLCJzdWIiOiJTNFdEVUxROVJLTEQifQ.k1TqaUQgs0hLb2DUygPHFApQKigTJnNIexUPq2Rdl4k',
+        'client': getattr(settings, 'CLAYFUL_SECRET_KEY', None),
         'language': 'ko',
         'currency': 'KRW',
         'time_zone': 'Asia/Seoul',
         'debug_language': 'ko',
     })
-    def post(self, request):
+
+    def post(self, request): # 자신의 장바구니에 물품 추가
+
         try:
             Cart = Clayful.Cart
-            payload = json.loads(request.body)
+            payload = json.dumps(request.data['payload'])
             options = {
-                'customer': request.session.get('custom_token'),
+                'customer': request.headers.get('custom_token'),
             }
 
             result = Cart.add_item_for_me(payload, options)
@@ -78,65 +67,56 @@ class CartItem(APIView):
             return Response(data)
 
         except Exception as e:
-            return Response(e.code)
+            return Response(e.code, status=e.status)
 
-    def delete(self, request):
+    def put(self, request, items_id): # 자신의 장바구니에서 물품 수정
         try:
             Cart = Clayful.Cart
+            payload = json.dumps(request.data['payload'])
             options = {
-                'customer': request.session.get('custom_token'),
+                'customer': request.headers.get('custom_token'),
             }
-            result = Cart.empty_for_me(options)
-            headers = result.headers
-            data = result.data
-            return Response(data)
 
-        except Exception as e:
-            return Response(e.code)
-
-    def put(self, request, items_id):
-        try:
-            Cart = Clayful.Cart
-            payload = json.loads(request.body)
-            options = {
-                'customer': request.session.get('custom_token'),
-            }
             result = Cart.update_item_for_me(items_id, payload, options)
             headers = result.headers
             data = result.data
             return Response(data)
 
         except Exception as e:
-            return Response(e.code)
+            return Response(e.code, status=e.status)
 
-    def delete(self, request, items_id):
+    def delete(self, request): # 자신의 장바구니에서 선택 품목삭제
         try:
             Cart = Clayful.Cart
             options = {
-                'customer': request.session.get('custom_token'),
+                'customer': request.headers.get('custom_token'),
             }
-            result = Cart.delete_item_for_me(items_id, options)
-            headers = result.headers
-            data = result.data
-            return Response(data)
+            
+            item_ids = json.dumps(request.data) # 선택된 품목을 dict형으로 받음
+            for item_id in item_ids['item_ids'].value: # dict의 item_id에 대해서 삭제 실행
+                Cart.delete_item_for_me(item_id,options) #삭제
+
+            return redirect('/') # 자신의 장바구니 화면으로 redirect
 
         except Exception as e:
-            return Response(e.code)
+            return Response(e.code, status=e.status)
 
-class CartCheckout(APIView):
+class CartCheckoutAPI(APIView):
+
     Clayful.config({
-        'client': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6IjhhNzc5NzY4NTlhOTZlMzI3N2NlZmRmNmU2M2MyMmE5Yzk0MGY3NTA2OTk5MDAwMzU4Y2ZlY2MyYzc0NzJhMTIiLCJyb2xlIjoiY2xpZW50IiwiaWF0IjoxNjA3NDkyMjc4LCJzdG9yZSI6IjQ1VEdYQjhYTEFLSi45NzMzQTRLRDkyWkUiLCJzdWIiOiJTNFdEVUxROVJLTEQifQ.k1TqaUQgs0hLb2DUygPHFApQKigTJnNIexUPq2Rdl4k',
+        'client': getattr(settings, 'CLAYFUL_SECRET_KEY', None),
         'language': 'ko',
         'currency': 'KRW',
         'time_zone': 'Asia/Seoul',
         'debug_language': 'ko',
     })
+
     def post(self, request):
         try:
             Cart = Clayful.Cart
-            payload = json.loads(request.body)
+            payload = json.dumps(request.data['payload'])
             options = {
-                'customer': request.session.get('custom_token'),
+                'customer': request.headers.get('custom_token'),
                 'query' : {
 
                 }
@@ -147,5 +127,5 @@ class CartCheckout(APIView):
             return Response(data)
 
         except Exception as e:
-            return Response(e.code)
+            return Response(e.code, status=e.status)
 

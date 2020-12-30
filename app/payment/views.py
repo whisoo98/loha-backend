@@ -1,13 +1,14 @@
-from django.shortcuts import render
+from django.shortcuts import render,redirect
 from django.http.response import  HttpResponse, JsonResponse
 from django.utils.decorators import method_decorator
+from django.conf import settings
 
-from rest_framework.decorators import api_view,parser_classes
-from rest_framework.views import Response
+from rest_framework.decorators import api_view, parser_classes
+from rest_framework.views import Response, APIView
 from rest_framework.parsers import JSONParser
 from rest_framework.authentication import SessionAuthentication
-from rest_framework.views import APIView
 from rest_framework.request import Request
+from rest_framework.status import *
 
 from clayful import Clayful
 from iamporter import *
@@ -31,11 +32,12 @@ IMP_PG_PAYPAL = "paypal"  # 페이팔
 IMP_PG_EXIMBAY = "eximbay"  # 엑심베이
 IMP_PG_NAVERPAY = "naverco"  # 네이버페이
 '''
+
 @api_view(['POST'])
 def create_payment(request):
-    client = Iamporter(imp_key="8605712299401734",
-                       imp_secret="VoICY5nRMtnvAENACdBM0UePAUtOZMiUb0x96V1TppoZ3bAFpbrq5FgGzJuzvNuGO1QUXROmgcmkoWZO")
-    body = json.loads(request.data)
+    client = Iamporter(imp_key=getattr(settings, 'IAMPORT_REST_KEY', None),
+                       imp_secret=getattr(settings, 'IAMPORT_SECRET_REST_KEY', None))
+    body = json.dumps(request.data)
 
     """카드정보 또는 빌링키로 결제를 요청합니다
             카드정보를 지정하여 일회성 키인 결제를 요청할 수 있으며, 빌링키(customer_uid)를 지정해 재결제를 요청할 수 있습니다.
@@ -106,8 +108,8 @@ def create_payment(request):
 
 @api_view(['POST'])
 def cancel_payment(request):
-    client = Iamporter(imp_key="8605712299401734",
-                       imp_secret="VoICY5nRMtnvAENACdBM0UePAUtOZMiUb0x96V1TppoZ3bAFpbrq5FgGzJuzvNuGO1QUXROmgcmkoWZO")
+    client = Iamporter(imp_key=getattr(settings, 'IAMPORT_REST_KEY', None),
+                       imp_secret=getattr(settings, 'IAMPORT_SECRET_REST_KEY', None))
 
     """승인된 결제를 취소합니다.
             Args:
@@ -120,7 +122,7 @@ def cancel_payment(request):
                 dict
             """
 
-    body = json.loads(request.data)
+    body = json.dumps(request.data)
 
     try:
 
@@ -139,10 +141,10 @@ def cancel_payment(request):
 
 @api_view(['GET'])
 def find_payment(request):
-    client = Iamporter(imp_key="8605712299401734",
-                       imp_secret="VoICY5nRMtnvAENACdBM0UePAUtOZMiUb0x96V1TppoZ3bAFpbrq5FgGzJuzvNuGO1QUXROmgcmkoWZO")
+    client = Iamporter(imp_key=getattr(settings, 'IAMPORT_REST_KEY', None),
+                       imp_secret=getattr(settings, 'IAMPORT_SECRET_REST_KEY', None))
 
-    body = json.loads(request.data)
+    body = json.dumps(request.data)
 
     """아임포트 고유번호 또는 가맹점지정 고유번호로 결제내역을 확인합니다
             Args:

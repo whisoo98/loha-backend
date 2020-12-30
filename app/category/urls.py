@@ -21,6 +21,4 @@ from .views import *
 
 urlpatterns = [
     path('',collection_list),
-    #path('',CollectionAPI.as_view()),
-    #path('<str:collection_id>/',CollectionAPI.as_view()),
 ]
