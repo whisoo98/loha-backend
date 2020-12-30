@@ -30,13 +30,13 @@ class CartAPI(APIView):
             Cart = Clayful.Cart
             payload = json.dumps(request.data)
             options = {
-                'customer': request.session.get('custom_token'),
+                #'customer': request.headers.get('custom_token'),
+                'customer' : 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6ImZmZTdjODY5Y2ZiZDI4YmEzZWY0NjMwZDg1MThjMDFmMDRiMGE4NGIxNjUxMDA3YmZkYzAyOWVkNTk0MGMzMmUiLCJyb2xlIjoiY3VzdG9tZXIiLCJpYXQiOjE2MDkzMDU3MzcsImV4cCI6MTYwOTkxMDUzNywic3ViIjoiSFlQQlZUTFFYUVdLIn0.L4Er39hUTAClYvYtoQGM7un26vvkKK-x5CbGw5P2FSU',
                 'query': {
 
                 },
             }
             result = Cart.get_for_me(payload, options)
-            #result = Cart.get_for_me()
             headers = result.headers
             data = result.data
             return Response(data)
@@ -55,7 +55,7 @@ class CartItemAPI(APIView):
             Cart = Clayful.Cart
             payload = json.dumps(request.data)
             options = {
-                'customer': request.session.get('custom_token'),
+                'customer': request.headers.get('custom_token'),
             }
 
             result = Cart.add_item_for_me(payload, options)
@@ -72,7 +72,7 @@ class CartItemAPI(APIView):
             Cart = Clayful.Cart
             payload = json.dumps(request.data)
             options = {
-                'customer': request.session.get('custom_token'),
+                'customer': request.headers.get('custom_token'),
             }
 
             result = Cart.update_item_for_me(items_id, payload, options)
@@ -87,10 +87,12 @@ class CartItemAPI(APIView):
         try:
             Cart = Clayful.Cart
             options = {
-                'customer': request.session.get('custom_token'),
+                #'customer': request.headers.get('custom_token'),
+                'customer' : 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6ImZmZTdjODY5Y2ZiZDI4YmEzZWY0NjMwZDg1MThjMDFmMDRiMGE4NGIxNjUxMDA3YmZkYzAyOWVkNTk0MGMzMmUiLCJyb2xlIjoiY3VzdG9tZXIiLCJpYXQiOjE2MDkzMDU3MzcsImV4cCI6MTYwOTkxMDUzNywic3ViIjoiSFlQQlZUTFFYUVdLIn0.L4Er39hUTAClYvYtoQGM7un26vvkKK-x5CbGw5P2FSU'
             }
-            item_ids = request.data.getlist('item_ids[]') # 선택한 품목 ID
-            for item_id in item_ids:
+            
+            item_ids = json.dumps(request.data) # 선택된 품목을 dict형으로 받음
+            for item_id in item_ids['item_ids'].value: # dict의 item_id에 대해서 삭제 실행
                 Cart.delete_item_for_me(item_id,options) #삭제
 
             return redirect('/') # 자신의 장바구니 화면으로 redirect
@@ -108,7 +110,7 @@ class CartCheckoutAPI(APIView):
             Cart = Clayful.Cart
             payload = json.dumps(request.data)
             options = {
-                'customer': request.session.get('custom_token'),
+                'customer': request.headers.get('custom_token'),
                 'query' : {
 
                 }
