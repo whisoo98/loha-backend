@@ -104,7 +104,10 @@ class User(APIView):
                 'mobile': request.data.get('phone')
             }
             result = Customer.create(payload)
-            return Response(result.data)
+            # wishlist 생성
+            self.make_wishlist(Clayful.WishList, result.data['_id'])
+            content = '회원가입 완료'
+            return Response(content, status=status.HTTP_202_ACCEPTED)
         except Exception as e:
             self.print_error(e)
             try:
@@ -187,6 +190,14 @@ class User(APIView):
             print(e.message)
         except Exception as er:
             pass
+
+    def make_wishlist(request, WishList, customer):
+        payload = {
+            'customer': customer,
+            'name': 'product_wishlist',
+            'description': None
+        }
+        WishList.create(payload)
         
 # 네이티브 로그인, 로그아웃 with Clayful
 class Auth(APIView):
@@ -334,6 +345,7 @@ def naver_login(request):
 
 
 # 토큰 발급 및 정보 저장
+@api_view(['GET'])
 def naver_callback(request):
     try :
         client_id = getattr(settings, 'NAVER_CLIENT_ID', None)
