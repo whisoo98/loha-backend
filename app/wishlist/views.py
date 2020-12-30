@@ -105,7 +105,7 @@ class WishList(APIView):
         print(e.message)
 
 
-'''
+''' 디버깅용
 @api_view(['GET'])
 def get_wishlist(request):
     Clayful.config({
