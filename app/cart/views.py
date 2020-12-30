@@ -26,7 +26,7 @@ class CartAPI(APIView):
     def post(self, request): # 고객이 본인 장바구니 확인
         try:
             Cart = Clayful.Cart
-            payload = json.dumps(request.data)
+            payload = json.dumps(request.data['payload'])
             options = {
                 'customer': request.headers.get('custom_token'),
                 'query': {
@@ -55,7 +55,7 @@ class CartItemAPI(APIView):
 
         try:
             Cart = Clayful.Cart
-            payload = json.dumps(request.data)
+            payload = json.dumps(request.data['payload'])
             options = {
                 'customer': request.headers.get('custom_token'),
             }
@@ -72,7 +72,7 @@ class CartItemAPI(APIView):
     def put(self, request, items_id): # 자신의 장바구니에서 물품 수정
         try:
             Cart = Clayful.Cart
-            payload = json.dumps(request.data)
+            payload = json.dumps(request.data['payload'])
             options = {
                 'customer': request.headers.get('custom_token'),
             }
@@ -114,7 +114,7 @@ class CartCheckoutAPI(APIView):
     def post(self, request):
         try:
             Cart = Clayful.Cart
-            payload = json.dumps(request.data)
+            payload = json.dumps(request.data['payload'])
             options = {
                 'customer': request.headers.get('custom_token'),
                 'query' : {

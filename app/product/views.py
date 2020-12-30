@@ -54,7 +54,7 @@ class ProductAPI(APIView):
     def post(self, request): #product 생성
         try:
             Product = Clayful.Product
-            payload = json.dumps(request.data)
+            payload = json.dumps(request.data['payload'])
             options = {}
             result = Product.create(payload, options)
             headers = result.headers
@@ -87,7 +87,7 @@ class ProductAPI(APIView):
     def put(self, request, product_id): #product 수정
         try:
             Product = Clayful.Product
-            payload = json.dumps(request.data)
+            payload = json.dumps(request.data['payload'])
             options = {}
             result = Product.update(product_id, payload, options)
             headers = result.headers
