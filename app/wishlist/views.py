@@ -32,7 +32,7 @@ class ProductWishList(APIView):
             query = {
                 'raw': True,
                 'limit': 15,
-                'page': request.GET['page'],
+                'page': int(request.GET.get('offset', 1)),
                 'fields': 'brand,bundled,bundles,vendor,thumbnail'
             }
             options['query'] = query
@@ -51,7 +51,6 @@ class ProductWishList(APIView):
             WishList = Clayful.WishList
             options = {'customer': request.headers.get('custom_token')}
             result = WishList.list_for_me(options)
-            # 상품 추가
             payload = {'product': request.data['product']}
             WishList.add_item_for_me(result.data[0]['_id'], payload, options)
             content = '추가 완료'
