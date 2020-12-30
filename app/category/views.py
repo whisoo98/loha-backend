@@ -15,7 +15,9 @@ import json
 import requests
 from clayful import Clayful
 
-def config():
+@api_view(['GET'])
+@parser_classes((JSONParser,))
+def collection_list(reqeust):
     Clayful.config({
         'client': getattr(settings, 'CLAYFUL_SECRET_KEY', None),
         'language': 'ko',
@@ -23,12 +25,6 @@ def config():
         'time_zone': 'Asia/Seoul',
         'debug_language': 'ko',
     })
-
-@api_view(['GET'])
-@parser_classes((JSONParser,))
-def collection_list(reqeust):
-
-    config()
 
     try:
         Collection = Clayful.Collection
@@ -44,7 +40,7 @@ def collection_list(reqeust):
         return Response(data)
     
     except Exception as e:
-        return Response(e.code)
+        return Response(e.code, status=e.status)
 
 
 

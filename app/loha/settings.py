@@ -10,24 +10,58 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
-import os
+import os, json
+from django.core.exceptions import ImproperlyConfigured
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# SECURITY WARNING: keep the secret key used in production secret!
+secret_file = os.path.join(BASE_DIR, 'secrets.json')
+
+with open(secret_file) as f:
+    secrets = json.loads(f.read())
+
+# Keep secret keys in secrets.json
+def get_secret(setting, secrets=secrets):
+    try:
+        return secrets[setting]
+    except KeyError:
+        error_msg = "Set the {0} environment variable".format(setting)
+        raise ImproperlyConfigured(error_msg)
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-# SECRET_KEY = os.environ.get("SECRET_KEY")
-SECRET_KEY = '=v^h@)$nwmhieg5%s*t_-q1d*7f2d)!0ucmc*(!0l#3wk66(4j'
+# SECRET_KEY = os.environ.get("SECRET_KEY", default='=v^h@)$nwmhieg5%s*t_-q1d*7f2d)!0ucmc*(!0l#3wk66(4j')
+# SECRET_KEY = '=v^h@)$nwmhieg5%s*t_-q1d*7f2d)!0ucmc*(!0l#3wk66(4j'
+SECRET_KEY = get_secret("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-# DEBUG = int(os.environ.get("DEBUG", default=0))
-DEBUG = True
+DEBUG = int(get_secret("DEBUG"))
+#DEBUG=1
+
+
+#SECRET_KEY
+# IAMPORT
+IAMPORT_CODE=get_secret('IAMPORT_CODE')
+IAMPORT_REST_KEY=get_secret('IAMPORT_REST_KEY')
+IAMPORT_SECRET_REST_KEY=get_secret('IAMPORT_SECRET_REST_KEY')
+# CLAYFUL
+CLAYFUL_SECRET_KEY=get_secret('CLAYFUL_SECRET_KEY')
+# KAKAO
+KAKAO_APP_ID=get_secret('KAKAO_APP_ID')
+KAKAO_REST_API=get_secret('KAKAO_REST_API')
+KAKAO_ADMIN_KEY=get_secret('KAKAO_ADMIN_KEY')
+# NAVER
+NAVER_CLIENT_ID=get_secret('NAVER_CLIENT_ID')
+NAVER_SECRET_KEY=get_secret('NAVER_SECRET_KEY')
+
 
 # HOST
-ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS")
+ALLOWED_HOSTS = get_secret("DJANGO_ALLOWED_HOSTS")
 # ALLOWED_HOSTS = []
 
 
@@ -85,8 +119,12 @@ WSGI_APPLICATION = 'loha.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': os.environ.get('APP_DB_ENGINE', 'django.db.backends.sqlite3'),
+        'NAME': os.environ.get('DB_NAME', 'db.sqlite'),
+        'USER': os.environ.get('DB_USER', ''),
+        'PASSWORD': os.environ.get('DB_PASSWORD', ''),
+        'HOST': os.environ.get('DB_HOST', None),
+        'PORT': os.environ.get('DB_PORT', None),
     }
 }
 

@@ -14,7 +14,8 @@ import json
 import requests
 
 # Create your views here.
-def config():
+
+class ProductCollectionAPI(APIView):
     Clayful.config({
         'client': getattr(settings, 'CLAYFUL_SECRET_KEY', None),
         'language': 'ko',
@@ -22,11 +23,6 @@ def config():
         'time_zone': 'Asia/Seoul',
         'debug_language': 'ko',
     })
-
-class ProductCollectionAPI(APIView):
-
-    def __int__(self):
-        config()
 
     def get(self, request, collection_id='any'): # 특정 콜렉션 ID 없으면 모두 부름
         try:
@@ -44,14 +40,17 @@ class ProductCollectionAPI(APIView):
             return Response(data)
 
         except Exception as e:
-            return Response(e.code, e.status)
+            return Response(e.code, status=e.status)
 
 
 class ProductAPI(APIView):
-
-    def __int__(self):
-        config()
-
+    Clayful.config({
+        'client': getattr(settings, 'CLAYFUL_SECRET_KEY', None),
+        'language': 'ko',
+        'currency': 'KRW',
+        'time_zone': 'Asia/Seoul',
+        'debug_language': 'ko',
+    })
     def post(self, request): #product 생성
         try:
             Product = Clayful.Product
@@ -64,14 +63,16 @@ class ProductAPI(APIView):
             return Response(data)
 
         except Exception as e:
-            return Response(e.code,e.status)
+            return Response(e.code, status=e.status)
 
-    def get(self, request, product_id): #product list
+    def get(self, request, product_id): #product list'
+
         try:
+
             Product = Clayful.Product
             options = {
                 'query': {
-                    'fields' : '_id,name,summary,description,price,discount,shipping,available,brand,thumbnail,collections,options,variants,meta.stream_url'
+                    #'fields' : '_id,name,summary,description,price,discount,shipping,available,brand,thumbnail,collections,options,variants,meta.stream_url'
                 },
             }
             result = Product.get(product_id, options)
@@ -81,7 +82,7 @@ class ProductAPI(APIView):
             return Response(data)
 
         except Exception as e:
-            return Response(e.code,e.status)
+            return Response(e.code, status=e.status)
 
     def put(self, request, product_id): #product 수정
         try:
@@ -95,7 +96,7 @@ class ProductAPI(APIView):
             return Response(data)
 
         except Exception as e:
-            return Response(e.code,e.status)
+            return Response(e.code, status=e.status)
 
     def delete(self, request, product_id): #product 삭제
         try:
@@ -109,14 +110,20 @@ class ProductAPI(APIView):
             return redirect('/')
 
         except Exception as e:
-            return Response(e.code, e.status)
+            return Response(e.code, status=e.status)
 
 
 @api_view(['GET'])
 @parser_classes((JSONParser,))
 def product_searchAPI(request):
 
-    config()
+    Clayful.config({
+        'client': getattr(settings, 'CLAYFUL_SECRET_KEY', None),
+        'language': 'ko',
+        'currency': 'KRW',
+        'time_zone': 'Asia/Seoul',
+        'debug_language': 'ko',
+    })
 
     try:
         Product = Clayful.Product
@@ -139,4 +146,4 @@ def product_searchAPI(request):
         return Response(data)
 
     except Exception as e:
-        return Response(e.code, e.status)
+        return Response(e.code, status=e.status)

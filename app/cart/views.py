@@ -13,7 +13,8 @@ import json
 
 # Create your views here.
 
-def config():
+class CartAPI(APIView):
+
     Clayful.config({
         'client': getattr(settings, 'CLAYFUL_SECRET_KEY', None),
         'language': 'ko',
@@ -21,11 +22,6 @@ def config():
         'time_zone': 'Asia/Seoul',
         'debug_language': 'ko',
     })
-
-class CartAPI(APIView):
-
-    def __init__(self):
-        config()
 
     def post(self, request): # 고객이 본인 장바구니 확인
         try:
@@ -47,8 +43,13 @@ class CartAPI(APIView):
 
 class CartItemAPI(APIView):
 
-    def __init__(self):
-        config()
+    Clayful.config({
+        'client': getattr(settings, 'CLAYFUL_SECRET_KEY', None),
+        'language': 'ko',
+        'currency': 'KRW',
+        'time_zone': 'Asia/Seoul',
+        'debug_language': 'ko',
+    })
 
     def post(self, request): # 자신의 장바구니에 물품 추가
 
@@ -102,8 +103,13 @@ class CartItemAPI(APIView):
 
 class CartCheckoutAPI(APIView):
 
-    def __init__(self):
-        config()
+    Clayful.config({
+        'client': getattr(settings, 'CLAYFUL_SECRET_KEY', None),
+        'language': 'ko',
+        'currency': 'KRW',
+        'time_zone': 'Asia/Seoul',
+        'debug_language': 'ko',
+    })
 
     def post(self, request):
         try:
