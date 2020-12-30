@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render,redirect
 from django.views import View
 from django.http import JsonResponse, HttpResponse
 from django.conf import settings
@@ -106,7 +106,7 @@ class ProductAPI(APIView):
             result = Product.delete(product_id, options)
             headers = result.headers
             data = result.data
-            return Response(data)
+            return redirect('/')
 
         except Exception as e:
             return Response(e.code, e.status)
