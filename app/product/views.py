@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.views import View
 from django.http import JsonResponse, HttpResponse
+from django.conf import settings
 
 from rest_framework import request
 from rest_framework.response import Response
@@ -15,7 +16,7 @@ import requests
 # Create your views here.
 def config():
     Clayful.config({
-        'client': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6IjM1MTUxMGVhM2IyYjkxMzllNmEwYzBiZDU5ODM1ZDg5OTBlYjFiZTY2NmVkYTcwNzgyNTRlOTdjZDQxZTI3N2IiLCJyb2xlIjoiY2xpZW50IiwiaWF0IjoxNjA5Mjk5MzM5LCJzdG9yZSI6IjQ1VEdYQjhYTEFLSi45NzMzQTRLRDkyWkUiLCJzdWIiOiJVM0dDTDZSWlVDVzMifQ.f6RndYqpY-ErnkYHq8EeP6Nkpg7bpcy1GGYeguKMtM0',
+        'client': getattr(settings, 'CLAYFUL_SECRET_KEY', None),
         'language': 'ko',
         'currency': 'KRW',
         'time_zone': 'Asia/Seoul',

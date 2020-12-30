@@ -1,4 +1,5 @@
 from django.shortcuts import render,redirect
+from django.conf import settings
 
 from rest_framework.decorators import api_view,parser_classes
 from rest_framework.parsers import JSONParser
@@ -9,11 +10,12 @@ from rest_framework.request import Request
 
 from clayful import Clayful
 import json
+
 # Create your views here.
 
 def config():
     Clayful.config({
-        'client': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6IjM1MTUxMGVhM2IyYjkxMzllNmEwYzBiZDU5ODM1ZDg5OTBlYjFiZTY2NmVkYTcwNzgyNTRlOTdjZDQxZTI3N2IiLCJyb2xlIjoiY2xpZW50IiwiaWF0IjoxNjA5Mjk5MzM5LCJzdG9yZSI6IjQ1VEdYQjhYTEFLSi45NzMzQTRLRDkyWkUiLCJzdWIiOiJVM0dDTDZSWlVDVzMifQ.f6RndYqpY-ErnkYHq8EeP6Nkpg7bpcy1GGYeguKMtM0',
+        'client': getattr(settings, 'CLAYFUL_SECRET_KEY', None),
         'language': 'ko',
         'currency': 'KRW',
         'time_zone': 'Asia/Seoul',
@@ -30,8 +32,7 @@ class CartAPI(APIView):
             Cart = Clayful.Cart
             payload = json.dumps(request.data)
             options = {
-                #'customer': request.headers.get('custom_token'),
-                'customer' : 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6ImZmZTdjODY5Y2ZiZDI4YmEzZWY0NjMwZDg1MThjMDFmMDRiMGE4NGIxNjUxMDA3YmZkYzAyOWVkNTk0MGMzMmUiLCJyb2xlIjoiY3VzdG9tZXIiLCJpYXQiOjE2MDkzMDU3MzcsImV4cCI6MTYwOTkxMDUzNywic3ViIjoiSFlQQlZUTFFYUVdLIn0.L4Er39hUTAClYvYtoQGM7un26vvkKK-x5CbGw5P2FSU',
+                'customer': request.headers.get('custom_token'),
                 'query': {
 
                 },
@@ -87,8 +88,7 @@ class CartItemAPI(APIView):
         try:
             Cart = Clayful.Cart
             options = {
-                #'customer': request.headers.get('custom_token'),
-                'customer' : 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6ImZmZTdjODY5Y2ZiZDI4YmEzZWY0NjMwZDg1MThjMDFmMDRiMGE4NGIxNjUxMDA3YmZkYzAyOWVkNTk0MGMzMmUiLCJyb2xlIjoiY3VzdG9tZXIiLCJpYXQiOjE2MDkzMDU3MzcsImV4cCI6MTYwOTkxMDUzNywic3ViIjoiSFlQQlZUTFFYUVdLIn0.L4Er39hUTAClYvYtoQGM7un26vvkKK-x5CbGw5P2FSU'
+                'customer': request.headers.get('custom_token'),
             }
             
             item_ids = json.dumps(request.data) # 선택된 품목을 dict형으로 받음

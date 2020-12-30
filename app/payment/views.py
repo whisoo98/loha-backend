@@ -1,6 +1,7 @@
 from django.shortcuts import render,redirect
 from django.http.response import  HttpResponse, JsonResponse
 from django.utils.decorators import method_decorator
+from django.conf import settings
 
 from rest_framework.decorators import api_view, parser_classes
 from rest_framework.views import Response, APIView
@@ -31,10 +32,11 @@ IMP_PG_PAYPAL = "paypal"  # 페이팔
 IMP_PG_EXIMBAY = "eximbay"  # 엑심베이
 IMP_PG_NAVERPAY = "naverco"  # 네이버페이
 '''
+
 @api_view(['POST'])
 def create_payment(request):
-    client = Iamporter(imp_key="8605712299401734",
-                       imp_secret="VoICY5nRMtnvAENACdBM0UePAUtOZMiUb0x96V1TppoZ3bAFpbrq5FgGzJuzvNuGO1QUXROmgcmkoWZO")
+    client = Iamporter(imp_key=getattr(settings, 'IAMPORT_REST_KEY', None),
+                       imp_secret=getattr(settings, 'IAMPORT_SECRET_REST_KEY', None))
     body = json.dumps(request.data)
 
     """카드정보 또는 빌링키로 결제를 요청합니다
@@ -106,8 +108,8 @@ def create_payment(request):
 
 @api_view(['POST'])
 def cancel_payment(request):
-    client = Iamporter(imp_key="8605712299401734",
-                       imp_secret="VoICY5nRMtnvAENACdBM0UePAUtOZMiUb0x96V1TppoZ3bAFpbrq5FgGzJuzvNuGO1QUXROmgcmkoWZO")
+    client = Iamporter(imp_key=getattr(settings, 'IAMPORT_REST_KEY', None),
+                       imp_secret=getattr(settings, 'IAMPORT_SECRET_REST_KEY', None))
 
     """승인된 결제를 취소합니다.
             Args:
@@ -139,8 +141,8 @@ def cancel_payment(request):
 
 @api_view(['GET'])
 def find_payment(request):
-    client = Iamporter(imp_key="8605712299401734",
-                       imp_secret="VoICY5nRMtnvAENACdBM0UePAUtOZMiUb0x96V1TppoZ3bAFpbrq5FgGzJuzvNuGO1QUXROmgcmkoWZO")
+    client = Iamporter(imp_key=getattr(settings, 'IAMPORT_REST_KEY', None),
+                       imp_secret=getattr(settings, 'IAMPORT_SECRET_REST_KEY', None))
 
     body = json.dumps(request.data)
 
