@@ -7,23 +7,27 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view,parser_classes
 from rest_framework.parsers import JSONParser
-import json
-from clayful import Clayful
 
+from clayful import Clayful
+import json
 import requests
 
 # Create your views here.
-
-class ProductCollectionAPI(APIView):
+def config():
     Clayful.config({
-        'client': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6Ijc3MGYzMDA2MTlkYjRhMjBiOGYyY2E5MzZlMDU5YzBmMjE4ZTFjNTE2YmI2ZmQzOWQxN2MyZTE0NTIzN2MzMzAiLCJyb2xlIjoiY2xpZW50IiwiaWF0IjoxNjAwNjc5ODY3LCJzdG9yZSI6IjQ1VEdYQjhYTEFLSi45NzMzQTRLRDkyWkUiLCJzdWIiOiJSTUM4WldVUTRFWkUifQ.tcG30RcADqDIj73fRbcIi8b2_u3LlhtXWVaL3SawHRs',
+        'client': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6IjM1MTUxMGVhM2IyYjkxMzllNmEwYzBiZDU5ODM1ZDg5OTBlYjFiZTY2NmVkYTcwNzgyNTRlOTdjZDQxZTI3N2IiLCJyb2xlIjoiY2xpZW50IiwiaWF0IjoxNjA5Mjk5MzM5LCJzdG9yZSI6IjQ1VEdYQjhYTEFLSi45NzMzQTRLRDkyWkUiLCJzdWIiOiJVM0dDTDZSWlVDVzMifQ.f6RndYqpY-ErnkYHq8EeP6Nkpg7bpcy1GGYeguKMtM0',
         'language': 'ko',
         'currency': 'KRW',
         'time_zone': 'Asia/Seoul',
         'debug_language': 'ko',
     })
 
-    def get(self, request, collection_id='any'):
+class ProductCollectionAPI(APIView):
+
+    def __int__(self):
+        config()
+
+    def get(self, request, collection_id='any'): # 특정 콜렉션 ID 없으면 모두 부름
         try:
             Product = Clayful.Product
             options = {
@@ -39,21 +43,18 @@ class ProductCollectionAPI(APIView):
             return Response(data)
 
         except Exception as e:
-            return Response(e.code)
+            return Response(e.code, e.status)
 
 
 class ProductAPI(APIView):
-    Clayful.config({
-        'client': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6Ijc3MGYzMDA2MTlkYjRhMjBiOGYyY2E5MzZlMDU5YzBmMjE4ZTFjNTE2YmI2ZmQzOWQxN2MyZTE0NTIzN2MzMzAiLCJyb2xlIjoiY2xpZW50IiwiaWF0IjoxNjAwNjc5ODY3LCJzdG9yZSI6IjQ1VEdYQjhYTEFLSi45NzMzQTRLRDkyWkUiLCJzdWIiOiJSTUM4WldVUTRFWkUifQ.tcG30RcADqDIj73fRbcIi8b2_u3LlhtXWVaL3SawHRs',
-        'language': 'ko',
-        'currency': 'KRW',
-        'time_zone': 'Asia/Seoul',
-        'debug_language': 'ko',
-    })
-    def post(self, request):
+
+    def __int__(self):
+        config()
+
+    def post(self, request): #product 생성
         try:
             Product = Clayful.Product
-            payload = json.loads(request.body)
+            payload = json.dumps(request.data)
             options = {}
             result = Product.create(payload, options)
             headers = result.headers
@@ -62,9 +63,9 @@ class ProductAPI(APIView):
             return Response(data)
 
         except Exception as e:
-            return Response(e.code)
+            return Response(e.code,e.status)
 
-    def get(self, request, product_id):
+    def get(self, request, product_id): #product list
         try:
             Product = Clayful.Product
             options = {
@@ -79,12 +80,12 @@ class ProductAPI(APIView):
             return Response(data)
 
         except Exception as e:
-            return Response(e.code)
+            return Response(e.code,e.status)
 
-    def put(self, request, product_id):
+    def put(self, request, product_id): #product 수정
         try:
             Product = Clayful.Product
-            payload = json.loads(request.body)
+            payload = json.dumps(request.data)
             options = {}
             result = Product.update(product_id, payload, options)
             headers = result.headers
@@ -93,9 +94,9 @@ class ProductAPI(APIView):
             return Response(data)
 
         except Exception as e:
-            return Response(e.code)
+            return Response(e.code,e.status)
 
-    def delete(self, request, product_id):
+    def delete(self, request, product_id): #product 삭제
         try:
             Product = Clayful.Product
             options = {
@@ -107,26 +108,20 @@ class ProductAPI(APIView):
             return Response(data)
 
         except Exception as e:
-            return Response(e.code)
+            return Response(e.code, e.status)
 
 
 @api_view(['GET'])
 @parser_classes((JSONParser,))
 def product_searchAPI(request):
 
-    Clayful.config({
-        'client': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6Ijc3MGYzMDA2MTlkYjRhMjBiOGYyY2E5MzZlMDU5YzBmMjE4ZTFjNTE2YmI2ZmQzOWQxN2MyZTE0NTIzN2MzMzAiLCJyb2xlIjoiY2xpZW50IiwiaWF0IjoxNjAwNjc5ODY3LCJzdG9yZSI6IjQ1VEdYQjhYTEFLSi45NzMzQTRLRDkyWkUiLCJzdWIiOiJSTUM4WldVUTRFWkUifQ.tcG30RcADqDIj73fRbcIi8b2_u3LlhtXWVaL3SawHRs',
-        'language': 'ko',
-        'time_zone': 'Asia/Seoul',
-        'debug_language': 'ko',
-    })
+    config()
 
     try:
         Product = Clayful.Product
         options = {
             'query': {
                 'q': request.data['search'],
-                #'search': request.data['search'],
                 'search': {
                     'name.ko' : '',
                 },
@@ -143,5 +138,4 @@ def product_searchAPI(request):
         return Response(data)
 
     except Exception as e:
-
-        return Response("EX")
+        return Response(e.code, e.status)
