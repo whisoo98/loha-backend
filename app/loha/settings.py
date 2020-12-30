@@ -120,7 +120,7 @@ WSGI_APPLICATION = 'loha.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': os.environ.get('APP_DB_ENGINE', 'django.db.backends.sqlite3'),
-        'NAME': os.environ.get('DB_NAME', 'db.sqlite'),
+        'NAME': os.environ.get('DB_NAME', 'db.sqlite3'),
         'USER': os.environ.get('DB_USER', ''),
         'PASSWORD': os.environ.get('DB_PASSWORD', ''),
         'HOST': os.environ.get('DB_HOST', None),
