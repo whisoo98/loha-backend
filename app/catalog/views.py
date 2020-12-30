@@ -51,7 +51,7 @@ class CatalogAPI(APIView):
 
             options = {
                 'query': {
-
+                    'limits' : 10
                 },
             }
 
@@ -68,6 +68,7 @@ class CatalogAPI(APIView):
 
 
 class CatalogDetailAPI(APIView):
+
     Clayful.config({
         'client': getattr(settings, 'CLAYFUL_SECRET_KEY', None),
         'language': 'ko',
@@ -76,11 +77,57 @@ class CatalogDetailAPI(APIView):
         'debug_language': 'ko',
     })
 
-    def get(self, request):
-        pass
+    def get(self, request, catalog_id):
+        try:
+            Catalog = Clayful.Catalog
+            options = {
+                'query': {
 
-    def post(self, request):
-        pass
+                },
+            }
 
-    def delete(self, request):
-        pass
+            result = Catalog.get(catalog_id, options)
+            headers = result.headers
+            data = result.data
+
+            return Response(data)
+
+        except Exception as e:
+
+            return Response(e.code)
+
+    def put(self, request, catalog_id):
+        try:
+            Catalog = Clayful.Catalog
+            payload = json.dumps(request.data['payload'])
+            options = {
+
+            }
+
+            result = Catalog.update(catalog_id, payload, options)
+
+            headers = result.headers
+            data = result.data
+
+            return Response(data)
+
+        except Exception as e:
+
+            return Response(e.code)
+
+    def delete(self, request, catalog_id):
+        try:
+            Catalog = Clayful.Catalog
+            options = {
+
+            }
+            result = Catalog.delete(catalog_id, options)
+
+            headers = result.headers
+            data = result.data
+
+            return Response(data)
+
+        except Exception as e:
+
+            return Response(data)
