@@ -22,7 +22,7 @@ def require_login(func):
                 'fields': "userId,country,name,alias,email,groups,phone"
             }
             options = {
-                'customer': request.headers.get('custom_token'),
+                'customer': request.headers.get('Custom-Token'),
                 'query': query
             }
             kwargs['result'] = Customer.get_me(options)
@@ -126,15 +126,15 @@ class User(APIView):
     def post(self, request, result):
         try:
             Customer = Clayful.Customer
-            options = {'customer': request.headers.get('custom_token')}
+            options = {'customer': request.headers.get('Custom-Token')}
             # 로그인 정보 수정 (이메일, 비밀번호)
             if request.data.get('old_password') is not None:
                 payload = {
                     'password': request.data.get('old_password'),
                     'credentials': {
                         'userId': result.data['userId'],
-                        'email': request.data.get('email'),
-                        'password': request.data.get('new_password')
+                        'email': result.data['email'] if request.data.get('email') is None else request.data.get('email'),
+                        'password': request.data.get('old_password') if request.data.get('new_password') is None else request.data.get('new_password'),
                     }
                 }
                 Customer.update_credentials_for_me(payload, options)
@@ -143,12 +143,13 @@ class User(APIView):
                 return Response(content, status=status.HTTP_400_BAD_REQUEST)
             # 개인 정보 수정 (이름, 번호, 별명)
             payload = {
-                'alias': request.data.get('alias'),
+                'alias': result.data['alias'] if request.data.get('alias') is None else request.data.get('alias'),
                 'name': {
-                    'full': request.data['name']
+                    'full': result.data['name']['full'] if request.data.get('name') is None else request.data.get('name')
                 },
-                'mobile': request.data.get('phone')
+                'mobile': result.data['phone'] if request.data.get('phone') is None else request.data.get('phone')
             }
+            print(payload)
             Customer.update_me(payload, options)            
         except Exception as e:
             self.print_error(e)
@@ -169,7 +170,7 @@ class User(APIView):
     def delete(self, request, result):
         try:
             Customer = Clayful.Customer
-            options = {'customer': request.headers.get('custom_token')}
+            options = {'customer': request.headers.get('Custom-Token')}
             Customer.delete_me(options)
         except Exception as e:
             self.print_error(e)
@@ -219,8 +220,8 @@ class Auth(APIView):
             payload = json.dumps(request.data)
             response = Customer.authenticate(payload)
             # header에 정보 저장
-            header = {'custom_token': response.data['token']}
-            #request.session['custom_token'] = response.data['token']
+            header = {'Custom-Token': response.data['token']}
+
             content = "로그인 성공"
             return Response(content, headers=header)
 
@@ -236,7 +237,7 @@ class Auth(APIView):
             header = {'Authorization': f'Bearer {token}'}
             requests.get("https://kapi.kakao.com//v1/user/logout", headers=header)
 
-        content = " 로그아웃 성공"
+        content = "로그아웃 성공"
         return Response(content)
 
 
@@ -310,7 +311,7 @@ def kakao_callback(request):
 
         result = kakao_to_clayful()
         content = "로그인 성공"
-        header = {'custom_token': result.data['token']}
+        header = {'Custom-Token': result.data['token']}
         return Response(content, headers=header)
     except Exception as e:
         print(e)
@@ -376,7 +377,7 @@ def naver_callback(request):
 
         result = naver_to_clayful()
         content = "로그인 성공"
-        header = {'custom_token': result.data['token']}
+        header = {'Custom-Token': result.data['token']}
         return Response(content, headers=header)
 
     except Exception as e:
