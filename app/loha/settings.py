@@ -35,14 +35,10 @@ def get_secret(setting, secrets=secrets):
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-# SECRET_KEY = os.environ.get("SECRET_KEY", default='=v^h@)$nwmhieg5%s*t_-q1d*7f2d)!0ucmc*(!0l#3wk66(4j')
-# SECRET_KEY = '=v^h@)$nwmhieg5%s*t_-q1d*7f2d)!0ucmc*(!0l#3wk66(4j'
 SECRET_KEY = get_secret("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = int(get_secret("DEBUG"))
-#DEBUG=1
-
 
 #SECRET_KEY
 # IAMPORT

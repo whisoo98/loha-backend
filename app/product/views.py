@@ -113,7 +113,7 @@ class ProductAPI(APIView):
             return Response(e.code, status=e.status)
 
 
-@api_view(['GET'])
+@api_view(['POST'])
 @parser_classes((JSONParser,))
 def product_searchAPI(request):
 
