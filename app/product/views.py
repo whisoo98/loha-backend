@@ -146,4 +146,4 @@ def product_searchAPI(request):
         return Response(data)
 
     except Exception as e:
-        return Response(e.code, status=e.status)
+        return Response("잘못된 검색입니다.")
