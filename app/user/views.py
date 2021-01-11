@@ -1,4 +1,5 @@
 from django.shortcuts import redirect
+from django.utils.decorators import method_decorator
 from rest_framework.views import Response
 from rest_framework import status
 from rest_framework.views import APIView
@@ -394,3 +395,78 @@ def naver_callback(request):
             pass
         content = "로그인 실패"
         return Response(content, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CustomerCouponAPI(APIView):
+
+    def __init__(self):
+        Clayful.config({
+            'client': getattr(settings, 'CLAYFUL_SECRET_KEY', None),
+            'language': 'ko',
+            'currency': 'KRW',
+            'time_zone': 'Asia/Seoul',
+            'debug_language': 'ko',
+        })
+
+    #@method_decorator(require_login)
+    def get(self, request): # 본인의 쿠폰 리스트 가져오기
+        try:
+            Customer = Clayful.Customer
+            options = {
+                'customer': request.headers['Custom-Token'],
+            }
+            result = Customer.list_coupons_for_me(options)
+            headers = result.headers
+            data = result.data
+
+            return Response(data)
+
+        except Exception as e:
+
+            return Response(e.code)
+
+    #@method_decorator(require_login)
+    def delete(self, request): # 본인의 쿠폰 삭제
+        try:
+            Customer = Clayful.Customer
+            options = {
+                'customer': request.headers['Custom-Token'],
+            }
+            coupon_ids = request.data['coupon_ids']
+            if coupon_ids is None:
+                raise Exception("쿠폰ID가 유효하지 않습니다.")
+            for coupon_id in coupon_ids:
+                result = Customer.delete_coupon_for_me(coupon_id, options)
+
+            return Response("쿠폰이 삭제되었습니다.")
+
+        except Exception as e:
+
+            return Response(e.code)
+
+
+
+@api_view(['GET'])
+#@require_login
+def count_coupon(request):
+    Clayful.config({
+        'client': getattr(settings, 'CLAYFUL_SECRET_KEY', None),
+        'language': 'ko',
+        'currency': 'KRW',
+        'time_zone': 'Asia/Seoul',
+        'debug_language': 'ko',
+    })
+
+    try:
+        Customer = Clayful.Customer
+        options = {
+            'customer': request.headers['Custom-Token'],
+        }
+        result = Customer.count_coupons_for_me(options)
+        headers = result.headers
+        data = result.data
+
+        return Response(data)
+
+    except Exception as e:
+        return Response(e.code)
