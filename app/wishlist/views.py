@@ -24,13 +24,13 @@ class ProductWishList(APIView):
 
     # ProductWishList 불러오기
     @require_login
-    def get(self, request):
+    def get(self, request, result):
         try:
             WishList = Clayful.WishList
-            options = {'customer': request.headers.get('custom_token')}
+            options = {'customer': request.headers.get('Custom-Token')}
             result = WishList.list_for_me(options)
             query = {
-                'limit': 15,
+                'limit': 6,
                 'page': int(request.GET.get('offset', 1))
             }
             options['query'] = query
@@ -44,10 +44,10 @@ class ProductWishList(APIView):
 
     # WishList 추가
     @require_login
-    def post(self, request):
+    def post(self, request, result):
         try:
             WishList = Clayful.WishList
-            options = {'customer': request.headers.get('custom_token')}
+            options = {'customer': request.headers.get('Custom-Token')}
             result = WishList.list_for_me(options)
             payload = {'product': request.data['product']}
             WishList.add_item_for_me(result.data[0]['_id'], payload, options)
@@ -63,10 +63,11 @@ class ProductWishList(APIView):
     def delete(self, request, result):
         try:
             WishList = Clayful.WishList
-            options = {'customer': request.headers.get('custom_token')}
+            options = {'customer': request.headers.get('Custom-Token')}
             result = WishList.list_for_me(options)
             result = WishList.delete_item_for_me(result.data[0]['_id'], request.data['product'], options)
-            return Response(result.data)
+            content = "삭제 완료"
+            return Response(content)
         except Exception as e:
             self.print_error(e)
             content = "잘못된 요청"

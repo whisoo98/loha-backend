@@ -113,7 +113,7 @@ class ProductAPI(APIView):
             return Response(e.code, status=e.status)
 
 
-@api_view(['GET'])
+@api_view(['POST'])
 @parser_classes((JSONParser,))
 def product_searchAPI(request):
 
@@ -146,4 +146,4 @@ def product_searchAPI(request):
         return Response(data)
 
     except Exception as e:
-        return Response(e.code, status=e.status)
+        return Response("잘못된 검색입니다.")
