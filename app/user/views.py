@@ -16,13 +16,14 @@ def require_login(func):
     def wrapper(self, request, *args, **kwargs):
         try:
             Customer = Clayful.Customer
+            token = request.headers['Authorization'].split()[1]
             # 이름, 별명, 이메일, 그룹 불러오기
             query = {
                 'raw': True,
                 'fields': "userId,country,name,alias,email,groups,phone"
             }
             options = {
-                'customer': request.headers.get('Custom-Token'),
+                'customer': token,
                 'query': query
             }
             kwargs['result'] = Customer.get_me(options)
@@ -154,7 +155,7 @@ class User(APIView):
         except Exception as e:
             self.print_error(e)
             if 'duplicated' in e.code:
-                content = "이미 가입된 아이디 입니다."
+                content = "이미 가입된 이메일 입니다."
                 return Response(content, status=status.HTTP_400_BAD_REQUEST)
             elif 'password' in e.code:
                 content = "잘못된 비밀번호입니다." # 로그인 정보 변경시
