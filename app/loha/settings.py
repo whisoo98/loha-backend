@@ -78,6 +78,7 @@ INSTALLED_APPS = [
     'cart',
     'payment',
     'usergroup',
+    'vendor',
 ]
 
 MIDDLEWARE = [
