@@ -16,13 +16,12 @@ def require_login(func):
     def wrapper(self, request, *args, **kwargs):
         try:
             Customer = Clayful.Customer
+            token = request.headers['Authorization'].split()[1]
             # 이름, 별명, 이메일, 그룹 불러오기
-            query = {
-                'raw': True,
-                'fields': "userId,country,name,alias,email,groups,phone"
-            }
+            # 일단 다 불러오고 나중에 최적화하자
+            query = {}
             options = {
-                'customer': request.headers.get('Custom-Token'),
+                'customer': token,
                 'query': query
             }
             kwargs['result'] = Customer.get_me(options)
@@ -43,6 +42,7 @@ def require_login(func):
 
         return func(self, request, *args, **kwargs)
     return wrapper
+
 
 # Clayful 초기화 decorator
 def Init_Clayful(func):
@@ -101,7 +101,11 @@ class User(APIView):
                 'name': {
                     'full': request.data['name']
                 },
-                'mobile': request.data.get('phone')
+                'mobile': request.data.get('phone'),
+                "meta":{
+                    "Follower": 0,
+                    "Following": ["default"]
+                }
             }
             result = Customer.create(payload)
             # wishlist 생성
@@ -394,3 +398,86 @@ def naver_callback(request):
             pass
         content = "로그인 실패"
         return Response(content, status=status.HTTP_400_BAD_REQUEST)
+
+
+# Influencer 팔로우
+
+class influencer_like(APIView):
+    @require_login
+    def get(self, request, result):
+        try:
+            contents = {
+                "success":{
+                    "Influencer_List": result.data['meta']['Following']
+                }
+            }
+            return Response(contents)
+        except Exception as e:
+            print(e)
+            try:
+                print(e.is_clayful)
+                print(e.model)
+                print(e.method)
+                print(e.status)
+                print(e.headers)
+                print(e.code)
+                print(e.message)
+            except Exception as er:
+                pass
+            contents = {
+                "error": {
+                    "message": "잘못된 요청입니다."
+                }
+            }
+            return Response(contents, status=status.HTTP_400_BAD_REQUEST)
+    @require_login
+    def post(self, request, result):
+        try:
+            Customer = Clayful.Customer
+            if request.data.get('InfluencerId') in result.data['meta']['Following']:
+                # 팔로잉 취소
+                result.data['meta']['Following'].remove(request.data.get('InfluencerId'))
+                payload = {
+                    'meta': {
+                        'Following': result.data['meta']['Following']
+                    }
+                }
+                Customer.increase_metafield(result.data['_id'], 'Follower', {'value': -1})
+                # influencer 없으면 알아서 예외 처리됨
+                Customer.update(result.data['_id'], payload)
+                contents = {
+                    "success": {
+                        "message": "팔로잉 취소",
+                        "status": "0"
+                    }
+                }
+                return Response(contents, status=status.HTTP_202_ACCEPTED)
+            # 팔로잉
+            payload = {
+                'meta': {
+                    'Following': result.data['meta']['Following'] + [request.data.get('InfluencerId')]
+                }
+            }
+            Customer.increase_metafield(result.data['_id'], 'Follower', {'value': 1})
+            # influencer 없으면 알아서 예외 처리됨
+            Customer.update(result.data['_id'], payload)
+            contents = {
+                "success": {
+                    "message": "팔로잉",
+                    "status": "1"
+                }
+            }
+            return Response(contents, status=status.HTTP_202_ACCEPTED)
+        except Exception as e:
+            print(e)
+            try:
+                print(e.code)
+                print(e.message)
+            except Exception as er:
+                pass
+            contents = {
+                "error": {
+                    "message": "잘못된 요청입니다."
+                }
+            }
+            return Response(contents, status=status.HTTP_400_BAD_REQUEST)
