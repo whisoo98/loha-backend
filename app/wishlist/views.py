@@ -39,7 +39,11 @@ class ProductWishList(APIView):
 
         except Exception as e:
             self.print_error(e)
-            content = "잘못된 요청"
+            content = {
+                'error': {
+                    'message': '잘못된 요청입니다.'
+                }
+            }
             return Response(content, status=status.HTTP_400_BAD_REQUEST)
 
     # WishList 추가
@@ -51,11 +55,19 @@ class ProductWishList(APIView):
             result = WishList.list_for_me(options)
             payload = {'product': request.data['product']}
             WishList.add_item_for_me(result.data[0]['_id'], payload, options)
-            content = '추가 완료'
+            content = {
+                'success': {
+                    'message': '추가 완료.'
+                }
+            }
             return Response(content, status=status.HTTP_202_ACCEPTED)
         except Exception as e:
             self.print_error(e)
-            content = "잘못된 요청"
+            content = {
+                'error': {
+                    'message': '잘못된 요청입니다.'
+                }
+            }
             return Response(content, status=status.HTTP_400_BAD_REQUEST)
 
     # WishList 삭제
@@ -65,22 +77,27 @@ class ProductWishList(APIView):
             WishList = Clayful.WishList
             options = {'customer': request.headers.get('Custom-Token')}
             result = WishList.list_for_me(options)
-            result = WishList.delete_item_for_me(result.data[0]['_id'], request.data['product'], options)
-            content = "삭제 완료"
+            WishList.delete_item_for_me(result.data[0]['_id'], request.data['product'], options)
+            content = {
+                'success': {
+                    'message': '삭제 완료.'
+                }
+            }
             return Response(content)
         except Exception as e:
             self.print_error(e)
-            content = "잘못된 요청"
+            content = {
+                'error': {
+                    'message': '잘못된 요청입니다.'
+                }
+            }
             return Response(content, status=status.HTTP_400_BAD_REQUEST)
 
     def print_error(request, e):
         print(e)
         try:
-            print(e.is_clayful)
             print(e.model)
             print(e.method)
-            print(e.status)
-            print(e.headers)
             print(e.code)
             print(e.message)
         except Exception as er:

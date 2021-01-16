@@ -17,28 +17,22 @@ def require_login(func):
         try:
             Customer = Clayful.Customer
             # 이름, 별명, 이메일, 그룹 불러오기
-            query = {
-                'raw': True,
-                'fields': "userId,country,name,alias,email,groups,phone"
-            }
-            options = {
-                'customer': request.headers.get('Custom-Token'),
-                'query': query
-            }
+            options = {'customer': request.headers.get('Custom-Token')}
             kwargs['result'] = Customer.get_me(options)
         except Exception as e:
             print(e)
             try:
-                print(e.is_clayful)
                 print(e.model)
                 print(e.method)
-                print(e.status)
-                print(e.headers)
                 print(e.code)
                 print(e.message)
             except Exception as er:
                 pass
-            content = "로그인 후 이용해 주세요."
+            content = {
+                'error': {
+                    'message': '로그인 후 이용해 주세요.'
+                }
+            }
             return Response(content, status=status.HTTP_401_UNAUTHORIZED)
 
         return func(self, request, *args, **kwargs)
@@ -58,7 +52,11 @@ def Init_Clayful(func):
             })
         except Exception as e:
             print(e)
-            content = "에러"
+            content = {
+                'error': {
+                    'message': 'Clay Error'
+                }
+            }
             return Response(content, status=status.HTTP_401_UNAUTHORIZED)
         #해당 함수 실행
         ret = func(*args, **kwargs)
@@ -106,19 +104,35 @@ class User(APIView):
             result = Customer.create(payload)
             # wishlist 생성
             self.make_wishlist(Clayful.WishList, result.data['_id'])
-            content = '회원가입 완료'
+            content = {
+                'success': {
+                    'message': '회원가입 완료'
+                }
+            }
             return Response(content, status=status.HTTP_202_ACCEPTED)
         except Exception as e:
             self.print_error(e)
             try:
                 if 'duplicated' in e.code:
-                    content = "이미 가입된 아이디 입니다."
+                    content = {
+                        'error': {
+                            'message': '이미 가입된 아이디/이메일 입니다.'
+                        }
+                    }
                     return Response(content, status=status.HTTP_400_BAD_REQUEST)
                 else:
-                    content = '잘못된 입력입니다.'
+                    content = {
+                        'error': {
+                            'message': '허용되지 않는 입력입니다.'
+                        }
+                    }
                     return Response(content, status=status.HTTP_400_BAD_REQUEST)
             except Exception as err:
-                content = '잘못된 입력입니다.'
+                content = {
+                    'error': {
+                        'message': '정보를 모두 입력해 주세요.'
+                    }
+                }
                 return Response(content, status=status.HTTP_400_BAD_REQUEST)
 
     # 회원 정보 수정
@@ -139,7 +153,11 @@ class User(APIView):
                 }
                 Customer.update_credentials_for_me(payload, options)
             else:
-                content = '비밀번호 입력 필요'
+                content = {
+                    'error': {
+                        'message': '비밀번호 입력해 주세요.'
+                    }
+                }
                 return Response(content, status=status.HTTP_400_BAD_REQUEST)
             # 개인 정보 수정 (이름, 번호, 별명)
             payload = {
@@ -162,7 +180,11 @@ class User(APIView):
             else:
                 content = '잘못된 입력입니다.'
                 return Response(content, status=status.HTTP_400_BAD_REQUEST)
-        content = '변경 완료'
+        content = {
+            'success': {
+                'message': '변경 완료.'
+            }
+        }
         return Response(content, status=status.HTTP_202_ACCEPTED)
 
     # 회원 탈퇴
@@ -174,19 +196,24 @@ class User(APIView):
             Customer.delete_me(options)
         except Exception as e:
             self.print_error(e)
-            content = '탈퇴 오류'
+            content = {
+                'error': {
+                    'message': e.massage
+                }
+            }
             return Response(content, status=status.HTTP_400_BAD_REQUEST)
-        content = '탈퇴 완료'
+        content = {
+            'success': {
+                'message': '탈퇴 완료.'
+            }
+        }
         return Response(content, status=status.HTTP_202_ACCEPTED)
 
     def print_error(request, e):
         print(e)
         try:
-            print(e.is_clayful)
             print(e.model)
             print(e.method)
-            print(e.status)
-            print(e.headers)
             print(e.code)
             print(e.message)
         except Exception as er:
@@ -222,12 +249,20 @@ class Auth(APIView):
             # header에 정보 저장
             header = {'Custom-Token': response.data['token']}
 
-            content = "로그인 성공"
+            content = {
+                'success': {
+                    'message': '로그인 완료.'
+                }
+            }
             return Response(content, headers=header)
 
         except Exception as e:
             self.print_error(e)
-            content = "로그인 실패"
+            content = {
+                'error': {
+                    'message': '잘못된 입력입니다.'
+                }
+            }
             return Response(content, status=status.HTTP_400_BAD_REQUEST)
 
     # 로그아웃 함수
@@ -244,11 +279,8 @@ class Auth(APIView):
     def print_error(request, e):
         print(e)
         try:
-            print(e.is_clayful)
             print(e.model)
             print(e.method)
-            print(e.status)
-            print(e.headers)
             print(e.code)
             print(e.message)
         except Exception as er:
@@ -310,7 +342,11 @@ def kakao_callback(request):
             return result
 
         result = kakao_to_clayful()
-        content = "로그인 성공"
+        content = {
+            'success': {
+                'message': '로그인 완료.'
+            }
+        }
         header = {'Custom-Token': result.data['token']}
         return Response(content, headers=header)
     except Exception as e:
