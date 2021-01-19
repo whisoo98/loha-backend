@@ -127,11 +127,23 @@ class User(APIView):
                             'message': '이미 가입된 아이디/이메일 입니다.'
                         }
                     }
+                    content = {
+                        'error': {
+                            'message': e.message,
+                            'code': e.code
+                        }
+                    }
                     return Response(content, status=status.HTTP_400_BAD_REQUEST)
                 else:
                     content = {
                         'error': {
                             'message': '허용되지 않는 입력입니다.'
+                        }
+                    }
+                    content = {
+                        'error': {
+                            'message': e.message,
+                            'code': e.code
                         }
                     }
                     return Response(content, status=status.HTTP_400_BAD_REQUEST)
@@ -180,19 +192,36 @@ class User(APIView):
                 'phone': result.data['phone'] if request.data.get('phone') is None else request.data.get('phone'),
                 'gender': result.data['gender'] if request.data.get('gender') is None else request.data.get('gender'),
                 'birthdate': result.data['birthdate']['raw'] if request.data.get('birthdate') is None else request.data.get('birthdate'),
-                'address' : result.data['address'] if request.data.get('address') is None else request.data.get('address'),
+                'address': result.data['address'] if request.data.get('address') is None else request.data.get('address'),
             }
             Customer.update_me(payload, options)
         except Exception as e:
             self.print_error(e)
             if 'duplicated' in e.code:
-                content = "이미 가입된 아이디 입니다."
+                #content = "이미 가입된 아이디 입니다."
+                content = {
+                    'error': {
+                        'message': e.message,
+                        'code': e.code
+                    }
+                }
                 return Response(content, status=status.HTTP_400_BAD_REQUEST)
             elif 'password' in e.code:
-                content = "잘못된 비밀번호입니다."  # 로그인 정보 변경시
+                #content = "잘못된 비밀번호입니다."  # 로그인 정보 변경시
+                content = {
+                    'error': {
+                        'message': e.message,
+                        'code': e.code
+                    }
+                }
                 return Response(content, status=status.HTTP_400_BAD_REQUEST)
             else:
-                content = '잘못된 입력입니다.'
+                content = {
+                    'error': {
+                        'message': e.message,
+                        'code': e.code
+                    }
+                }
                 return Response(content, status=status.HTTP_400_BAD_REQUEST)
         content = {
             'success': {
@@ -215,6 +244,7 @@ class User(APIView):
                     'message': e.massage
                 }
             }
+
             return Response(content, status=status.HTTP_400_BAD_REQUEST)
         content = {
             'success': {
