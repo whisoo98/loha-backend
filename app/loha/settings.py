@@ -28,7 +28,7 @@ def get_secret(setting, secrets=secrets):
         return secrets[setting]
     except KeyError:
         error_msg = "Set the {0} environment variable".format(setting)
-        raise ImproperlyConfigured(error_msg)
+        return None
 
 
 # Quick-start development settings - unsuitable for production
@@ -54,7 +54,9 @@ KAKAO_ADMIN_KEY=get_secret('KAKAO_ADMIN_KEY')
 # NAVER
 NAVER_CLIENT_ID=get_secret('NAVER_CLIENT_ID')
 NAVER_SECRET_KEY=get_secret('NAVER_SECRET_KEY')
-
+# MUX
+MUX_CLIENT_ID = get_secret('MUX_CLIENT_ID')
+MUX_SECRET_KEY = get_secret('MUX_SECRET_KEY')
 
 # HOST
 ALLOWED_HOSTS = get_secret("DJANGO_ALLOWED_HOSTS")
@@ -78,6 +80,9 @@ INSTALLED_APPS = [
     'cart',
     'payment',
     'usergroup',
+    'influencer',
+    'media',
+    'images',
 ]
 
 MIDDLEWARE = [
@@ -116,12 +121,12 @@ WSGI_APPLICATION = 'loha.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': os.environ.get('APP_DB_ENGINE', 'django.db.backends.sqlite3'),
-        'NAME': os.environ.get('DB_NAME', 'db.sqlite3'),
-        'USER': os.environ.get('DB_USER', ''),
-        'PASSWORD': os.environ.get('DB_PASSWORD', ''),
-        'HOST': os.environ.get('DB_HOST', None),
-        'PORT': os.environ.get('DB_PORT', None),
+        'ENGINE': get_secret('APP_DB_ENGINE') or 'django.db.backends.sqlite3',
+        'NAME': get_secret('DB_NAME') or os.path.join(BASE_DIR, 'db.sqlite3'),
+        'USER': get_secret('DB_USER') or '',
+        'PASSWORD': get_secret('PASSWORD') or '',
+        'HOST': get_secret('HOST') or None,
+        'PORT': get_secret('PORT') or None,
     }
 }
 
@@ -169,3 +174,5 @@ STATIC_URL = '/static/'
 # 창 닫으면 로그아웃
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
+# Datetime format
+DATETIME_FORMAT = 'Y-m-d H:i:s'
