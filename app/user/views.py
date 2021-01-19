@@ -170,6 +170,7 @@ class User(APIView):
                 }
                 return Response(content, status=status.HTTP_400_BAD_REQUEST)
             # 개인 정보 수정 (이름, 번호, 별명)
+
             payload = {
                 'alias': result.data['alias'] if request.data.get('alias') is None else request.data.get('alias'),
                 'name': {
@@ -178,10 +179,9 @@ class User(APIView):
                 'mobile': result.data['mobile'] if request.data.get('mobile') is None else request.data.get('mobile'),
                 'phone': result.data['phone'] if request.data.get('phone') is None else request.data.get('phone'),
                 'gender': result.data['gender'] if request.data.get('gender') is None else request.data.get('gender'),
-                'birthdate': result.data['birthdate'] if request.data.get('birthdate') is None else request.data.get('birthdate'),
+                'birthdate': result.data['birthdate']['raw'] if request.data.get('birthdate') is None else request.data.get('birthdate'),
                 'address' : result.data['address'] if request.data.get('address') is None else request.data.get('address'),
             }
-            print(payload)
             Customer.update_me(payload, options)
         except Exception as e:
             self.print_error(e)
