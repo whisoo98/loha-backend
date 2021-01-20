@@ -22,7 +22,7 @@ def is_influencer(func):
     def wrapper(request, *args, **kwargs):
         try:
             Customer = Clayful.Customer
-            token = request.headers['Authorization'].split()[1]
+            token= request.headers.get('Custom-Token')
             # 이름, 별명, 이메일, 그룹 불러오기
             query = {
                 'raw' : True,
@@ -110,26 +110,3 @@ def get_stream_key(request, result):
         }
         return Response(contents, status=status.HTTP_400_BAD_REQUEST)
 
-# 방송 시작하기
-
-
-
-
-
-# Webhook 처리
-# VOD 추가
-@api_view(['GET','POST'])
-def callback(request):
-    print(request.data)
-    # 방송시작 ( stream.active ) : 방송 상태 -> 알림?
-    # 방송종료(stream.disconnected) : 방송 종료
-    # video.asset.ready : 방송 종료 후 VOD 생성됨
-    return Response('hihi')
-
-# 스트리밍 시작
-@is_influencer
-def start_streaming(request):
-    # 상품에 인플루엔서 추가
-    # influencer에 상품 추가 ( 상품+날짜를 key로 해야될듯)
-    # body에는 방송 제목, 상품, 날짜 등등 필요할듯
-    pass

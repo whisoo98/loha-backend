@@ -4,9 +4,9 @@ from django.db import models
 
 
 class MediaStream(models.Model):
-    id = models.AutoField()
     title = models.CharField(max_length=200)
     stream_url = models.URLField(null=True)
+    vod_id = models.CharField(max_length=200, null=True)
     vod_url = models.URLField(null=True)
     stream_id = models.CharField(max_length=200)
     product_id = models.CharField(max_length=200)
@@ -23,4 +23,6 @@ class MediaStream(models.Model):
 
 class MyVod(models.Model):
     user_id = models.CharField(max_length=200)
-    vod_id = models.ForeignKey(MediaStream,on_delete=models.CASCADE)
+    vod_id = models.ForeignKey(MediaStream, on_delete=models.CASCADE)
+    active = models.BooleanField(default=True)
+
