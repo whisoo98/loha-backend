@@ -37,10 +37,18 @@ def collection_list(reqeust):
         }
         result = Collection.list(options)
         data = result.data
+
+        l = list(range(len(data)))
+        for key in l:
+            if data[key]['name'] == '인플루엔서':
+                data.pop(key)
+                break
+
         return Response(data)
     
     except Exception as e:
-        return Response(e.code, status=e.status)
+        print(e)
+        return Response("카테고리를 불러오지 못했습니다.")
 
 
 

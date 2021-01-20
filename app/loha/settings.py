@@ -28,7 +28,7 @@ def get_secret(setting, secrets=secrets):
         return secrets[setting]
     except KeyError:
         error_msg = "Set the {0} environment variable".format(setting)
-        raise ImproperlyConfigured(error_msg)
+        return None
 
 
 # Quick-start development settings - unsuitable for production
@@ -82,6 +82,7 @@ INSTALLED_APPS = [
     'usergroup',
     'influencer',
     'media',
+    'images',
 ]
 
 MIDDLEWARE = [
