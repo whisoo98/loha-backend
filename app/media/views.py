@@ -143,7 +143,7 @@ def delete_my_vod(request, result):
 @is_influencer
 def get_my_vod(request, result):
     try:
-        my_vod = MediaSerializer(MediaStream.objects.filter(influencer_id=result['_id']).order_by('started_at'), many=True)
+        my_vod = MediaSerializer(MediaStream.objects.filter(influencer_id=result['_id']).order_by('-started_at'), many=True)
         contents = {
             'success': {
                 'message': '성공',
@@ -181,9 +181,10 @@ def mux_callback(request):
         if request.data['type'] == "video.asset.live_stream_completed":
             # Stream status -> live, create 시간 추가
             stream_id = request.data['data']['live_stream_id']
-            now_stream = MediaStream.objects.get(Q(stream_id = stream_id) & Q(status='live')).order_by('started_at')[0]
-            now_stream.vod_url = request.data['data']['playback_ids']['id']
+            now_stream = MediaStream.objects.filter(Q(stream_id = stream_id) & Q(status='live')).order_by('started_at')[0]
+            now_stream.vod_url = request.data['data']['playback_ids'][0]['id']
             now_stream.vod_id = request.data['data']['id']
+            now_stream.finished_at = datetime.datetime.now()
             now_stream.status = 'completed'
             now_stream.save()
 
@@ -191,6 +192,7 @@ def mux_callback(request):
 
         return Response("OK")
     except Exception as e:
+        print(e)
         return Response('오류 발생')
 
 
