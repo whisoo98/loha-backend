@@ -18,5 +18,7 @@ from django.urls import path, include
 from .views import *
 
 urlpatterns = [
-    path('add/', AddCoupon.as_view()),
+    path('add/', Coupon.as_view()),
+    path('', Coupon.as_view()),
+    path('manager/', manager_coupon_list),
 ]
