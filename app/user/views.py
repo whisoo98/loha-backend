@@ -1,4 +1,5 @@
 from django.shortcuts import redirect
+from django.utils.decorators import method_decorator
 from rest_framework.views import Response
 from rest_framework import status
 from rest_framework.views import APIView
@@ -561,4 +562,3 @@ class influencer_like(APIView):
                 }
             }
             return Response(contents, status=status.HTTP_400_BAD_REQUEST)
-

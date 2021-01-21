@@ -82,6 +82,7 @@ INSTALLED_APPS = [
     'cart',
     'payment',
     'usergroup',
+    'coupon',
     'influencer',
     'media',
     'images',
