@@ -22,7 +22,6 @@ import time
 
 # Create your views here.
 
-#required_login
 class CartAPI(APIView):
 
     Clayful.config({
@@ -37,6 +36,8 @@ class CartAPI(APIView):
         try:
             Cart = Clayful.Cart
             payload = json.dumps(request.data['payload'])
+            if payload is None:
+                payload = {}
             options = {
                 'customer': request.headers.get('Custom-Token'),
                 'query': {
@@ -67,6 +68,8 @@ class CartItemAPI(APIView):
         try:
             Cart = Clayful.Cart
             payload = json.dumps(request.data['payload'])
+            if payload is None:
+                payload = {}
             options = {
                 'customer': request.headers.get('Custom-Token'),
             }
@@ -128,7 +131,7 @@ class CartCheckoutAPI(APIView):
             Cart = Clayful.Cart
             payload = json.dumps(request.data['payload'])
             options = {
-                'customer': request.headers.get('custom_token'),
+                'customer': request.headers.get('Custom-Token'),
                 'query' : {
 
                 }
