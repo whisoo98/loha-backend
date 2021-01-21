@@ -64,6 +64,8 @@ ALLOWED_HOSTS = get_secret("DJANGO_ALLOWED_HOSTS")
 # Application definition
 
 INSTALLED_APPS = [
+    'chat',
+    'channels',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -108,8 +110,18 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'loha.wsgi.application'
 
+WSGI_APPLICATION = 'loha.wsgi.application'
+ASGI_APPLICATION = 'loha.routing.application'
+
+CHANNEL_LAYERS = {
+    'default' : {
+        'BACKEND' : 'channels_redis.core.RedisChannelLayer',
+        'CONFIG' :{
+            "hosts": [(ALLOWED_HOSTS, 6379)],
+        },
+    },
+}
 
 # development settings
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
