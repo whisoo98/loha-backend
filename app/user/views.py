@@ -18,7 +18,7 @@ def require_login(func):
     def wrapper(self, request, *args, **kwargs):
         try:
             Customer = Clayful.Customer
-            token = request.headers['Authorization'].split()[1]
+            # token = request.headers['Authorization'].split()[1]
             # 이름, 별명, 이메일, 그룹 불러오기
             options = {'customer': request.headers.get('Custom-Token')}
             kwargs['result'] = Customer.get_me(options)
