@@ -19,8 +19,7 @@ RUN pip install clayful
 RUN pip install psycopg2
 RUN pip install iamporter
 RUN apk add tk
-RUN pip install -U channels==2.2
-RUN pip install channels_redis
+
 
 COPY ./requirements.txt .
 RUN pip install -r requirements.txt
