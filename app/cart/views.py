@@ -4,6 +4,7 @@ from django.http import JsonResponse
 
 from iamporter.errors import ImpUnAuthorized, ImpApiError
 from iamporter import *
+from pip._internal import req
 
 from rest_framework.decorators import api_view,parser_classes
 from rest_framework.parsers import JSONParser
@@ -35,9 +36,12 @@ class CartAPI(APIView):
     def post(self, request):  # 고객이 본인 장바구니 확인
         try:
             Cart = Clayful.Cart
-            payload = json.dumps(request.data['payload'])
-            if payload is None:
-                payload = {}
+            #payload = json.dumps(request.data['payload'])
+            payload = {}
+            if 'payload' in request.data == True:
+                payload = json.dumps(request.data['payload'])
+            else:
+
             options = {
                 'customer': request.headers.get('Custom-Token'),
                 'query': {
