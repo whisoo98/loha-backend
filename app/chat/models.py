@@ -4,7 +4,7 @@ from django.db import models
 # Create your models here.
 
 class RoomUser(models.Model):
-    room_name = models.TextField()
+    room_name = models.ForeignKey('Room', on_delete=models.CASCADE, db_index=False, db_column='room')
     username = models.TextField()
 
     def __str(self):
@@ -13,6 +13,7 @@ class RoomUser(models.Model):
 
 class Room(models.Model):
     room_name = models.TextField(primary_key=True)
+    room_streamer = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

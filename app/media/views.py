@@ -8,6 +8,7 @@ from .models import *
 from django.db.models import Q
 from .serializers import *
 from user.views import require_login
+from chat.models import *
 from clayful import Clayful
 from django.conf import settings
 import json
@@ -44,6 +45,11 @@ def reserve_live(request, result):
             thumbnail_url= request.data.get('title'),
             started_at= request.data['started_at']
         )
+        
+        #스트리머의 이전 채팅방 모두 삭제
+        Room.objects.filter(room_streamer=result['_id']).all().delete()
+
+
 
         # 상품에 URL 추가
         contents = {
@@ -73,7 +79,10 @@ def start_live(request, result):
 
         # 라이브 상태 변경
         now_stream = MediaStream.objects.get(Q(pk=request.data['media_id']) & Q(influencer_id=result['_id']) & (Q(status='ready') | Q(status='live')))
+        Room.objects.create(room_name=now_stream.stream_id,
+                            room_streamer=now_stream.influencer_id)#채팅방 생성
         now_stream.save()
+
         contents = {
             "success": {
                 "message": "방송이 시작되었습니다.",
@@ -121,6 +130,7 @@ def edit_my_vod(request, result):
 def delete_my_vod(request, result):
     try:
         now_stream = MediaStream.objects.get(Q(pk=request.data['media_id']) & Q(influencer_id=result['_id']))
+        Room.objects.filter(room_name=now_stream.stream_id).delete()
         now_stream.delete()
         contents = {
             'success': {

@@ -13,7 +13,8 @@ class ChatConsumer(WebsocketConsumer):
     # FOR COMMING
     def count_user(self, data):
         room_name = data['room_name']
-        count = RoomUser.objects.filter(room_name=room_name).count()
+        count = RoomUser.objects.filter(
+            room_name=Room.objects.filter(room_name=self.room_name).all()[0]).count()
         self.count = count
         content = {
             'command': 'countUser',
@@ -31,13 +32,17 @@ class ChatConsumer(WebsocketConsumer):
             self.room_group_name,
             self.channel_name
         )
-        RoomUser.objects.create(room_name=self.room_name, username=self.username)
+        RoomUser.objects.create(
+            room_name=Room.objects.filter(room_name=self.room_name).all()[0],
+            username=self.username
+        )
         self.accept()
 
     # FOR GOING OUT
     def disconnect(self, close_code):
         # Leave room group
-        RoomUser.objects.filter(room_name=self.room_name).filter(username=self.username).delete()
+        RoomUser.objects.filter(
+            room_name=Room.objects.filter(room_name=self.room_name).all()[0]).filter(username=self.username).delete()
         # RoomUser.objects.filter(room_name=room_name).filter(username=username).delete()
         async_to_sync(self.channel_layer.group_discard)(
             self.room_group_name,
