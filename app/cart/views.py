@@ -40,7 +40,7 @@ class CartAPI(APIView):
             payload = {}
             if 'payload' in request.data == True:
                 payload = json.dumps(request.data['payload'])
-            else:
+
 
             options = {
                 'customer': request.headers.get('Custom-Token'),
