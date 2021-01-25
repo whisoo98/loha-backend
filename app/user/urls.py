@@ -24,7 +24,5 @@ urlpatterns = [
     path('auth/kakao/callback/', kakao_callback),
     path('auth/naver/login/', naver_login),
     path('auth/naver/callback/', naver_callback),
-    path('coupon/',CustomerCouponAPI.as_view()),
-    path('coupon/count/',count_coupon),
 ]
 
