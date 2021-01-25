@@ -14,7 +14,7 @@ from rest_framework.request import Request
 
 import requests
 from payment.views import *
-from clayful import Clayful
+from clayful import Clayful, ClayfulException
 from clayful.exception import ClayfulException
 import json
 import time
@@ -32,7 +32,7 @@ class CartAPI(APIView):
         'debug_language': 'ko',
     })
 
-    def post(self, request): # 고객이 본인 장바구니 확인
+    def post(self, request):  # 고객이 본인 장바구니 확인
         try:
             Cart = Clayful.Cart
             payload = json.dumps(request.data['payload'])
@@ -45,13 +45,30 @@ class CartAPI(APIView):
                 },
             }
             result = Cart.get_for_me(payload, options)
-            #result = Cart.get_for_me()
             headers = result.headers
             data = result.data
-            return Response(data)
+            return Response(data, status=HTTP_200_OK)
 
+        except ClayfulException as e:
+            return Response(e.code, status=HTTP_400_BAD_REQUEST)
         except Exception as e:
-            return Response(e.code)
+            return Response("알 수 없는 예외가 발생했습니다.", status=HTTP_400_BAD_REQUEST)
+
+    def delete(self, request): # 고객이 본인 장바구니 확인
+        try:
+            Cart = Clayful.Cart
+            options = {
+                'customer': request.headers.get('Custom-Token'),
+            }
+            result = Cart.empty_for_me(options)
+
+            return Response("장바구니 비우기가 완료되었습니다.", status=HTTP_200_OK)
+
+        except ClayfulException as e:
+            return Response(e.code, status=HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response("알 수 없는 예외가 발생했습니다.", status=HTTP_400_BAD_REQUEST)
+
 
 class CartItemAPI(APIView):
 
@@ -78,26 +95,33 @@ class CartItemAPI(APIView):
             headers = result.headers
             data = result.data
 
-            return Response(data)
+            return Response(data, status=HTTP_200_OK)
+
+
+        except ClayfulException as e:
+            return Response(e.code, status=HTTP_400_BAD_REQUEST)
 
         except Exception as e:
-            return Response(e.code)
+            return Response("알 수 없는 예외가 발생했습니다.", status=HTTP_400_BAD_REQUEST)
 
-    def put(self, request, items_id): # 자신의 장바구니에서 물품 수정
+    def put(self, request): # 자신의 장바구니에서 물품 수정
         try:
             Cart = Clayful.Cart
-            payload = json.dumps(request.data['payload'])
+            payloads = json.dumps(request.data['payload'])
             options = {
                 'customer': request.headers.get('Custom-Token'),
             }
+            result = []
+            for payload in payloads:
+                result.append(Cart.update_item_for_me(payload['item_id'], payload['payload'], options).data)
+            return Response(result, status=HTTP_200_OK)
 
-            result = Cart.update_item_for_me(items_id, payload, options)
-            headers = result.headers
-            data = result.data
-            return Response(data)
+
+        except ClayfulException as e:
+            return Response(e.code, status=HTTP_400_BAD_REQUEST)
 
         except Exception as e:
-            return Response(e.code)
+            return Response("알 수 없는 예외가 발생했습니다.", status=HTTP_400_BAD_REQUEST)
 
     def delete(self, request): # 자신의 장바구니에서 선택 품목삭제
         try:
@@ -110,10 +134,14 @@ class CartItemAPI(APIView):
             for item_id in item_ids['item_ids'].value: # dict의 item_id에 대해서 삭제 실행
                 Cart.delete_item_for_me(item_id,options) #삭제
 
-            return redirect('/') # 자신의 장바구니 화면으로 redirect
+            return Response("모두 삭제하였습니다.", status=HTTP_200_OK)
+
+
+        except ClayfulException as e:
+            return Response(e.code, status=HTTP_400_BAD_REQUEST)
 
         except Exception as e:
-            return Response(e.code)
+            return Response("알 수 없는 예외가 발생했습니다.", status=HTTP_400_BAD_REQUEST)
 
 
 class CartCheckoutAPI(APIView):
@@ -139,10 +167,14 @@ class CartCheckoutAPI(APIView):
             result = Cart.checkout_for_me('order', payload, options)
             headers = result.headers
             data = result.data
-            return Response(data)
+            return Response(data, status=HTTP_200_OK)
+
+
+        except ClayfulException as e:
+            return Response(e.code, status=HTTP_400_BAD_REQUEST)
 
         except Exception as e:
-            return Response(e.code)
+            return Response("알 수 없는 예외가 발생했습니다.", status=HTTP_400_BAD_REQUEST)
 
 '''
 
