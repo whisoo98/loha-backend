@@ -58,6 +58,7 @@ class Images(APIView):
             Image = Clayful.Image
             options = {'customer': request.headers.get('Custom-Token')}
             res = Image.list_for_me(options)
+
             if not res.data:
                 payload = {
                     'model': (None, 'Customer'),
@@ -85,11 +86,19 @@ class Images(APIView):
 
         except Exception as e:
             self.print_error(e)
-            content = {
-                'error': {
-                    'message': '잘못된 요청입니다.'
+            try :
+                content = {
+                    'error': {
+                        'message': e.message,
+                        'code' : e. code
+                    }
                 }
-            }
+            except Exception :
+                content = {
+                    'error': {
+                        'message': '잘못된 요청입니다.'
+                    }
+                }
             return Response(content, status=status.HTTP_400_BAD_REQUEST)
 
     # 이미지 삭제
