@@ -14,8 +14,9 @@ RUN pip install requests
 RUN pip install clayful
 RUN pip install psycopg2
 RUN pip install iamporter
+RUN pip install -U channels==2.0.2
+RUN pip install channels_redis
 
-s
 COPY ./requirements.txt .
 RUN pip install -r requirements.txt
 
