@@ -5,6 +5,7 @@ from rest_framework.views import APIView
 from rest_framework.decorators import api_view
 from influencer.views import is_influencer
 from .models import *
+from chat.models import *
 from django.db.models import Q
 from .serializers import *
 from user.views import require_login
@@ -44,7 +45,11 @@ def reserve_live(request, result):
             thumbnail_url= request.data.get('title'),
             started_at= request.data['started_at']
         )
-        
+
+        Room.objects.filter(room_streamer=result['_id']).all().delete()
+
+        Room.objects.create(room_name=result['meta']['Stream_id'],
+                            room_streamer=result['_id'])
 
 
 

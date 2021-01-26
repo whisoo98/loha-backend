@@ -66,8 +66,8 @@ ALLOWED_HOSTS = get_secret("DJANGO_ALLOWED_HOSTS")
 # Application definition
 
 INSTALLED_APPS = [
-    #'chat',
-    #'channels',
+    'chat',
+    'channels',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -118,7 +118,7 @@ TEMPLATES = [
 
 
 WSGI_APPLICATION = 'loha.wsgi.application'
-'''
+
 ASGI_APPLICATION = 'loha.routing.application'
 
 CHANNEL_LAYERS = {
@@ -129,7 +129,7 @@ CHANNEL_LAYERS = {
         },
     },
 }
-'''
+
 # development settings
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 
