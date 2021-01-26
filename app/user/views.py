@@ -12,7 +12,6 @@ import datetime
 
 import urllib
 
-
 # 로그인 확인 decorator
 def require_login(func):
     def wrapper(self, request, *args, **kwargs):
@@ -98,19 +97,36 @@ class User(APIView):
             payload = {
                 'groups': ['ZZ9HGQBGPLTA'], # 일반고객으로 추가
                 'userId': request.data['userId'],
-                'alias': request.data.get('alias'),
                 'email': request.data['email'],
                 'password': request.data['password'],
                 'name': {
                     'full': request.data['name']
                 },
-                'mobile': request.data.get('mobile'),
-                'phone': request.data.get('phone'),
-                'gender': request.data.get('gender'),
-                'birthdate': request.data.get('birthdate'),
+                'alias': None if request.data['alias'] == "" else request.data['alias'],
+                'mobile': None if request.data['mobile'] == "" else request.data['mobile'],
+                'phone': None if request.data['phone'] == "" else request.data['phone'],
+                'gender': None if request.data['gender'] == "" else request.data['gender'],
+                'birthdate': None if request.data['birthdate'] == "" else request.data['birthdate']
             }
-            if request.data.get('address') is not None:
-                payload['address'] = request.data['address']
+            if request.data['address']['primary']['name']['full'] != "" :
+                payload['address'] = {
+                    "primary": {
+                        "name": {
+                            "first": None if request.data['address']['primary']['name']['first'] =="" else request.data['address']['primary']['name']['first'],
+                            "last": None if request.data['address']['primary']['name']['last'] =="" else request.data['address']['primary']['name']['last'],
+                            "full": None if request.data['address']['primary']['name']['full'] =="" else request.data['address']['primary']['name']['full']
+                        },
+                        "mobile": None if request.data['address']['primary']['mobile'] =="" else request.data['address']['primary']['mobile'],
+                        "phone": None if request.data['address']['primary']['phone'] =="" else request.data['address']['primary']['phone'],
+                        "country": None if request.data['address']['primary']['country'] =="" else request.data['address']['primary']['country'],
+                        "state": None if request.data['address']['primary']['country'] =="" else request.data['address']['primary']['country'],
+                        "city": None if request.data['address']['primary']['city'] =="" else request.data['address']['primary']['city'],
+                        "address1": None if request.data['address']['primary']['address1'] =="" else request.data['address']['primary']['address1'],
+                        "address2": None if request.data['address']['primary']['address2'] =="" else request.data['address']['primary']['address2'],
+                        "postcode": None if request.data['address']['primary']['postcode'] =="" else request.data['address']['primary']['postcode'],
+                        "company": None if request.data['address']['primary']['company'] =="" else request.data['address']['primary']['company'],
+                    }
+                }
             result = Customer.create(payload)
             # wishlist 생성
             self.make_wishlist(Clayful.WishList, result.data['_id'])
