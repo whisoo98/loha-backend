@@ -70,7 +70,7 @@ class Coupon(APIView):
                 'query': {},
             }
             customer_id = Customer.get_me(options).data['_id']
-            payload = request.data['payload']
+            payload = json.dumps(request.data['payload'])
 
             options = {
             }
