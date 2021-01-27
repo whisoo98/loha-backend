@@ -1,4 +1,4 @@
-from django.shortcuts import render,redirect
+from django.shortcuts import render, redirect
 from django.conf import settings
 from django.http import JsonResponse
 
@@ -6,10 +6,10 @@ from iamporter.errors import ImpUnAuthorized, ImpApiError
 from iamporter import *
 from pip._internal import req
 
-from rest_framework.decorators import api_view,parser_classes
+from rest_framework.decorators import api_view, parser_classes
 from rest_framework.parsers import JSONParser
 from rest_framework.authentication import SessionAuthentication
-from rest_framework.views import APIView,Response
+from rest_framework.views import APIView, Response
 from rest_framework.status import *
 from rest_framework.request import Request
 
@@ -24,7 +24,6 @@ import time
 # Create your views here.
 
 class CartAPI(APIView):
-
     Clayful.config({
         'client': getattr(settings, 'CLAYFUL_SECRET_KEY', None),
         'language': 'ko',
@@ -36,11 +35,10 @@ class CartAPI(APIView):
     def post(self, request):  # 고객이 본인 장바구니 확인
         try:
             Cart = Clayful.Cart
-            #payload = json.dumps(request.data['payload'])
+            # payload = json.dumps(request.data['payload'])
             payload = {}
             if 'payload' in request.data == True:
                 payload = json.dumps(request.data['payload'])
-
 
             options = {
                 'customer': request.headers.get('Custom-Token'),
@@ -58,7 +56,7 @@ class CartAPI(APIView):
         except Exception as e:
             return Response("알 수 없는 예외가 발생했습니다.", status=HTTP_400_BAD_REQUEST)
 
-    def delete(self, request): # 고객이 본인 장바구니 확인
+    def delete(self, request):  # 고객이 본인 장바구니 비우기
         try:
             Cart = Clayful.Cart
             options = {
@@ -75,7 +73,6 @@ class CartAPI(APIView):
 
 
 class CartItemAPI(APIView):
-
     Clayful.config({
         'client': getattr(settings, 'CLAYFUL_SECRET_KEY', None),
         'language': 'ko',
@@ -84,22 +81,28 @@ class CartItemAPI(APIView):
         'debug_language': 'ko',
     })
 
-    def post(self, request): # 자신의 장바구니에 물품 추가
+    def post(self, request):  # 자신의 장바구니에 물품 추가
 
         try:
             Cart = Clayful.Cart
-            payload = json.dumps(request.data['payload'])
+            payload = request.data['payload']
+
             if payload is None:
                 payload = {}
             options = {
                 'customer': request.headers.get('Custom-Token'),
             }
+            cart = Cart.get_for_me({}, options).data
+            cart_id = []
+            for key in cart['cart']['items']:
+                cart_id.append(key['product']['_id'])
 
-            result = Cart.add_item_for_me(payload, options)
-            headers = result.headers
-            data = result.data
+            result = []
+            for key in payload:
+                if (key['product'] not in cart_id):
+                    result.append(Cart.add_item_for_me(payload, options).data)
 
-            return Response(data, status=HTTP_200_OK)
+            return Response(result, status=HTTP_200_OK)
 
 
         except ClayfulException as e:
@@ -108,7 +111,7 @@ class CartItemAPI(APIView):
         except Exception as e:
             return Response("알 수 없는 예외가 발생했습니다.", status=HTTP_400_BAD_REQUEST)
 
-    def put(self, request): # 자신의 장바구니에서 물품 수정
+    def put(self, request):  # 자신의 장바구니에서 물품 수정
         try:
             Cart = Clayful.Cart
             payloads = json.dumps(request.data['payload'])
@@ -127,16 +130,16 @@ class CartItemAPI(APIView):
         except Exception as e:
             return Response("알 수 없는 예외가 발생했습니다.", status=HTTP_400_BAD_REQUEST)
 
-    def delete(self, request): # 자신의 장바구니에서 선택 품목삭제
+    def delete(self, request):  # 자신의 장바구니에서 선택 품목삭제
         try:
             Cart = Clayful.Cart
             options = {
                 'customer': request.headers.get('Custom-Token'),
             }
-            
-            item_ids = json.dumps(request.data) # 선택된 품목을 dict형으로 받음
-            for item_id in item_ids['item_ids'].value: # dict의 item_id에 대해서 삭제 실행
-                Cart.delete_item_for_me(item_id,options) #삭제
+
+            item_ids = json.dumps(request.data)  # 선택된 품목을 dict형으로 받음
+            for item_id in item_ids['item_ids'].value:  # dict의 item_id에 대해서 삭제 실행
+                Cart.delete_item_for_me(item_id, options)  # 삭제
 
             return Response("모두 삭제하였습니다.", status=HTTP_200_OK)
 
@@ -149,7 +152,6 @@ class CartItemAPI(APIView):
 
 
 class CartCheckoutAPI(APIView):
-
     Clayful.config({
         'client': getattr(settings, 'CLAYFUL_SECRET_KEY', None),
         'language': 'ko',
@@ -164,7 +166,7 @@ class CartCheckoutAPI(APIView):
             payload = json.dumps(request.data['payload'])
             options = {
                 'customer': request.headers.get('Custom-Token'),
-                'query' : {
+                'query': {
 
                 }
             }
@@ -179,6 +181,7 @@ class CartCheckoutAPI(APIView):
 
         except Exception as e:
             return Response("알 수 없는 예외가 발생했습니다.", status=HTTP_400_BAD_REQUEST)
+
 
 '''
 
