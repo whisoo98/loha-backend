@@ -85,6 +85,26 @@ class User(APIView):
     # 현재 회원정보 출력
     @require_login
     def get(self, request, result):
+        print(result.data)
+        if result.data['address']['primary'] is None:
+            result.data['address'] = {
+                "primary": {
+                    "name": {
+                        "first": "",
+                        "last": "",
+                        "full": ""
+                    },
+                    "mobile": "",
+                    "phone": "",
+                    "country": "",
+                    "state": "",
+                    "city": "",
+                    "address1": "",
+                    "address2": "",
+                    "postcode": "",
+                    "company": ""
+                }
+            }
         return Response(result.data)
 
     # 회원가입
@@ -182,13 +202,11 @@ class User(APIView):
             # 로그인 정보 수정 (이메일, 비밀번호)
             if request.data.get('old_password') is not None:
                 payload = {
-                    'password': request.data.get('old_password'),
+                    'password': request.data['old_password'],
                     'credentials': {
                         'userId': result.data['userId'],
-                        'email': result.data['email'] if request.data.get('email') is None else request.data.get(
-                            'email'),
-                        'password': request.data.get('old_password') if request.data.get(
-                            'new_password') is None else request.data.get('new_password'),
+                        'email': result.data['email'] if request.data['email'] == "" else request.data['email'],
+                        'password': request.data['old_password'] if request.data['new_password'] == "" else request.data['new_password'],
                     }
                 }
                 Customer.update_credentials_for_me(payload, options)
@@ -202,16 +220,34 @@ class User(APIView):
             # 개인 정보 수정 (이름, 번호, 별명)
 
             payload = {
-                'alias': result.data['alias'] if request.data.get('alias') is None else request.data.get('alias'),
+                'alias': None if request.data['alias'] == "" else request.data['alias'],
                 'name': {
-                    'full': result.data['name']['full'] if request.data.get('name') is None else request.data.get('name')
+                    'full': None if request.data['name'] == "" else request.data['name'],
                 },
-                'mobile': result.data['mobile'] if request.data.get('mobile') is None else request.data.get('mobile'),
-                'phone': result.data['phone'] if request.data.get('phone') is None else request.data.get('phone'),
-                'gender': result.data['gender'] if request.data.get('gender') is None else request.data.get('gender'),
-                'birthdate': result.data['birthdate']['raw'] if request.data.get('birthdate') is None else request.data.get('birthdate'),
-                'address': result.data['address'] if request.data.get('address') is None else request.data.get('address'),
+                'mobile': None if request.data['mobile'] == "" else request.data['mobile'],
+                'phone': None if request.data['phone'] == "" else request.data['phone'],
+                'gender': None if request.data['gender'] == "" else request.data['gender'],
+                'birthdate': None if request.data['birthdate'] == "" else request.data['birthdate']
             }
+            if request.data['address']['primary']['name']['full'] != "" :
+                payload['address'] = {
+                    "primary": {
+                        "name": {
+                            "first": None if request.data['address']['primary']['name']['first'] =="" else request.data['address']['primary']['name']['first'],
+                            "last": None if request.data['address']['primary']['name']['last'] =="" else request.data['address']['primary']['name']['last'],
+                            "full": None if request.data['address']['primary']['name']['full'] =="" else request.data['address']['primary']['name']['full']
+                        },
+                        "mobile": None if request.data['address']['primary']['mobile'] =="" else request.data['address']['primary']['mobile'],
+                        "phone": None if request.data['address']['primary']['phone'] =="" else request.data['address']['primary']['phone'],
+                        "country": None if request.data['address']['primary']['country'] =="" else request.data['address']['primary']['country'],
+                        "state": None if request.data['address']['primary']['country'] =="" else request.data['address']['primary']['country'],
+                        "city": None if request.data['address']['primary']['city'] =="" else request.data['address']['primary']['city'],
+                        "address1": None if request.data['address']['primary']['address1'] =="" else request.data['address']['primary']['address1'],
+                        "address2": None if request.data['address']['primary']['address2'] =="" else request.data['address']['primary']['address2'],
+                        "postcode": None if request.data['address']['primary']['postcode'] =="" else request.data['address']['primary']['postcode'],
+                        "company": None if request.data['address']['primary']['company'] =="" else request.data['address']['primary']['company'],
+                    }
+                }
             Customer.update_me(payload, options)
         except Exception as e:
             self.print_error(e)
