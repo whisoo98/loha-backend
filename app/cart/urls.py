@@ -20,7 +20,6 @@ from .views import *
 urlpatterns = [
     path('', CartAPI.as_view()),
     path('items/',CartItemAPI.as_view()),
-    path('items/<str:items_id>/', CartItemAPI.as_view()),
     path('checkout/', CartCheckoutAPI.as_view()),
     #path('checkout/', checkout_api),
     #path('<str:customer_id>/', CartAPI.as_view()),

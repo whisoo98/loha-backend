@@ -18,7 +18,5 @@ from django.urls import path
 from .views import *
 
 urlpatterns = [
-    path('product/', ProductWishList.as_view()),
-    #path('byeol/', ByeolWishList.as_view()),
-    #path('vod/', VodWishList.as_view()),
+    path('', ProductWishList.as_view()),
 ]
