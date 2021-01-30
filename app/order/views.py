@@ -102,7 +102,7 @@ def request_refund_for_me_api(request, order_id):
         return Response("알 수 없는 오류가 발생하였습니다.", status=HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
-def restock_all_refund_items(request, order_id, refund_id):
+def restock_all_refund_items(request):
     Clayful.config({
         'client': getattr(settings, 'CLAYFUL_SECRET_KEY', None),
         'language': 'ko',
@@ -111,6 +111,9 @@ def restock_all_refund_items(request, order_id, refund_id):
         'debug_language': 'ko',
     })
     try:
+
+        order_id = request.data['params']['orderId']
+        refund_id = request.data['params']['refundId']
         Order = Clayful.Order
         options = {
         }
@@ -268,8 +271,9 @@ class OrderMarkDoneAPI(APIView):#주문 완료 체크
             'debug_language': 'ko',
         })
 
-    def post(self, request, order_id):
+    def post(self, request):
         try:
+            order_id = request.data['params']['orderId']
             Order = Clayful.Order
             options = {
             }
@@ -277,26 +281,6 @@ class OrderMarkDoneAPI(APIView):#주문 완료 체크
             result = Order.mark_as_done(order_id, options)
             headers = result.headers
             data = result.data
-
-            return Response(data)
-
-        except ClayfulException as e:
-            return Response(e.code, status=e.status)
-
-        except Exception as e:
-            return Response("알 수 없는 오류가 발생하였습니다.", status=HTTP_400_BAD_REQUEST)
-
-    def delete(self, request, order_id):
-        try:
-            Order = Clayful.Order
-            options = {
-            }
-
-            result = Order.mark_as_undone(order_id, options)
-            headers = result.headers
-            data = result.data
-
-            return Response(data)
 
         except ClayfulException as e:
             return Response(e.code, status=e.status)
