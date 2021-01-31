@@ -82,10 +82,12 @@ INSTALLED_APPS = [
     'cart',
     'payment',
     'usergroup',
+    'catalog',
     'coupon',
     'influencer',
     'media',
     'images',
+    'order',
 ]
 
 MIDDLEWARE = [

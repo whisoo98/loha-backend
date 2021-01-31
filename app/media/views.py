@@ -51,10 +51,6 @@ def reserve_live(request, result):
         Room.objects.create(room_name=result['meta']['Stream_id'],
                             room_streamer=result['_id'])
 
-
-
-
-
         # 상품에 URL 추가
         contents = {
             "success": {
@@ -181,7 +177,6 @@ def get_my_vod(request, result):
 # VOD 좋아요
 @require_login
 def like_Vod(request, result):
-
     pass
 
 # mux callback 처리 (방송 시작, 방송 종료)
