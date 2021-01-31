@@ -87,6 +87,7 @@ INSTALLED_APPS = [
     'influencer',
     'media',
     'images',
+    'order',
 ]
 
 MIDDLEWARE = [
