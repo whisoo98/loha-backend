@@ -26,15 +26,33 @@ class ReviewAPI(APIView):
     def post(self, request):
         try:
             Review = Clayful.Review
-            payload = json.dumps(request.data['payload'])
+            Image = Clayful.Image
             options = {
                 'customer': request.headers['Custom-Token'],
             }
+
+            payload = json.dumps(request.data['payload'])
+
+            img_list = request.data['images'] #이미지 리스트
+            img_payload = {
+                'model': 'Review',
+                'application': 'images'
+            }
+
+            img_id = []
+
+            for img in img_list:
+                img_payload['file'] = img
+                img_id.append(Image.create_for_me(img_payload,options))
+
+            payload['images'] = img_id
+
             result = Review.create_for_me(payload, options)
             headers = result.headers
             data = result.data
 
             return Response(data)
+
         except ClayfulException as e:
             return Response(e.code, status=e.status)
 
@@ -48,6 +66,7 @@ class ReviewAPI(APIView):
 
             options = {
                 'query': {
+
                 },
             }
 
@@ -85,12 +104,32 @@ class ReviewAPI(APIView):
     def put(self, request, review_id):
         try:
             Review = Clayful.Review
+            Image = Clayful.Image
             payload = json.dumps(request.data['payload'])
-
             options = {
                 'customer': request.headers['Custom-Token'],
             }
 
+            img_list = request.data['images']
+
+            before = Review.get_published(review_id, {
+                'customer': request.headers['Custom-Token'],
+                'field': 'images'
+            }).data
+
+            for img in before:
+                Image.delete_for_me(img,options)
+
+            after = []
+            img_payload = {
+                'model': 'Review',
+                'application': 'images'
+            }
+            for img in img_list:
+                img_payload['file'] = img
+                after.append(Image.create_for_me(img_payload, options))
+
+            payload['images'] = after
             result = Review.update_for_me(review_id, payload, options)
 
             headers = result.headers
