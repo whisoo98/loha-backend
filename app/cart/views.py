@@ -85,12 +85,12 @@ class CartItemAPI(APIView):
 
         try:
             Cart = Clayful.Cart
-            payload = request.data['payload']
+            payload = json.dumps(request.data['payload'])
 
             if payload is None:
                 payload = {}
             options = {
-                'customer': request.headers.get('Custom-Token'),
+                'customer': request.headers['Custom-Token'],
             }
             cart = Cart.get_for_me({}, options).data
             cart_id = []
