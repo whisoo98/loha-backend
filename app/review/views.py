@@ -9,10 +9,11 @@ from rest_framework.views import APIView
 from rest_framework.status import *
 from rest_framework.decorators import api_view,parser_classes
 from rest_framework.parsers import JSONParser
-
+import pprint
 from clayful import Clayful, ClayfulException
 import json
 import requests
+import base64
 
 
 class ReviewAPI(APIView):
@@ -30,20 +31,32 @@ class ReviewAPI(APIView):
             options = {
                 'customer': request.headers['Custom-Token'],
             }
-
             payload = json.dumps(request.data['payload'])
 
             img_list = request.data['images'] #이미지 리스트
+            pprint.pprint(request.data['images'])
+
             img_payload = {
-                'model': 'Review',
-                'application': 'images'
+                'model': (None, 'Review'),
+                'application': (None, 'images'),
+                'file': ('image.jpg', request.data['images'], 'image/jpeg')
             }
-
+            print("!")
+            pprint.pprint(img_list)
+            pprint.pprint(request.files)
             img_id = []
-
+            #res = Image.create_for_me(img_payload, options).data['_id']
+            return Response("!")
             for img in img_list:
-                img_payload['file'] = img
-                img_id.append(Image.create_for_me(img_payload,options))
+                print(img)
+                img_payload['file'] = (
+                    'image.jpg',
+                    open('./path/to/image.jpg', 'rb'),
+                    'image/jpeg'
+                )
+                pprint.pprint(img_payload)
+                #img_id.append(Image.create_for_me(img_payload,options).data['_id'])
+            print("!")
 
             payload['images'] = img_id
 

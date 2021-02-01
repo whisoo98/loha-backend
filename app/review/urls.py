@@ -18,7 +18,7 @@ from django.urls import path, include
 from .views import *
 
 urlpatterns = [
-    path('', review_list_published_api),
+    path('list/', review_list_published_api),
     path('', ReviewAPI.as_view()),
     path('<str:review_id>/', ReviewAPI.as_view()),
 ]
