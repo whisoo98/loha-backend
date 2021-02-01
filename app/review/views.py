@@ -176,3 +176,31 @@ def review_list_published_api(request):
     except Exception as e:
         return Response("알 수 없는 오류가 발생하였습니다.")
 
+@api_view(['GET'])
+def review_list_published_for_me_api(request, custom_id):
+    Clayful.config({
+        'client': getattr(settings, 'CLAYFUL_SECRET_KEY', None),
+        'language': 'ko',
+        'currency': 'KRW',
+        'time_zone': 'Asia/Seoul',
+        'debug_language': 'ko',
+    })
+    try:
+        Review = Clayful.Review
+
+        options = {
+            'query': {
+                'customer':custom_id
+            },
+        }
+        result = Review.list_published(options)
+        headers = result.headers
+        data = result.data
+
+        return Response(data)
+
+    except ClayfulException as e:
+        return Response(e.code, status=e.status)
+
+    except Exception as e:
+        return Response("알 수 없는 오류가 발생하였습니다.")
