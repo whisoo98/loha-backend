@@ -96,7 +96,7 @@ class CartItemAPI(APIView):
 
             result = []
             for key in payload:
-                if (key['product'] not in cart_id):
+                if (key['variant'] not in cart_id):
                     result.append(Cart.add_item_for_me(key, options).data)
 
             return Response(result, status=HTTP_200_OK)
