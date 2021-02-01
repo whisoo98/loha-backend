@@ -31,9 +31,15 @@ class ReviewAPI(APIView):
             options = {
                 'customer': request.headers['Custom-Token'],
             }
-            payload = json.dumps(request.data['payload'])
+            print(request.FILES)
+            print(request.FILES['images'])
+            print(dir(request.FILES['images']))
+            print(request.FILES['images'][0].values)
+            print(request.FILES['images'][0].items)
+            print(request.FILES['images'][0].keys)
 
-            img_list = request.data['images'] #이미지 리스트
+            payload = json.dumps(request.data['payload'])
+            img_list = request.FILES #이미지 리스트
             pprint.pprint(request.data['images'])
 
             img_payload = {
