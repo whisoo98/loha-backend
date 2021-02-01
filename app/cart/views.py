@@ -121,10 +121,10 @@ class CartItemAPI(APIView):
 
 
         except ClayfulException as e:
-            return Response(e.code, status=HTTP_400_BAD_REQUEST)
+            return Response(e.code, status=e.status)
 
         except Exception as e:
-            return Response("알 수 없는 예외가 발생했습니다.", status=e.status)
+            return Response("알 수 없는 예외가 발생했습니다.", status=HTTP_400_BAD_REQUEST)
 
     def delete(self, request):  # 자신의 장바구니에서 선택 품목삭제
         try:
