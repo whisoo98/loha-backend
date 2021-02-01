@@ -92,7 +92,7 @@ class CartItemAPI(APIView):
             cart = Cart.get_for_me({}, options).data
             cart_id = []
             for key in cart['cart']['items']:
-                cart_id.append(key['product']['_id'])
+                cart_id.append(key['variant']['_id'])
 
             result = []
             for key in payload:
