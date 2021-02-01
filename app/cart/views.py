@@ -67,7 +67,7 @@ class CartAPI(APIView):
             return Response("장바구니 비우기가 완료되었습니다.", status=HTTP_200_OK)
 
         except ClayfulException as e:
-            return Response(e.code, status=HTTP_400_BAD_REQUEST)
+            return Response(e.code, status=e.status)
         except Exception as e:
             return Response("알 수 없는 예외가 발생했습니다.", status=HTTP_400_BAD_REQUEST)
 
@@ -106,7 +106,7 @@ class CartItemAPI(APIView):
 
 
         except ClayfulException as e:
-            return Response(e.code, status=HTTP_400_BAD_REQUEST)
+            return Response(e.code, status=e.status)
 
         except Exception as e:
             return Response("알 수 없는 예외가 발생했습니다.", status=HTTP_400_BAD_REQUEST)
@@ -134,18 +134,18 @@ class CartItemAPI(APIView):
         try:
             Cart = Clayful.Cart
             options = {
-                'customer': request.headers.get('Custom-Token'),
+                'customer': request.headers['Custom-Token'],
             }
+            item_ids = (request.data['item_ids'])  # 선택된 품목을 dict형으로 받음
 
-            item_ids = json.dumps(request.data)  # 선택된 품목을 dict형으로 받음
-            for item_id in item_ids['item_ids'].value:  # dict의 item_id에 대해서 삭제 실행
+            for item_id in item_ids:  # dict의 item_id에 대해서 삭제 실행
                 Cart.delete_item_for_me(item_id, options)  # 삭제
 
             return Response("모두 삭제하였습니다.", status=HTTP_200_OK)
 
 
         except ClayfulException as e:
-            return Response(e.code, status=HTTP_400_BAD_REQUEST)
+            return Response(e.code, status=e.status)
 
         except Exception as e:
             return Response("알 수 없는 예외가 발생했습니다.", status=HTTP_400_BAD_REQUEST)
@@ -177,7 +177,7 @@ class CartCheckoutAPI(APIView):
 
 
         except ClayfulException as e:
-            return Response(e.code, status=HTTP_400_BAD_REQUEST)
+            return Response(e.code, status=e.status)
 
         except Exception as e:
             return Response("알 수 없는 예외가 발생했습니다.", status=HTTP_400_BAD_REQUEST)
