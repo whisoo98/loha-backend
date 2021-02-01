@@ -85,10 +85,7 @@ class CartItemAPI(APIView):
 
         try:
             Cart = Clayful.Cart
-            payload = json.dumps(request.data['payload'])
-
-            if payload is None:
-                payload = {}
+            payload = (request.data['payload'])
             options = {
                 'customer': request.headers['Custom-Token'],
             }
@@ -100,14 +97,13 @@ class CartItemAPI(APIView):
             result = []
             for key in payload:
                 if (key['product'] not in cart_id):
-                    result.append(Cart.add_item_for_me(payload, options).data)
+                    result.append(Cart.add_item_for_me(key, options).data)
 
             return Response(result, status=HTTP_200_OK)
 
 
         except ClayfulException as e:
             return Response(e.code, status=e.status)
-
         except Exception as e:
             return Response("알 수 없는 예외가 발생했습니다.", status=HTTP_400_BAD_REQUEST)
 
@@ -137,8 +133,8 @@ class CartItemAPI(APIView):
                 'customer': request.headers.get('Custom-Token'),
             }
 
-            item_ids = json.dumps(request.data)  # 선택된 품목을 dict형으로 받음
-            for item_id in item_ids['item_ids'].value:  # dict의 item_id에 대해서 삭제 실행
+            item_ids = (request.data['item_ids'])  # 선택된 품목을 dict형으로 받음
+            for item_id in item_ids:  # dict의 item_id에 대해서 삭제 실행
                 Cart.delete_item_for_me(item_id, options)  # 삭제
 
             return Response("모두 삭제하였습니다.", status=HTTP_200_OK)
