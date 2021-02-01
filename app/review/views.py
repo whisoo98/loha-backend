@@ -31,42 +31,27 @@ class ReviewAPI(APIView):
             options = {
                 'customer': request.headers['Custom-Token'],
             }
-            print(request.FILES)
-            print(request.FILES['images'])
-            print(dir(request.FILES['images']))
-            print(request.FILES['images'][0].values)
-            print(request.FILES['images'][0].items)
-            print(request.FILES['images'][0].keys)
 
-            payload = json.dumps(request.data['payload'])
-            img_list = request.FILES #이미지 리스트
-            pprint.pprint(request.data['images'])
+            payload = (request.data)
+
+            img_list = request.FILES.getlist('images') #이미지 리스트
 
             img_payload = {
                 'model': (None, 'Review'),
                 'application': (None, 'images'),
-                'file': ('image.jpg', request.data['images'], 'image/jpeg')
+                #'file': ('image.jpg', request.data['images'], 'image/jpeg')
             }
-            print("!")
-            pprint.pprint(img_list)
-            pprint.pprint(request.files)
             img_id = []
-            #res = Image.create_for_me(img_payload, options).data['_id']
-            return Response("!")
             for img in img_list:
-                print(img)
                 img_payload['file'] = (
                     'image.jpg',
-                    open('./path/to/image.jpg', 'rb'),
+                    img,
                     'image/jpeg'
                 )
-                pprint.pprint(img_payload)
-                #img_id.append(Image.create_for_me(img_payload,options).data['_id'])
-            print("!")
+                img_id.append(Image.create_for_me(img_payload,options).data['_id'])
 
             payload['images'] = img_id
-
-            result = Review.create_for_me(payload, options)
+            result = Review.create_for_me(json.dumps(payload), options)
             headers = result.headers
             data = result.data
 
