@@ -110,7 +110,7 @@ class CartItemAPI(APIView):
     def put(self, request):  # 자신의 장바구니에서 물품 수정
         try:
             Cart = Clayful.Cart
-            payloads = json.dumps(request.data['payload'])
+            payloads = (request.data['payload'])
             options = {
                 'customer': request.headers.get('Custom-Token'),
             }
