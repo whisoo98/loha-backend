@@ -43,7 +43,6 @@ class CartAPI(APIView):
             options = {
                 'customer': request.headers.get('Custom-Token'),
                 'query': {
-
                 },
             }
             result = Cart.get_for_me(payload, options)

@@ -3,13 +3,14 @@ from django.views import View
 from django.http import JsonResponse, HttpResponse
 from django.conf import settings
 
+from rest_framework.status import *
 from rest_framework import request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view,parser_classes
 from rest_framework.parsers import JSONParser
 
-from clayful import Clayful
+from clayful import Clayful,ClayfulException
 import json
 import requests
 
@@ -29,6 +30,7 @@ class ProductCollectionAPI(APIView):
             Product = Clayful.Product
             options = {
                 'query': {
+                    'raw':True,
                     'available': True,
                     'collection': collection_id,
                 },
@@ -39,9 +41,10 @@ class ProductCollectionAPI(APIView):
 
             return Response(data)
 
+        except ClayfulException as e:
+            return Response(e.code +" " + e.message, status=e.status)
         except Exception as e:
-            return Response(e.code, status=e.status)
-
+            return Response("알 수 없는 예외가 발생하였습니다.", status=HTTP_400_BAD_REQUEST)
 
 class ProductAPI(APIView):
     Clayful.config({
@@ -71,6 +74,7 @@ class ProductAPI(APIView):
 
             Product = Clayful.Product
             options = {
+                'raw':True,
                 'query': {
                     #'fields' : '_id,name,summary,description,price,discount,shipping,available,brand,thumbnail,collections,options,variants,meta.stream_url'
                 },
@@ -135,6 +139,7 @@ def product_searchAPI(request):
         Product = Clayful.Product
         options = {
             'query': {
+                'raw':True,
                 'q': request.data['search'],
                 'search': {
                     'name.ko' : '',
