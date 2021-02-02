@@ -92,11 +92,20 @@ class CartItemAPI(APIView):
             cart = Cart.get_for_me({}, options).data
             cart_id = []
             for key in cart['cart']['items']:
-                cart_id.append(key['variant']['_id'])
+                cart_id.append({
+                    'variant_id':key['variant']['_id'],
+                    'item_id': key['_id']
+                })
 
             result = []
             for key in payload:
-                if (key['variant'] not in cart_id):
+                isFind = 0
+                for key2 in cart_id:
+                    if (key['variant'] == key2['variant_id']):
+                        isFind=1
+                        result.append(Cart.update_item_for_me(key2['item_id'], key, options).data)
+                        break
+                if isFind == 0:
                     result.append(Cart.add_item_for_me(key, options).data)
 
             return Response(result, status=HTTP_200_OK)

@@ -76,8 +76,14 @@ class ProductAPI(APIView):
                 },
             }
             result = Product.get(product_id, options)
+            count = Clayful.Review.count_published({
+                'query':{
+                    'product':product_id
+                }
+            }).data['count']['raw']
             headers = result.headers
             data = result.data
+            data['review_count'] = count
 
             return Response(data)
 
