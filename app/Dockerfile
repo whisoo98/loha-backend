@@ -4,6 +4,10 @@ FROM python:3.8.6
 # set work directory
 WORKDIR /usr/src/app
 
+# vim 설치
+RUN apt-get -y update
+RUN apt-get -y install vim
+
 # set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
@@ -14,7 +18,6 @@ RUN pip install requests
 RUN pip install clayful
 RUN pip install psycopg2
 RUN pip install iamporter
-RUN pip install -U channels==2.0.2
 RUN pip install channels_redis
 
 COPY ./requirements.txt .

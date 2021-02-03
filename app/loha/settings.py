@@ -127,6 +127,7 @@ ASGI_APPLICATION = 'loha.routing.application'
 CHANNEL_LAYERS = {
     'default' : {
         'BACKEND' : 'channels_redis.core.RedisChannelLayer',
+        'ROUTING': 'loha.routing.channel_routing',
         'CONFIG' :{
             "hosts": [(ALLOWED_HOSTS, 6379)],
         },
