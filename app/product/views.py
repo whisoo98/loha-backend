@@ -12,9 +12,45 @@ from rest_framework.parsers import JSONParser
 
 from clayful import Clayful,ClayfulException
 import json
+import pprint
 import requests
 
 # Create your views here.
+def set_raw(dict):
+    depth1 = {
+        'price':['original','sale'],
+        'discount':['discounted'],
+        'rating':['count','sum','average'],
+        'variants':{
+            'price':['original', 'sale'],
+            'discount':['discounted'],
+            'weight':['weight'],
+            'width':['width'],
+            'height':['height'],
+            'depth':['depth'],
+        },
+    }
+
+    dict['totalReview']=dict['totalReview']['raw']
+    dict['updatedAt']=dict['updatedAt']['raw']
+    dict['createdAt']=dict['createdAt']['raw']
+
+    for depth2 in depth1.keys():
+        if depth2 != 'variants':
+            for key in depth1[depth2]:
+                dict[depth2][key]=dict[depth2][key]['raw']
+        else:
+            for depth3 in depth1[depth2].keys():
+                print("!")
+                for items in dict['variants']:
+                    for key in depth1[depth2][depth3]:
+                        if (depth3 == 'price' or depth3 == 'discount'):
+                            print("#")
+                            items[depth3][key]=items[depth3][key]['raw']
+                        else:
+                            items[depth3] = items[depth3]['raw']
+    return dict
+
 
 class ProductCollectionAPI(APIView):
     Clayful.config({
@@ -37,7 +73,8 @@ class ProductCollectionAPI(APIView):
             result = Product.list(options)
             headers = result.headers
             data = result.data
-
+            for dict in data:
+                dict = set_raw(dict)
             return Response(data)
 
         except ClayfulException as e:
@@ -78,15 +115,9 @@ class ProductAPI(APIView):
                 },
             }
             result = Product.get(product_id, options)
-            count = Clayful.Review.count_published({
-                'query':{
-                    'product':product_id
-                }
-            }).data['count']['raw']
             headers = result.headers
             data = result.data
-            data['review_count'] = count
-
+            data = set_raw(data)
             return Response(data)
 
         except Exception as e:
@@ -150,7 +181,7 @@ def product_searchAPI(request):
 
         headers = result.headers
         data = result.data
-
+        data = set_raw(data)
         return Response(data)
 
     except Exception as e:
