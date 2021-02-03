@@ -15,22 +15,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from django.conf.urls import url
+from .views import *
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('product/', include('product.urls')),
-    path('collections/', include('category.urls')),
-    path('user/', include('user.urls')),
-    path('usergroup/', include('usergroup.urls')),
-    path('cart/', include('cart.urls')),
-    path('wishlist/', include('wishlist.urls')),
-    path('catalog/', include('catalog.urls')),
-    path('payment/', include('payment.urls')),
-    path('coupon/',include('coupon.urls')),
-    path('influencer/', include('influencer.urls')),
-    path('media/', include('media.urls')),
-    path('images/', include('images.urls')),
-    path('review/', include('review.urls')),
-    path('order/', include('order.urls')),
+    path('list/', review_list_published_api),
+    path('list/<str:custom_id>/', review_list_published_for_me_api),
+    path('', ReviewAPI.as_view()),
+    path('<str:review_id>/', ReviewAPI.as_view()),
 ]
