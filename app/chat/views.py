@@ -14,6 +14,9 @@ import pprint
 from .models import *
 # Create your views here.
 
+def index(request):
+    return render(request, 'chat/index.html', {})
+
 ## view는 이용하지 않느다.
 def room(request, room_name):
     stream_id = room_name

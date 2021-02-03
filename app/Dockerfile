@@ -21,9 +21,12 @@ RUN pip install iamporter
 RUN pip install -U channels
 RUN pip install channels_redis
 RUN pip install -U Daphne
+# redis
+# pip install pypiwin32
 
 COPY ./requirements.txt .
 RUN pip install -r requirements.txt
 
+RUN pip install django_extensions
 # copy project
 COPY . .

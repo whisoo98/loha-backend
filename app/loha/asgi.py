@@ -12,12 +12,30 @@ django_asgi_app = get_asgi_application()
 from channels.auth import AuthMiddlewareStack
 from channels.routing import ProtocolTypeRouter, URLRouter
 
+from chat.routing import websocket_urlpatterns
+
+application = ProtocolTypeRouter({
+    "http": get_asgi_application(),
+    # Just HTTP for now. (We can add other protocols later.)
+    "websocket": AuthMiddlewareStack(
+        URLRouter(
+            websocket_urlpatterns
+        )
+    ),
+})
+'''
+import os
+from django.core.asgi import get_asgi_application
+from channels.auth import AuthMiddlewareStack
+from channels.routing import ProtocolTypeRouter, URLRouter
+from django.conf.urls import url
 from chat.consumers import ChatConsumer
+
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "loha.settings")
 
 application = ProtocolTypeRouter({
     # Django's ASGI application to handle traditional HTTP requests
-    "http": django_asgi_app,
-
+    "http": get_asgi_application(),
     # WebSocket chat handler
     "websocket": AuthMiddlewareStack(
         URLRouter([
@@ -25,3 +43,4 @@ application = ProtocolTypeRouter({
         ])
     ),
 })
+'''

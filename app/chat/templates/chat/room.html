@@ -121,7 +121,7 @@
 	var chatSocket = new ReconnectingWebSocket(
 		'ws://' + window.location.host +
 		'/ws/chat/' + roomName + '/');
-	
+	console.log('ws://' + window.location.host + '/ws/chat/' + roomName + '/');
 	chatSocket.onopen = function(e){
 		fetchMessages();
 		chatSocket.send(JSON.stringify({

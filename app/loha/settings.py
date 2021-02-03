@@ -9,7 +9,6 @@ https://docs.djangoproject.com/en/2.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.2/ref/settings/
 """
-
 import os, json
 from django.core.exceptions import ImproperlyConfigured
 
@@ -66,8 +65,9 @@ ALLOWED_HOSTS = get_secret("DJANGO_ALLOWED_HOSTS")
 # Application definition
 
 INSTALLED_APPS = [
-    'chat',
     'channels',
+    'chat',
+    'django_extensions',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -122,14 +122,13 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'loha.wsgi.application'
 
-ASGI_APPLICATION = 'loha.routing.application'
+ASGI_APPLICATION = 'loha.asgi.application'
 
 CHANNEL_LAYERS = {
-    'default' : {
-        'BACKEND' : 'channels_redis.core.RedisChannelLayer',
-        'ROUTING': 'loha.routing.channel_routing',
-        'CONFIG' :{
-            "hosts": [(ALLOWED_HOSTS, 6379)],
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("127.0.0.1", 6379)],
         },
     },
 }
