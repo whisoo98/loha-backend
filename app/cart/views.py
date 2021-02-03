@@ -43,7 +43,6 @@ class CartAPI(APIView):
             options = {
                 'customer': request.headers.get('Custom-Token'),
                 'query': {
-
                 },
             }
             result = Cart.get_for_me(payload, options)
@@ -52,7 +51,7 @@ class CartAPI(APIView):
             return Response(data, status=HTTP_200_OK)
 
         except ClayfulException as e:
-            return Response(e.code, status=HTTP_400_BAD_REQUEST)
+            return Response(e.code, status=e.status)
         except Exception as e:
             return Response("알 수 없는 예외가 발생했습니다.", status=HTTP_400_BAD_REQUEST)
 
@@ -85,36 +84,41 @@ class CartItemAPI(APIView):
 
         try:
             Cart = Clayful.Cart
-            payload = request.data['payload']
-
-            if payload is None:
-                payload = {}
+            payload = (request.data['payload'])
             options = {
-                'customer': request.headers.get('Custom-Token'),
+                'customer': request.headers['Custom-Token'],
             }
             cart = Cart.get_for_me({}, options).data
             cart_id = []
             for key in cart['cart']['items']:
-                cart_id.append(key['product']['_id'])
+                cart_id.append({
+                    'variant_id':key['variant']['_id'],
+                    'item_id': key['_id']
+                })
 
             result = []
             for key in payload:
-                if (key['product'] not in cart_id):
-                    result.append(Cart.add_item_for_me(payload, options).data)
+                isFind = 0
+                for key2 in cart_id:
+                    if (key['variant'] == key2['variant_id']):
+                        isFind=1
+                        result.append(Cart.update_item_for_me(key2['item_id'], key, options).data)
+                        break
+                if isFind == 0:
+                    result.append(Cart.add_item_for_me(key, options).data)
 
             return Response(result, status=HTTP_200_OK)
 
 
         except ClayfulException as e:
             return Response(e.code, status=e.status)
-
         except Exception as e:
             return Response("알 수 없는 예외가 발생했습니다.", status=HTTP_400_BAD_REQUEST)
 
     def put(self, request):  # 자신의 장바구니에서 물품 수정
         try:
             Cart = Clayful.Cart
-            payloads = json.dumps(request.data['payload'])
+            payloads = (request.data['payload'])
             options = {
                 'customer': request.headers.get('Custom-Token'),
             }
@@ -125,7 +129,7 @@ class CartItemAPI(APIView):
 
 
         except ClayfulException as e:
-            return Response(e.code, status=HTTP_400_BAD_REQUEST)
+            return Response(e.code, status=e.status)
 
         except Exception as e:
             return Response("알 수 없는 예외가 발생했습니다.", status=HTTP_400_BAD_REQUEST)
@@ -134,10 +138,10 @@ class CartItemAPI(APIView):
         try:
             Cart = Clayful.Cart
             options = {
-                'customer': request.headers['Custom-Token'],
+                'customer': request.headers.get('Custom-Token'),
             }
-            item_ids = (request.data['item_ids'])  # 선택된 품목을 dict형으로 받음
 
+            item_ids = (request.data['item_ids'])  # 선택된 품목을 dict형으로 받음
             for item_id in item_ids:  # dict의 item_id에 대해서 삭제 실행
                 Cart.delete_item_for_me(item_id, options)  # 삭제
 

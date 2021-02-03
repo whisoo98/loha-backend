@@ -16,21 +16,18 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.conf.urls import url
+from .views import *
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('product/', include('product.urls')),
-    path('collections/', include('category.urls')),
-    path('user/', include('user.urls')),
-    path('usergroup/', include('usergroup.urls')),
-    path('cart/', include('cart.urls')),
-    path('wishlist/', include('wishlist.urls')),
-    path('catalog/', include('catalog.urls')),
-    path('payment/', include('payment.urls')),
-    path('coupon/',include('coupon.urls')),
-    path('influencer/', include('influencer.urls')),
-    path('media/', include('media.urls')),
-    path('images/', include('images.urls')),
-    path('review/', include('review.urls')),
-    path('order/', include('order.urls')),
+    path('',order_list_api),
+    path('sync/<str:order_id>/', sync_inventory_api),
+    path('refund/<str:order_id>/', request_refund_for_me_api),
+    path('restock/', restock_all_refund_items),
+    path('refund/cancel/<str:order_id>/<str:refund_id>/', cancel_refund_for_me_api),
+    path('cancel/<str:order_id>/', cancel_for_me_api),
+    path('<str:order_id>/', OrderAPI.as_view),
+    path('markdone/',OrderMarkDoneAPI.as_view),
+    path('<str:order_id>/receivemark/',OrderMarkReceiveAPI.as_view),
+    path('refund/accept/<str:order_id>/<str:refund_id>/',RefundAcceptAPI.as_view),
+    path('fulfill/<str:order_id>/',FulfillAPI.as_view)
 ]
