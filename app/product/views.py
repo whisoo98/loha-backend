@@ -19,15 +19,18 @@ import requests
 def set_raw(dict):
     depth1 = {
         'price':['original','sale'],
-        'discount':['discounted'],
+        #'discount':['discounted'],
+        'discount':['discounted','value'],
         'rating':['count','sum','average'],
         'variants':{
             'price':['original', 'sale'],
-            'discount':['discounted'],
+            #'discount':['discounted'],
+            'discount':['discounted','value'],
             'weight':['weight'],
             'width':['width'],
             'height':['height'],
             'depth':['depth'],
+            'quantity':['quantity']
         },
     }
 
@@ -38,17 +41,18 @@ def set_raw(dict):
     for depth2 in depth1.keys():
         if depth2 != 'variants':
             for key in depth1[depth2]:
-                dict[depth2][key]=dict[depth2][key]['raw']
+                if dict[depth2][key] is not None:
+                    dict[depth2][key]=dict[depth2][key]['raw']
         else:
             for depth3 in depth1[depth2].keys():
-                print("!")
                 for items in dict['variants']:
                     for key in depth1[depth2][depth3]:
                         if (depth3 == 'price' or depth3 == 'discount'):
-                            print("#")
-                            items[depth3][key]=items[depth3][key]['raw']
+                            if items[depth3][key] is not None:
+                                items[depth3][key]=items[depth3][key]['raw']
                         else:
-                            items[depth3] = items[depth3]['raw']
+                            if items[depth3] is not None:
+                                items[depth3] = items[depth3]['raw']
     return dict
 
 

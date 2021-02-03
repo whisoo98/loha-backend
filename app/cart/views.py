@@ -29,12 +29,11 @@ def set_raw(dict):
         'rating':['count','sum','average'],
         'variants':{
             'price':['original', 'sale'],
-            'discount':['discounted','value'],
+            'discount':['discounted'],
             'weight':['weight'],
             'width':['width'],
             'height':['height'],
             'depth':['depth'],
-            'quantity':['quantity']
         },
     }
 
@@ -57,6 +56,7 @@ def set_raw(dict):
                         else:
                             items[depth3] = items[depth3]['raw']
     return dict
+
 
 class CartAPI(APIView):
     Clayful.config({
