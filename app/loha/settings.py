@@ -186,8 +186,9 @@ USE_TZ = False
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
-
+STATIC_ROOT = os.path.abspath('.\\static')
 STATIC_URL = '/static/'
+
 
 # 창 닫으면 로그아웃
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True

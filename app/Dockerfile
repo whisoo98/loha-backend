@@ -20,6 +20,7 @@ RUN pip install psycopg2
 RUN pip install iamporter
 RUN pip install -U channels
 RUN pip install channels_redis
+RUN pip install -U Daphne
 
 COPY ./requirements.txt .
 RUN pip install -r requirements.txt

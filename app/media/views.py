@@ -46,9 +46,7 @@ def reserve_live(request, result):
             started_at= request.data['started_at']
         )
 
-        Room.objects.filter(room_streamer=result['_id']).all().delete()
-
-        Room.objects.create(room_name=result['meta']['Stream_id'],
+        Room.objects.create(room_name=new_media['id'],
                             room_streamer=result['_id'])
 
         # 상품에 URL 추가
@@ -58,6 +56,7 @@ def reserve_live(request, result):
                 "data": MediaSerializer(new_media).data
             }
         }
+
         return Response(contents, status=status.HTTP_202_ACCEPTED)
 
     except Exception as e:
@@ -193,7 +192,7 @@ def mux_callback(request):
             now_stream.finished_at = datetime.datetime.now()
             now_stream.status = 'completed'
             now_stream.save()
-
+            Room.objects.filter(room_streamer=now_stream['id']).delete()
             return Response("completed")
 
         return Response("OK")
