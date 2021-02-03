@@ -30,7 +30,6 @@ class ProductCollectionAPI(APIView):
             Product = Clayful.Product
             options = {
                 'query': {
-                    'raw':True,
                     'available': True,
                     'collection': collection_id,
                 },
@@ -74,7 +73,6 @@ class ProductAPI(APIView):
 
             Product = Clayful.Product
             options = {
-                'raw':True,
                 'query': {
                     #'fields' : '_id,name,summary,description,price,discount,shipping,available,brand,thumbnail,collections,options,variants,meta.stream_url'
                 },
@@ -139,7 +137,6 @@ def product_searchAPI(request):
         Product = Clayful.Product
         options = {
             'query': {
-                'raw':True,
                 'q': request.data['search'],
                 'search': {
                     'name.ko' : '',
