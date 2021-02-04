@@ -32,8 +32,6 @@ class ChatConsumer(WebsocketConsumer):
             self.room_group_name,
             self.channel_name
         )
-        #
-        room_name = Room.objects.filter(room_name=self.room_name).all()
 
         RoomUser.objects.create(
             room_name=Room.objects.filter(room_name=self.room_name).all()[0],
