@@ -19,15 +19,14 @@ from clayful import Clayful, ClayfulException
 from clayful.exception import ClayfulException
 import json
 import time
-
+import pprint
 
 # Create your views here.
 def sort(data): #배송 조건등 필요
     convert = [{
-        'vendor' : 'none',
+        'vendor' : 'byeolshow',
         'items':[]
     }]
-    pass
     for key in data['items']:
         dict_temp = {}
         if 'vendor' in key:
@@ -46,21 +45,25 @@ def sort(data): #배송 조건등 필요
                 })
         else:
             for L in convert:
-                if L['vendor'] == 'none':
+                if L['vendor'] == 'byeolshow':
                     dict_temp = L
                     break
             dict_temp['items'].append(key)
     return convert
-
-'''
-def set_raw(dict):
+def set_raw(dict_):
     depth = {
         'items':{
             'addedAt':['addedAt'],
-            'variants': {
-                'price': ['original', 'sale'],
+            'variant': {
+                'price': {
+                    'original':['original'],
+                    'sale':['sale']
+                },
                 # 'discount':['discounted'],
-                'discount': ['discounted', 'value'],
+                'discount': {
+                    'discounted':['discounted'],
+                    'value':['value']
+                },
                 'weight': ['weight'],
                 'width': ['width'],
                 'height': ['height'],
@@ -68,50 +71,125 @@ def set_raw(dict):
             },
             'quantity': ['quantity'],
             'discounted':['discounted'],
+            'discounts':{
+                'discounted':['discounted'],
+                'value': ['value'],
+                'before': ['before'],
+                'after': ['after'],
+            },
             'taxed':['taxed'],
-            'price':['original','sale','withTax','withoutTax'],
+            'price':{
+                'original':['original'],
+                'sale':['sale'],
+                'withTax':['withTax'],
+                'withoutTax':['withoutTax']
+            },
             'total':{
-                'price': ['original', 'sale', 'withTax', 'withoutTax'],
+                'price':{
+                    'original':['original'],
+                    'sale':['sale'],
+                    'withTax':['withTax'],
+                    'withoutTax':['withoutTax']
+                },
                 'discounted': ['discounted'],
                 'taxed': ['taxed'],
             }
         },
-        'currency':['rate'],
+        'currency':{
+            'rate':['rate']
+        },
         'total':{
-            'price': ['original', 'sale', 'withTax', 'withoutTax'],
-            'quantity': ['quantity'],
+            'price':{
+                'original':['original'],
+                'sale':['sale'],
+                'withTax':['withTax'],
+                'withoutTax':['withoutTax']
+            },
             'discounted': ['discounted'],
             'amount': ['amount'],
             'items':{
-                'price': ['original', 'sale', 'withTax', 'withoutTax'],
+                'price': {
+                    'original': ['original'],
+                    'sale': ['sale'],
+                    'withTax': ['withTax'],
+                    'withoutTax': ['withoutTax']
+                },
                 'discounted': ['discounted'],
                 'taxed': ['taxed'],
             },
             'shipping':{
-                'fee':['original', 'sale', 'withTax', 'withoutTax'],
+                'fee':{
+                    'original':['original'],
+                    'sale':['sale'],
+                    'withTax':['withTax'],
+                    'withoutTax':['withoutTax']
+                },
                 'discounted': ['discounted'],
                 'taxed': ['taxed'],
             }
         }
     }
+    for depth1 in depth.keys():
+        t_dict = depth[depth1]
+        print('depth1 ' + depth1)
+        if(depth1=='items'):
+            for ele in dict_['items']:
+                if isinstance(t_dict, dict):
+                    for depth2 in t_dict.keys():
+                        t2_dict = t_dict[depth2]
+                        if(depth2=='discounts'):
+                            for ele2 in ele['discounts']:
+                                for depth3 in t2_dict.keys():
+                                    if ele2[depth3] is not None:
+                                        ele2[depth3] = ele2[depth3]['raw']
 
-    for depth2 in depth1.keys():
-        if depth2 != 'variants':
-            for key in depth1[depth2]:
-                if dict[depth2][key] is not None:
-                    dict[depth2][key]=dict[depth2][key]['raw']
-        else:
-            for depth3 in depth1[depth2].keys():
-                for items in dict['variants']:
-                    for key in depth1[depth2][depth3]:
-                        if (depth3 == 'price' or depth3 == 'discount'):
-                            if items[depth3][key] is not None:
-                                items[depth3][key]=items[depth3][key]['raw']
                         else:
-                            if items[depth3] is not None:
-                                items[depth3] = items[depth3]['raw']
-    return dict
-'''
+                            print('depth2 ' + depth2)
+                            if isinstance(t2_dict, dict):
+                                for depth3 in t2_dict.keys():
+                                    print('depth3 ' + depth3)
+                                    t3_dict = t2_dict[depth3]
+                                    if isinstance(t3_dict, dict):
+                                        for depth4 in t3_dict.keys():
+                                            print('depth4 ' + depth4)
+                                            if ele[depth2][depth3][depth4] is not None:
+                                                ele[depth2][depth3][depth4] = ele[depth2][depth3][depth4]['raw']
+
+                                    else:
+                                        for key in t3_dict:
+                                            if 'raw' in ele[depth2][key]:
+                                                ele[depth2][key] = ele[depth2][key]['raw']
+
+                            else:
+                                for key1 in t2_dict:
+                                    print('key1 ' + key1)
+                                    if 'raw' in ele[key1]:
+                                        ele[key1] = ele[key1]['raw']
+                else:
+                    for key2 in t_dict:
+                        print('key2 ' + key2)
+                        if 'raw' in dict_[depth1][key2]:
+                            dict_[depth1][key2] = dict_[depth1][key2]['raw']
+        else:
+            if isinstance(t_dict,dict):
+                for depth2 in t_dict.keys():
+                    t2_dict = t_dict[depth2]
+                    if isinstance(t2_dict, dict):
+                        for depth3 in t2_dict.keys():
+                            t3_dict = t2_dict[depth3]
+                            if 'raw' in dict_[depth1][depth2][depth3]:
+                                dict_[depth1][depth2][depth3]=dict_[depth1][depth2][depth3]['raw']
+                    else:
+                        for key1 in t2_dict:
+                            if 'raw' in dict_[depth1][key1]:
+                                dict_[depth1][key1]=dict_[depth1][key1]['raw']
+            else:
+                for key2 in t_dict:
+                    if 'raw' in dict_[depth1][key2]:
+                        dict_[depth1][key2]=dict_[depth1][key2]['raw']
+
+    return dict_
+
 
 class CartAPI(APIView):
     Clayful.config({
@@ -138,17 +216,20 @@ class CartAPI(APIView):
             result = Cart.get_for_me(payload, options)
             headers = result.headers
             data = result.data
-            for dict in data['cart']:
-                #dict = set_raw(dict)
-                a=1
-            #data = set_raw(data)
-            #data['cart']['items'] = sort(data['cart'])
+            print("!")
+            data['cart'] = set_raw(data['cart'])
+            print("@")
+
+
+            data['cart'] = sort(data['cart'])
+            print("#")
 
             return Response(data, status=HTTP_200_OK)
 
         except ClayfulException as e:
             return Response(e.code, status=e.status)
         except Exception as e:
+            print(e)
             return Response("알 수 없는 예외가 발생했습니다.", status=HTTP_400_BAD_REQUEST)
 
     def delete(self, request):  # 고객이 본인 장바구니 비우기
