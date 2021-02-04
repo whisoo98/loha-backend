@@ -185,7 +185,8 @@ def product_searchAPI(request):
 
         headers = result.headers
         data = result.data
-        data = set_raw(data)
+        for dict in data:
+            dict = set_raw(dict)
         return Response(data)
 
     except Exception as e:

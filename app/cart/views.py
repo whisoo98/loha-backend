@@ -22,41 +22,96 @@ import time
 
 
 # Create your views here.
-def set_raw(dict):
-    depth1 = {
-        'price':['original','sale'],
-        'discount':['discounted'],
-        'rating':['count','sum','average'],
-        'variants':{
-            'price':['original', 'sale'],
-            'discount':['discounted'],
-            'weight':['weight'],
-            'width':['width'],
-            'height':['height'],
-            'depth':['depth'],
-        },
-    }
+def sort(data): #배송 조건등 필요
+    convert = [{
+        'vendor' : 'none',
+        'items':[]
+    }]
+    pass
+    for key in data['items']:
+        dict_temp = {}
+        if 'vendor' in key:
+            chk = False
+            for L in convert:
+                if L['vendor'] == key['vendor']:
+                    chk = True
+                    dict_temp = L
+                    break
+            if chk:
+                dict_temp['items'].append(key)
+            else:
+                convert.append({
+                    'vendor':key['vendor'],
+                    'items':key,
+                })
+        else:
+            for L in convert:
+                if L['vendor'] == 'none':
+                    dict_temp = L
+                    break
+            dict_temp['items'].append(key)
+    return convert
 
-    dict['totalReview']=dict['totalReview']['raw']
-    dict['updatedAt']=dict['updatedAt']['raw']
-    dict['createdAt']=dict['createdAt']['raw']
+'''
+def set_raw(dict):
+    depth = {
+        'items':{
+            'addedAt':['addedAt'],
+            'variants': {
+                'price': ['original', 'sale'],
+                # 'discount':['discounted'],
+                'discount': ['discounted', 'value'],
+                'weight': ['weight'],
+                'width': ['width'],
+                'height': ['height'],
+                'depth': ['depth'],
+            },
+            'quantity': ['quantity'],
+            'discounted':['discounted'],
+            'taxed':['taxed'],
+            'price':['original','sale','withTax','withoutTax'],
+            'total':{
+                'price': ['original', 'sale', 'withTax', 'withoutTax'],
+                'discounted': ['discounted'],
+                'taxed': ['taxed'],
+            }
+        },
+        'currency':['rate'],
+        'total':{
+            'price': ['original', 'sale', 'withTax', 'withoutTax'],
+            'quantity': ['quantity'],
+            'discounted': ['discounted'],
+            'amount': ['amount'],
+            'items':{
+                'price': ['original', 'sale', 'withTax', 'withoutTax'],
+                'discounted': ['discounted'],
+                'taxed': ['taxed'],
+            },
+            'shipping':{
+                'fee':['original', 'sale', 'withTax', 'withoutTax'],
+                'discounted': ['discounted'],
+                'taxed': ['taxed'],
+            }
+        }
+    }
 
     for depth2 in depth1.keys():
         if depth2 != 'variants':
             for key in depth1[depth2]:
-                dict[depth2][key]=dict[depth2][key]['raw']
+                if dict[depth2][key] is not None:
+                    dict[depth2][key]=dict[depth2][key]['raw']
         else:
             for depth3 in depth1[depth2].keys():
-                print("!")
                 for items in dict['variants']:
                     for key in depth1[depth2][depth3]:
                         if (depth3 == 'price' or depth3 == 'discount'):
-                            print("#")
-                            items[depth3][key]=items[depth3][key]['raw']
+                            if items[depth3][key] is not None:
+                                items[depth3][key]=items[depth3][key]['raw']
                         else:
-                            items[depth3] = items[depth3]['raw']
+                            if items[depth3] is not None:
+                                items[depth3] = items[depth3]['raw']
     return dict
-
+'''
 
 class CartAPI(APIView):
     Clayful.config({
@@ -83,6 +138,12 @@ class CartAPI(APIView):
             result = Cart.get_for_me(payload, options)
             headers = result.headers
             data = result.data
+            for dict in data['cart']:
+                #dict = set_raw(dict)
+                a=1
+            #data = set_raw(data)
+            #data['cart']['items'] = sort(data['cart'])
+
             return Response(data, status=HTTP_200_OK)
 
         except ClayfulException as e:
