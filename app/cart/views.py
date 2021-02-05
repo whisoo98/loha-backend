@@ -22,7 +22,31 @@ import time
 import pprint
 
 # Create your views here.
-def sort(data): #배송 조건등 필요
+def ship_raw(shipping):
+    for shipment in shipping:
+        for rule in shipment['rules']:
+            for key in rule:
+                if key == 'free':
+                    if rule[key]['priceOver'] is not None:
+                        rule[key]['priceOver'] = rule[key]['priceOver']['raw']
+                else:
+                    if rule[key] is not None:
+                        rule[key] = rule[key]['raw']
+        for region in shipment['regions']:
+            for rule in region['rules']:
+                for key in rule:
+                    if key == 'free':
+                        if rule[key]['priceOver'] is not None:
+                            rule[key]['priceOver'] = rule[key]['priceOver']['raw']
+                    else:
+                        if rule[key] is not None:
+                            rule[key] = rule[key]['raw']
+
+
+    return shipping
+
+def sort(data, shipping): #배송 조건등 필요
+    shipping = ship_raw(shipping)
     convert = [{
         'vendor' : 'byeolshow',
         'items':[]
@@ -49,7 +73,16 @@ def sort(data): #배송 조건등 필요
                     dict_temp = L
                     break
             dict_temp['items'].append(key)
+
+    for vendor in convert:
+        for shipment in shipping:
+            if vendor['vendor']==shipment['vendor']:
+                vendor['ShippingPolicy']=shipment
+    for item in convert:
+        if not len(item['items']):
+            convert.pop(convert.index(item))
     return convert
+
 def set_raw(dict_):
     depth = {
         'items':{
@@ -131,7 +164,7 @@ def set_raw(dict_):
     }
     for depth1 in depth.keys():
         t_dict = depth[depth1]
-        print('depth1 ' + depth1)
+        #print('depth1 ' + depth1)
         if(depth1=='items'):
             for ele in dict_['items']:
                 if isinstance(t_dict, dict):
@@ -144,14 +177,14 @@ def set_raw(dict_):
                                         ele2[depth3] = ele2[depth3]['raw']
 
                         else:
-                            print('depth2 ' + depth2)
+                            #print('depth2 ' + depth2)
                             if isinstance(t2_dict, dict):
                                 for depth3 in t2_dict.keys():
-                                    print('depth3 ' + depth3)
+                                    #print('depth3 ' + depth3)
                                     t3_dict = t2_dict[depth3]
                                     if isinstance(t3_dict, dict):
                                         for depth4 in t3_dict.keys():
-                                            print('depth4 ' + depth4)
+                                            #print('depth4 ' + depth4)
                                             if ele[depth2][depth3][depth4] is not None:
                                                 ele[depth2][depth3][depth4] = ele[depth2][depth3][depth4]['raw']
 
@@ -162,12 +195,12 @@ def set_raw(dict_):
 
                             else:
                                 for key1 in t2_dict:
-                                    print('key1 ' + key1)
+                                    #print('key1 ' + key1)
                                     if 'raw' in ele[key1]:
                                         ele[key1] = ele[key1]['raw']
                 else:
                     for key2 in t_dict:
-                        print('key2 ' + key2)
+                        #print('key2 ' + key2)
                         if 'raw' in dict_[depth1][key2]:
                             dict_[depth1][key2] = dict_[depth1][key2]['raw']
         else:
@@ -204,7 +237,7 @@ class CartAPI(APIView):
         try:
             Cart = Clayful.Cart
             # payload = json.dumps(request.data['payload'])
-            payload = {}
+            payload={}
             if 'payload' in request.data == True:
                 payload = json.dumps(request.data['payload'])
 
@@ -216,13 +249,32 @@ class CartAPI(APIView):
             result = Cart.get_for_me(payload, options)
             headers = result.headers
             data = result.data
-            print("!")
+            for L in data['cart']['items']:
+                var_id = L['variant']['_id']
+                prod_id = L['product']['_id']
+                variants = Clayful.Product.get(prod_id,{
+                    'query':{
+                        'raw':True,
+                        'fields':'variants._id,variants.quantity'
+                    }
+                }).data['variants']
+                for quantity in variants:
+                    if quantity['_id'] == var_id:
+                        L['stock'] = quantity['quantity']
+
             data['cart'] = set_raw(data['cart'])
-            print("@")
 
+            ShippingPolicy = Clayful.ShippingPolicy
+            shipping = ShippingPolicy.list({
+                'query':{
+                    'fields':'method,country,rules,regions,vendor',
+                }
+            }).data
+            for l in shipping:
+                if 'vendor' not in l:
+                    l['vendor']='byeolshow'
+            data['cart'] = sort(data['cart'],shipping)
 
-            data['cart'] = sort(data['cart'])
-            print("#")
 
             return Response(data, status=HTTP_200_OK)
 
