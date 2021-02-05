@@ -47,6 +47,7 @@ def ship_raw(shipping):
 
 def sort(data, shipping): #배송 조건등 필요
     shipping = ship_raw(shipping)
+    print("W")
     convert = [{
         'vendor' : 'byeolshow',
         'items':[]
@@ -61,11 +62,13 @@ def sort(data, shipping): #배송 조건등 필요
                     dict_temp = L
                     break
             if chk:
+                print("?")
                 dict_temp['items'].append(key)
+                print("!")
             else:
                 convert.append({
                     'vendor':key['vendor'],
-                    'items':key,
+                    'items':[key],
                 })
         else:
             for L in convert:
@@ -81,6 +84,7 @@ def sort(data, shipping): #배송 조건등 필요
     for item in convert:
         if not len(item['items']):
             convert.pop(convert.index(item))
+
     return convert
 
 def set_raw(dict_):
