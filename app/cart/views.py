@@ -45,7 +45,7 @@ def ship_raw(shipping):
 
     return shipping
 
-def sort(data, shipping): #배송 조건등 필요
+def sort(data, shipping, product): #배송 조건등 필요
     shipping = ship_raw(shipping)
     print("W")
     convert = [{
@@ -135,6 +135,7 @@ def set_raw(dict_):
         'currency':{
             'rate':['rate']
         },
+
         'total':{
             'price':{
                 'original':['original'],
@@ -143,6 +144,7 @@ def set_raw(dict_):
                 'withoutTax':['withoutTax']
             },
             'discounted': ['discounted'],
+            'taxed':['taxed'],
             'amount': ['amount'],
             'items':{
                 'price': {
@@ -253,6 +255,7 @@ class CartAPI(APIView):
             result = Cart.get_for_me(payload, options)
             headers = result.headers
             data = result.data
+            return Response(data)
             for L in data['cart']['items']:
                 var_id = L['variant']['_id']
                 prod_id = L['product']['_id']
@@ -274,9 +277,12 @@ class CartAPI(APIView):
                     'fields':'method,country,rules,regions,vendor',
                 }
             }).data
+            '''
             for l in shipping:
                 if 'vendor' not in l:
                     l['vendor']='byeolshow'
+            '''
+
             data['cart'] = sort(data['cart'],shipping)
 
 
