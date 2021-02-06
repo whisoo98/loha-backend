@@ -45,7 +45,7 @@ def ship_raw(shipping):
 
     return shipping
 
-def sort(data, shipping, product): #배송 조건등 필요
+def sort(data, shipping): #배송 조건등 필요
     shipping = ship_raw(shipping)
     print("W")
     convert = [{
@@ -255,20 +255,21 @@ class CartAPI(APIView):
             result = Cart.get_for_me(payload, options)
             headers = result.headers
             data = result.data
-            return Response(data)
             for L in data['cart']['items']:
                 var_id = L['variant']['_id']
                 prod_id = L['product']['_id']
-                variants = Clayful.Product.get(prod_id,{
+                prod_data= Clayful.Product.get(prod_id,{
                     'query':{
                         'raw':True,
-                        'fields':'variants._id,variants.quantity'
+                        'fields':'shipping.calculation,variants._id,variants.quantity'
                     }
-                }).data['variants']
+                }).data
+                variants = prod_data['variants']
+                shipCalculation = prod_data['shipping']['calculation']
                 for quantity in variants:
                     if quantity['_id'] == var_id:
                         L['stock'] = quantity['quantity']
-
+                        L['calculation'] = shipCalculation
             data['cart'] = set_raw(data['cart'])
 
             ShippingPolicy = Clayful.ShippingPolicy
@@ -277,11 +278,11 @@ class CartAPI(APIView):
                     'fields':'method,country,rules,regions,vendor',
                 }
             }).data
-            '''
+
             for l in shipping:
                 if 'vendor' not in l:
-                    l['vendor']='byeolshow'
-            '''
+                    shipping.pop(shipping.index(l))
+
 
             data['cart'] = sort(data['cart'],shipping)
 
