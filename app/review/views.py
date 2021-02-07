@@ -33,8 +33,9 @@ class ReviewAPI(APIView):
             }
 
             payload = (request.data)
-
-            img_list = request.FILES.getlist('images') #이미지 리스트
+            img_list = []
+            if len(request.FILES.getlist('images'))>0:
+                img_list = request.FILES.getlist('images') #이미지 리스트
 
             img_payload = {
                 'model': (None, 'Review'),
@@ -70,7 +71,7 @@ class ReviewAPI(APIView):
 
             options = {
                 'query': {
-
+                    'fields':'-helped,-flagged,-rating,-totalComment,-commentedAt'
                 },
             }
 
@@ -78,6 +79,14 @@ class ReviewAPI(APIView):
 
             headers = result.headers
             data = result.data
+            data['publishedAt']['raw']=data['publishedAt']
+            data['createdAt']['raw']=data['createdAt']
+            data['updatedAt']['raw']=data['updatedAt']
+            data['product']['price']['original']=data['product']['price']['original']['raw']
+            data['product']['price']['sale']=data['product']['price']['sale']['raw']
+            data['discount']['discounted']=data['discount']['discounted']['raw']
+            if data['discount']['value'] is not None:
+                data['discount']['value']=data['discount']['value']['raw']
 
             return Response(data)
         except ClayfulException as e:
@@ -161,13 +170,22 @@ def review_list_published_api(request):
 
         options = {
             'query': {
-                'product':request.data['product_id']
+                'product':request.data['product_id'],
+                'fields':'-commentedAt,-flagged,-helped,-rating,-totalComment'
             },
         }
         result = Review.list_published(options)
         headers = result.headers
         data = result.data
-
+        for review in data:
+            review['publishedAt']['raw'] = review['publishedAt']
+            review['createdAt']['raw'] = review['createdAt']
+            review['updatedAt']['raw'] = review['updatedAt']
+            review['product']['price']['original'] = review['product']['price']['original']['raw']
+            review['product']['price']['sale'] = review['product']['price']['sale']['raw']
+            review['discount']['discounted'] = review['discount']['discounted']['raw']
+            if review['discount']['value'] is not None:
+                review['discount']['value'] = review['discount']['value']['raw']
         return Response(data)
 
     except ClayfulException as e:
@@ -177,7 +195,7 @@ def review_list_published_api(request):
         return Response("알 수 없는 오류가 발생하였습니다.")
 
 @api_view(['GET'])
-def review_list_published_for_me_api(request, custom_id):
+def review_list_published_for_me_api(request):
     Clayful.config({
         'client': getattr(settings, 'CLAYFUL_SECRET_KEY', None),
         'language': 'ko',
@@ -190,13 +208,21 @@ def review_list_published_for_me_api(request, custom_id):
 
         options = {
             'query': {
-                'customer':custom_id
+                'customer':request.data['customer_id']
             },
         }
         result = Review.list_published(options)
         headers = result.headers
         data = result.data
-
+        for review in data:
+            review['publishedAt']['raw'] = review['publishedAt']
+            review['createdAt']['raw'] = review['createdAt']
+            review['updatedAt']['raw'] = review['updatedAt']
+            review['product']['price']['original'] = review['product']['price']['original']['raw']
+            review['product']['price']['sale'] = review['product']['price']['sale']['raw']
+            review['discount']['discounted'] = review['discount']['discounted']['raw']
+            if review['discount']['value'] is not None:
+                review['discount']['value'] = review['discount']['value']['raw']
         return Response(data)
 
     except ClayfulException as e:

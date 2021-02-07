@@ -20,6 +20,6 @@ from .views import *
 
 
 urlpatterns = [
-    path('',CatalogAPI.as_view),
-    path('<str:catalog_id>',CatalogDetailAPI.as_view),
+    path('',CatalogAPI.as_view()),
+    path('<str:catalog_id>',CatalogDetailAPI.as_view()),
 ]

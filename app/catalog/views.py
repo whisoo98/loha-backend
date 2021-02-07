@@ -5,6 +5,7 @@ from django.views import View
 from django.http import JsonResponse, HttpResponse,Http404
 from django.conf import settings
 
+from rest_framework.status import *
 from rest_framework import generics
 from rest_framework import mixins
 from rest_framework.decorators import api_view,parser_classes
@@ -13,7 +14,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 import json
 import requests
-from clayful import Clayful
+from clayful import Clayful,ClayfulException
 
 
 class CatalogAPI(APIView):
@@ -51,7 +52,7 @@ class CatalogAPI(APIView):
 
             options = {
                 'query': {
-                    'limits' : 10
+                    'limit' : 7
                 },
             }
 
@@ -59,12 +60,17 @@ class CatalogAPI(APIView):
 
             headers = result.headers
             data = result.data
+            for catalog in data:
+                catalog['createdAt']=catalog['createdAt']['raw']
+                catalog['updatedAt']=catalog['updatedAt']['raw']
+            return Response(data,status=HTTP_200_OK)
 
-            return Response(data)
+        except ClayfulException as e:
+            return Response(e.code + ' '+e.message,status=e.status)
 
         except Exception as e:
-
-            return Response(e.code)
+            print(e)
+            return Response("알 수 없는 오류가 발생하였습니다.",status=HTTP_400_BAD_REQUEST)
 
 
 class CatalogDetailAPI(APIView):
