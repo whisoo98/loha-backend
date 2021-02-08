@@ -36,7 +36,20 @@ def manager_coupon_list(request):
         count = Coupon.count(options).data
         headers = result.headers
         data = result.data
-        data['Count'] = count
+        for coupon in data:
+            for discount in coupon['discount'].keys():
+                if coupon['discount'][discount] is not None and discount != 'type':
+                    coupon['discount'][discount] = coupon['discount'][discount]['raw']
+            for amount in coupon['amount'].keys():
+                if coupon['amount'][amount] is not None:
+                    coupon['amount'][amount] = coupon['amount'][amount]['raw']
+            for price in coupon['price'].keys():
+                if coupon['price'][price] is not None:
+                    coupon['price'][price] = coupon['price'][price]['raw']
+            if coupon['expiresAt'] is not None:
+                coupon['expiresAt']=coupon['expiresAt']['raw']
+            coupon['createdAt']=coupon['createdAt']['raw']
+            coupon['updatedAt']=coupon['updatedAt']['raw']
 
         return Response(data, status=status.HTTP_200_OK)
 
@@ -45,6 +58,7 @@ def manager_coupon_list(request):
         return Response(e.code, status=status.HTTP_400_BAD_REQUEST)
 
     except Exception as e:
+        print(e)
         return Response("알 수 없는 예외가 발생하였습니다.", status=status.HTTP_400_BAD_REQUEST)
 
 
