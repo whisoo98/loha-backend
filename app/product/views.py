@@ -122,10 +122,29 @@ class ProductAPI(APIView):
             headers = result.headers
             data = result.data
             data = set_raw(data)
+            vendor = data['vendor']['_id']
+            ShippingPolicy = Clayful.ShippingPolicy
+            options['query']['vendor']=vendor
+            shipping = ShippingPolicy.list(options).data
+
+            for ele in shipping:
+                for rule in ele['rules']:
+                    if rule['free']['priceOver'] is not None:
+                        rule['free']['priceOver'] = rule['free']['priceOver']['raw']
+                    rule['weightOver']=rule['weightOver']['raw']
+                    rule['fee']=rule['fee']['raw']
+                ele['createdAt']=ele['createdAt']['raw']
+                ele['updatedAt']=ele['updatedAt']['raw']
+            data['ShippingPolicy']=shipping
             return Response(data)
 
+
+        except ClayfulException as e:
+
+            return Response(e.code + ' ' + e.message, status=e.status)
         except Exception as e:
-            return Response(e.code, status=e.status)
+            print(e)
+            return Response('알 수 없는 오류가 발생했습니다.', status=HTTP_400_BAD_REQUEST)
 
     def put(self, request, product_id): #product 수정
         try:
