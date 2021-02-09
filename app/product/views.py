@@ -126,7 +126,8 @@ class ProductAPI(APIView):
             ShippingPolicy = Clayful.ShippingPolicy
             options['query']['vendor']=vendor
             shipping = ShippingPolicy.list(options).data
-
+            data['shipping']['method'] =data['shipping']['methods'][0]
+            del(data['shipping']['methods'])
             for ele in shipping:
                 for rule in ele['rules']:
                     if rule['free']['priceOver'] is not None:
@@ -135,7 +136,7 @@ class ProductAPI(APIView):
                     rule['fee']=rule['fee']['raw']
                 ele['createdAt']=ele['createdAt']['raw']
                 ele['updatedAt']=ele['updatedAt']['raw']
-            data['ShippingPolicy']=shipping
+            data['ShippingPolicy']=shipping[0]
             return Response(data)
 
 

@@ -47,7 +47,6 @@ def ship_raw(shipping):
 
 def sort(data, shipping): #배송 조건등 필요
     shipping = ship_raw(shipping)
-    print("W")
     convert = [{
         'vendor' : 'byeolshow',
         'items':[]
@@ -271,6 +270,9 @@ class CartAPI(APIView):
                         L['stock'] = quantity['quantity']
                         L['calculation'] = shipCalculation
             data['cart'] = set_raw(data['cart'])
+            for L in data['cart']['items']:
+                if L['stock'] is not None and L['quantity']>L['stock']:
+                    L['quantity']=L['stock']
 
             ShippingPolicy = Clayful.ShippingPolicy
             shipping = ShippingPolicy.list({
@@ -324,7 +326,8 @@ class CartItemAPI(APIView):
 
         try:
             Cart = Clayful.Cart
-            payload = (request.data['payload'])
+            Product = Clayful.Product
+            payloads = (request.data['payloads'])
             options = {
                 'customer': request.headers['Custom-Token'],
             }
@@ -337,15 +340,21 @@ class CartItemAPI(APIView):
                 })
 
             result = []
-            for key in payload:
+            for payload in payloads:
                 isFind = 0
                 for key2 in cart_id:
-                    if (key['variant'] == key2['variant_id']):
+                    if (payload['payload']['variant'] == key2['variant_id']):
                         isFind=1
-                        result.append(Cart.update_item_for_me(key2['item_id'], key, options).data)
+                        result.append(Cart.update_item_for_me(key2['item_id'], payload['payload'], options).data)
                         break
                 if isFind == 0:
-                    result.append(Cart.add_item_for_me(key, options).data)
+                    shipment_id = Product.get(payload['payload']['product'],{
+                        'query':{
+                            'fields':'shipping.methods'
+                        }
+                    }).data
+                    payload['payload']['shippingMethod']=shipment_id['shipping']['methods'][0]['_id']
+                    result.append(Cart.add_item_for_me(payload['payload'], options).data)
 
             return Response(result, status=HTTP_200_OK)
 
@@ -359,7 +368,7 @@ class CartItemAPI(APIView):
     def put(self, request):  # 자신의 장바구니에서 물품 수정
         try:
             Cart = Clayful.Cart
-            payloads = (request.data['payload'])
+            payloads = (request.data['payloads'])
             options = {
                 'customer': request.headers.get('Custom-Token'),
             }
