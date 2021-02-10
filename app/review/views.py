@@ -178,14 +178,14 @@ def review_list_published_api(request):
         headers = result.headers
         data = result.data
         for review in data:
-            review['publishedAt']['raw'] = review['publishedAt']
-            review['createdAt']['raw'] = review['createdAt']
-            review['updatedAt']['raw'] = review['updatedAt']
+            review['publishedAt'] = review['publishedAt']['raw']
+            review['createdAt'] = review['createdAt']['raw']
+            review['updatedAt'] = review['updatedAt']['raw']
             review['product']['price']['original'] = review['product']['price']['original']['raw']
             review['product']['price']['sale'] = review['product']['price']['sale']['raw']
-            review['discount']['discounted'] = review['discount']['discounted']['raw']
-            if review['discount']['value'] is not None:
-                review['discount']['value'] = review['  discount']['value']['raw']
+            review['product']['discount']['discounted'] = review['product']['discount']['discounted']['raw']
+            if review['product']['discount']['value'] is not None:
+                review['product']['discount']['value'] = review['product']['discount']['value']['raw']
         return Response(data)
 
     except ClayfulException as e:
