@@ -33,4 +33,5 @@ urlpatterns = [
     path('images/', include('images.urls')),
     path('review/', include('review.urls')),
     path('order/', include('order.urls')),
+    path('webhook/', include('webhook.urls')),
 ]

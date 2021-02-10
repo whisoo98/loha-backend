@@ -89,6 +89,7 @@ INSTALLED_APPS = [
     'images',
     'review',
     'order',
+    'webhook',
 ]
 
 MIDDLEWARE = [
