@@ -20,7 +20,6 @@ from .views import *
 
 urlpatterns = [
     path('',order_list_api),
-    path('sync/<str:order_id>/', sync_inventory_api),
     path('refund/<str:order_id>/', request_refund_for_me_api),
     path('refund/cancel/<str:order_id>/<str:refund_id>/', cancel_refund_for_me_api),
     path('cancel/<str:order_id>/', cancel_for_me_api),
