@@ -185,13 +185,14 @@ def review_list_published_api(request):
             review['product']['price']['sale'] = review['product']['price']['sale']['raw']
             review['discount']['discounted'] = review['discount']['discounted']['raw']
             if review['discount']['value'] is not None:
-                review['discount']['value'] = review['discount']['value']['raw']
+                review['discount']['value'] = review['  discount']['value']['raw']
         return Response(data)
 
     except ClayfulException as e:
-        return Response(e.code, status=e.status)
+        return Response(e.code + ' ' + e.message, status=e.status)
 
     except Exception as e:
+        print(e)
         return Response("알 수 없는 오류가 발생하였습니다.")
 
 @api_view(['GET'])
@@ -208,25 +209,27 @@ def review_list_published_for_me_api(request):
 
         options = {
             'query': {
-                'customer':request.data['customer_id']
+                'fields':'-commentedAt,-flagged,-helped,-rating,-totalComment',
+                'customer':request.data['customer_id'],
             },
         }
         result = Review.list_published(options)
         headers = result.headers
         data = result.data
         for review in data:
-            review['publishedAt']['raw'] = review['publishedAt']
-            review['createdAt']['raw'] = review['createdAt']
-            review['updatedAt']['raw'] = review['updatedAt']
+            review['publishedAt'] = review['publishedAt']['raw']
+            review['createdAt'] = review['createdAt']['raw']
+            review['updatedAt'] = review['updatedAt']['raw']
             review['product']['price']['original'] = review['product']['price']['original']['raw']
             review['product']['price']['sale'] = review['product']['price']['sale']['raw']
-            review['discount']['discounted'] = review['discount']['discounted']['raw']
-            if review['discount']['value'] is not None:
-                review['discount']['value'] = review['discount']['value']['raw']
+            review['product']['discount']['discounted'] = review['product']['discount']['discounted']['raw']
+            if review['product']['discount']['value'] is not None:
+                review['product']['discount']['value'] = review['product']['discount']['value']['raw']
         return Response(data)
 
     except ClayfulException as e:
-        return Response(e.code, status=e.status)
+        return Response(e.code + ' ' + e.message, status=e.status)
 
     except Exception as e:
+        print(e)
         return Response("알 수 없는 오류가 발생하였습니다.")
