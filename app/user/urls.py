@@ -24,5 +24,7 @@ urlpatterns = [
     path('auth/kakao/callback/', kakao_callback),
     path('auth/naver/login/', naver_login),
     path('auth/naver/callback/', naver_callback),
+    path('auth/facebook/login/', facebook_login),
+    path('auth/facebook/callback/', facebook_callback),
 ]
 
