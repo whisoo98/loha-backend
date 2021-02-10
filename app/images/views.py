@@ -24,8 +24,9 @@ class Images(APIView):
                     'application': 'avatar'
                 }
             }
-            result = Image.list_for_me(options)
-            if not result.data:
+            res = Image.list_for_me(options)
+
+            if not res.data:
                 contents = {
                     "error": {
                         "message": "등록된 사진이 없습니다."
@@ -35,7 +36,7 @@ class Images(APIView):
 
             contents = {
                 "success": {
-                    "data": result.data
+                    "data": res.data
                 }
             }
             return Response(contents, status=status.HTTP_200_OK)
@@ -56,7 +57,13 @@ class Images(APIView):
     def post(self, request, result):
         try:
             Image = Clayful.Image
-            options = {'customer': request.headers.get('Custom-Token')}
+            options = {
+                'customer': request.headers.get('Custom-Token'),
+                'query': {
+                    'model': 'Customer',
+                    'application': 'avatar'
+                }
+            }
             res = Image.list_for_me(options)
 
             if not res.data:
@@ -105,7 +112,13 @@ class Images(APIView):
     @require_login
     def delete(self, request, result):
         try:
-            options = {'customer': request.headers.get('Custom-Token')}
+            options = {
+                'customer': request.headers.get('Custom-Token'),
+                'query': {
+                    'model': 'Customer',
+                    'application': 'avatar'
+                }
+            }
             Image = Clayful.Image
             res = Image.list_for_me(options)
             Image.delete_for_me(res.data[0]['_id'], options)
