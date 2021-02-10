@@ -538,14 +538,14 @@ def naver_callback(request):
 # 코드 발급
 def facebook_login(request):
     client_id = getattr(settings, 'FACEBOOK_CLIENT_ID', None)
-    local_host = "https://www.facebook.com/v9.0/dialog/oauth?"
-    # local_host = "http://localhost:8000/"
-    redirect_uri = local_host + "user/auth/facebook/callback/"
+    host = "https://www.facebook.com/v9.0/dialog/oauth?"
+    # host = "http://localhost:8000/"
+    redirect_uri = host + "user/auth/facebook/callback/"
     state = hash(datetime.datetime.now().strftime('%Y%m%d%H%M%S'))
     request.session['my_state'] = state
 
     return redirect(
-        f"https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id={client_id}&redirect_uri={redirect_uri}&state={state}")
+        f"{host}?client_id={client_id}&redirect_uri={redirect_uri}&state={state}")
 
 
 # 토큰 발급 및 정보 저장
