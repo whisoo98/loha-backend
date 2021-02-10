@@ -30,6 +30,10 @@ def order_list_api(request):
         options = {
             'customer': request.headers['Custom-Token'],
             'query': {
+                'fields':'_id,total.price,done,tags,cancellation,'
+                         'items._id,items.bundleItems._id,items.total.price,items.product,items.variant,'
+                         'fulfillments,refunds,createdAt,'
+                         'shipments._id'
 
             },
         }
@@ -40,7 +44,7 @@ def order_list_api(request):
         return Response(data)
 
     except ClayfulException as e:
-        return Response(e.code, status=e.status)
+        return Response(e.code + ' ' + e.message, status=e.status)
 
     except Exception as e:
         return Response("알 수 없는 오류가 발생하였습니다.", status=HTTP_400_BAD_REQUEST)
@@ -66,7 +70,7 @@ def sync_inventory_api(request, order_id):
         return Response(data)
 
     except ClayfulException as e:
-        return Response(e.code, status=e.status)
+        return Response(e.code + ' ' + e.message, status=e.status)
 
     except Exception as e:
         return Response("알 수 없는 오류가 발생하였습니다.", status=HTTP_400_BAD_REQUEST)
@@ -96,7 +100,7 @@ def request_refund_for_me_api(request, order_id):
         return Response(data)
 
     except ClayfulException as e:
-        return Response(e.code, status=e.status)
+        return Response(e.code + ' ' + e.message, status=e.status)
 
     except Exception as e:
         return Response("알 수 없는 오류가 발생하였습니다.", status=HTTP_400_BAD_REQUEST)
@@ -126,7 +130,7 @@ def restock_all_refund_items(request):
         return Response(data)
 
     except ClayfulException as e:
-        return Response(e.code, status=e.status)
+        return Response(e.code + ' ' + e.message, status=e.status)
 
     except Exception as e:
         return Response("알 수 없는 오류가 발생하였습니다.", status=HTTP_400_BAD_REQUEST)
@@ -154,7 +158,7 @@ def cancel_refund_for_me_api(request, order_id, refund_id):
         return Response(data)
 
     except ClayfulException as e:
-        return Response(e.code, status=e.status)
+        return Response(e.code + ' ' + e.message, status=e.status)
 
     except Exception as e:
         return Response("알 수 없는 오류가 발생하였습니다.", status=HTTP_400_BAD_REQUEST)
@@ -183,7 +187,7 @@ def cancel_for_me_api(request, order_id):
         return Response(data)
 
     except ClayfulException as e:
-        return Response(e.code, status=e.status)
+        return Response(e.code + ' ' + e.message, status=e.status)
 
     except Exception as e:
         return Response("알 수 없는 오류가 발생하였습니다.", status=HTTP_400_BAD_REQUEST)
@@ -215,7 +219,7 @@ class OrderAPI(APIView):#주문 가져오기 수정 삭제
             return Response(data)
 
         except ClayfulException as e:
-            return Response(e.code, status=e.status)
+            return Response(e.code + ' ' + e.message, status=e.status)
 
         except Exception as e:
             return Response("알 수 없는 오류가 발생하였습니다.", status=HTTP_400_BAD_REQUEST)
@@ -235,7 +239,7 @@ class OrderAPI(APIView):#주문 가져오기 수정 삭제
             return Response(data)
 
         except ClayfulException as e:
-            return Response(e.code, status=e.status)
+            return Response(e.code + ' ' + e.message, status=e.status)
 
         except Exception as e:
             return Response("알 수 없는 오류가 발생하였습니다.", status=HTTP_400_BAD_REQUEST)
@@ -255,7 +259,7 @@ class OrderAPI(APIView):#주문 가져오기 수정 삭제
             return Response("주문 삭제가 완료되었습니다.")
 
         except ClayfulException as e:
-            return Response(e.code, status=e.status)
+            return Response(e.code + ' ' + e.message, status=e.status)
 
         except Exception as e:
             return Response("알 수 없는 오류가 발생하였습니다.", status=HTTP_400_BAD_REQUEST)
@@ -283,7 +287,7 @@ class OrderMarkDoneAPI(APIView):#주문 완료 체크
             data = result.data
 
         except ClayfulException as e:
-            return Response(e.code, status=e.status)
+            return Response(e.code + ' ' + e.message, status=e.status)
 
         except Exception as e:
             return Response("알 수 없는 오류가 발생하였습니다.", status=HTTP_400_BAD_REQUEST)
@@ -313,7 +317,7 @@ class RefundAcceptAPI(APIView): #환불 승인여부
             return Response(data)
 
         except ClayfulException as e:
-            return Response(e.code, status=e.status)
+            return Response(e.code + ' ' + e.message, status=e.status)
 
         except Exception as e:
             return Response("알 수 없는 오류가 발생하였습니다.", status=HTTP_400_BAD_REQUEST)
@@ -331,7 +335,7 @@ class RefundAcceptAPI(APIView): #환불 승인여부
             return Response(data)
 
         except ClayfulException as e:
-            return Response(e.code, status=e.status)
+            return Response(e.code + ' ' + e.message, status=e.status)
 
         except Exception as e:
             return Response("알 수 없는 오류가 발생하였습니다.", status=HTTP_400_BAD_REQUEST)
@@ -363,7 +367,7 @@ class OrderMarkReceiveAPI(APIView):
             return Response(data)
 
         except ClayfulException as e:
-            return Response(e.code, status=e.status)
+            return Response(e.code + ' ' + e.message, status=e.status)
 
         except Exception as e:
             return Response("알 수 없는 오류가 발생하였습니다.", status=HTTP_400_BAD_REQUEST)
@@ -385,7 +389,7 @@ class OrderMarkReceiveAPI(APIView):
             return Response(data)
 
         except ClayfulException as e:
-            return Response(e.code, status=e.status)
+            return Response(e.code + ' ' + e.message, status=e.status)
 
         except Exception as e:
             return Response("알 수 없는 오류가 발생하였습니다.", status=HTTP_400_BAD_REQUEST)
@@ -416,7 +420,7 @@ class FulfillAPI(APIView):
             return Response(data)
 
         except ClayfulException as e:
-            return Response(e.code, status=e.status)
+            return Response(e.code + ' ' + e.message, status=e.status)
 
         except Exception as e:
             return Response("알 수 없는 오류가 발생하였습니다.", status=HTTP_400_BAD_REQUEST)
@@ -438,7 +442,7 @@ class FulfillAPI(APIView):
             return Response(data)
 
         except ClayfulException as e:
-            return Response(e.code, status=e.status)
+            return Response(e.code + ' ' + e.message, status=e.status)
 
         except Exception as e:
             return Response("알 수 없는 오류가 발생하였습니다.", status=HTTP_400_BAD_REQUEST)
@@ -459,7 +463,7 @@ class FulfillAPI(APIView):
             return Response("삭제가 완료되었습니다.")
 
         except ClayfulException as e:
-            return Response(e.code, status=e.status)
+            return Response(e.code + ' ' + e.message, status=e.status)
 
         except Exception as e:
             return Response("알 수 없는 오류가 발생하였습니다.", status=HTTP_400_BAD_REQUEST)

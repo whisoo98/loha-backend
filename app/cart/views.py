@@ -292,7 +292,7 @@ class CartAPI(APIView):
             return Response(data, status=HTTP_200_OK)
 
         except ClayfulException as e:
-            return Response(e.code, status=e.status)
+            return Response(e.code + ' ' + e.message, status=e.status)
         except Exception as e:
             print(e)
             return Response("알 수 없는 예외가 발생했습니다.", status=HTTP_400_BAD_REQUEST)
@@ -307,9 +307,15 @@ class CartAPI(APIView):
 
             return Response("장바구니 비우기가 완료되었습니다.", status=HTTP_200_OK)
 
+
         except ClayfulException as e:
-            return Response(e.code, status=e.status)
+
+            return Response(e.code + ' ' + e.message, status=e.status)
+
         except Exception as e:
+
+            print(e)
+
             return Response("알 수 없는 예외가 발생했습니다.", status=HTTP_400_BAD_REQUEST)
 
 
@@ -359,10 +365,15 @@ class CartItemAPI(APIView):
             return Response(result, status=HTTP_200_OK)
 
 
+
         except ClayfulException as e:
-            return Response(e.code, status=e.status)
+
+            return Response(e.code + ' ' + e.message, status=e.status)
+
         except Exception as e:
+
             print(e)
+
             return Response("알 수 없는 예외가 발생했습니다.", status=HTTP_400_BAD_REQUEST)
 
     def put(self, request):  # 자신의 장바구니에서 물품 수정
@@ -378,10 +389,15 @@ class CartItemAPI(APIView):
             return Response(result, status=HTTP_200_OK)
 
 
+
         except ClayfulException as e:
-            return Response(e.code, status=e.status)
+
+            return Response(e.code + ' ' + e.message, status=e.status)
 
         except Exception as e:
+
+            print(e)
+
             return Response("알 수 없는 예외가 발생했습니다.", status=HTTP_400_BAD_REQUEST)
 
     def delete(self, request):  # 자신의 장바구니에서 선택 품목삭제
@@ -398,10 +414,15 @@ class CartItemAPI(APIView):
             return Response("모두 삭제하였습니다.", status=HTTP_200_OK)
 
 
+
         except ClayfulException as e:
-            return Response(e.code, status=e.status)
+
+            return Response(e.code + ' ' + e.message, status=e.status)
 
         except Exception as e:
+
+            print(e)
+
             return Response("알 수 없는 예외가 발생했습니다.", status=HTTP_400_BAD_REQUEST)
 
 
@@ -430,10 +451,15 @@ class CartCheckoutAPI(APIView):
             return Response(data, status=HTTP_200_OK)
 
 
+
         except ClayfulException as e:
-            return Response(e.code, status=e.status)
+
+            return Response(e.code + ' ' + e.message, status=e.status)
 
         except Exception as e:
+
+            print(e)
+
             return Response("알 수 없는 예외가 발생했습니다.", status=HTTP_400_BAD_REQUEST)
 
 

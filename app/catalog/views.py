@@ -15,9 +15,10 @@ from rest_framework.views import APIView
 import json
 import requests
 from clayful import Clayful,ClayfulException
+import datetime
 
-
-class CatalogAPI(APIView):
+@api_view(['GET'])
+def catalog_list(request):
     Clayful.config({
         'client': getattr(settings, 'CLAYFUL_SECRET_KEY', None),
         'language': 'ko',
@@ -25,115 +26,39 @@ class CatalogAPI(APIView):
         'time_zone': 'Asia/Seoul',
         'debug_language': 'ko',
     })
+    try:
+        Catalog = Clayful.Catalog
 
-    def post(self, request):
-        try:
-            Catalog = Clayful.Catalog
-            payload = request.data['payload']
-            options = {
+        options = {
+            'query': {
+                'limit' : 7
+            },
+        }
 
-            }
+        result = Catalog.list(options)
 
-            result = Catalog.create(payload, options)
+        headers = result.headers
+        data = result.data
+        for catalog in data:
+            catalog['createdAt']=catalog['createdAt']['raw']
+            catalog['updatedAt']=catalog['updatedAt']['raw']
+            '''
+            if catalog['meta']['DeletedAt'] is not None:
+                Due = catalog['meta']['DeletedAt']=catalog['meta']['DeletedAt']['raw']
+                Due = datetime.datetime.strptime(Due, '%Y-%m-%dT%H:%M:%S.%fZ')
+                if Due <= datetime.datetime.now():
+                    Catalog.delete(catalog['_id'],{})
+                    '''
 
-            headers = result.headers
-            data = result.data
-
-            return Response(data)
-
-        except Exception as e:
-
-            return Response(e.code)
-
-    def get(self, request):
-        try:
-
-            Catalog = Clayful.Catalog
-
-            options = {
-                'query': {
-                    'limit' : 7
-                },
-            }
-
-            result = Catalog.list(options)
-
-            headers = result.headers
-            data = result.data
-            for catalog in data:
-                catalog['createdAt']=catalog['createdAt']['raw']
-                catalog['updatedAt']=catalog['updatedAt']['raw']
-            return Response(data,status=HTTP_200_OK)
-
-        except ClayfulException as e:
-            return Response(e.code + ' '+e.message,status=e.status)
-
-        except Exception as e:
-            print(e)
-            return Response("알 수 없는 오류가 발생하였습니다.",status=HTTP_400_BAD_REQUEST)
+        return Response(data,status=HTTP_200_OK)
 
 
-class CatalogDetailAPI(APIView):
+    except ClayfulException as e:
 
-    Clayful.config({
-        'client': getattr(settings, 'CLAYFUL_SECRET_KEY', None),
-        'language': 'ko',
-        'currency': 'KRW',
-        'time_zone': 'Asia/Seoul',
-        'debug_language': 'ko',
-    })
+        return Response(e.code + ' ' + e.message, status=e.status)
 
-    def get(self, request, catalog_id):
-        try:
-            Catalog = Clayful.Catalog
-            options = {
-                'query': {
+    except Exception as e:
 
-                },
-            }
+        print(e)
 
-            result = Catalog.get(catalog_id, options)
-            headers = result.headers
-            data = result.data
-
-            return Response(data)
-
-        except Exception as e:
-
-            return Response(e.code)
-
-    def put(self, request, catalog_id):
-        try:
-            Catalog = Clayful.Catalog
-            payload = json.dumps(request.data['payload'])
-            options = {
-
-            }
-
-            result = Catalog.update(catalog_id, payload, options)
-
-            headers = result.headers
-            data = result.data
-
-            return Response(data)
-
-        except Exception as e:
-
-            return Response(e.code)
-
-    def delete(self, request, catalog_id):
-        try:
-            Catalog = Clayful.Catalog
-            options = {
-
-            }
-            result = Catalog.delete(catalog_id, options)
-
-            headers = result.headers
-            data = result.data
-
-            return Response(data)
-
-        except Exception as e:
-
-            return Response(data)
+        return Response("알 수 없는 예외가 발생했습니다.", status=HTTP_400_BAD_REQUEST)
