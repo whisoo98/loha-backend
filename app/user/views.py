@@ -545,14 +545,14 @@ def facebook_login(request):
     request.session['my_state'] = state
 
     return redirect(
-        f"https://www.facebook.com/v9.0/dialog/oauth?client_id={client_id}&redirect_uri={redirect_uri}&state={state}")
+        f"https://www.facebook.com/v9.0/dialog/oauth?response_type=code&client_id={client_id}&redirect_uri={redirect_uri}&state={state}")
 
 
 # 토큰 발급 및 정보 저장
 @api_view(['GET'])
 def facebook_callback(request):
     try:
-        client_id = getattr(settings, 'NAVER_CLIENT_ID', None)
+        client_id = getattr(settings, 'FACEBOOK_CLIENT_ID', None)
         client_secret = getattr(settings, 'NAVER_SECRET_KEY', None)
         code = request.query_params['code']
         state = request.query_params['state']
