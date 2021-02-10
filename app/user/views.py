@@ -552,34 +552,37 @@ def facebook_login(request):
 @api_view(['GET'])
 def facebook_callback(request):
     try:
+        host = "https://www.byeolshowco.com/"
         client_id = getattr(settings, 'FACEBOOK_CLIENT_ID', None)
-        client_secret = getattr(settings, 'NAVER_SECRET_KEY', None)
+        client_secret = getattr(settings, 'FACEBOOK_SECRET_KEY', None)
+        redirect_uri = host + "user/auth/facebook/callback/"
         code = request.query_params['code']
         state = request.query_params['state']
         my_state = str(request.session['my_state'])
-        return Response(request.data)
+
         if state != my_state:
             return Response('No hack, Csrf')
 
         # 토큰 발급
         token_request = requests.get(
-            f"https://nid.naver.com/oauth2.0/token?grant_type=authorization_code&client_id={client_id}&client_secret={client_secret}&code={code}")
+            f"https://graph.facebook.com/v9.0/oauth/access_token?client_id={client_id}&redirect_uri={redirect_uri}&client_secret={client_secret}&code={code}")
         token_response = token_request.json()
-        naver_access_token = token_response.get('access_token')
+
+        facebook_access_token = token_response.get('access_token')
 
         # Clayful에 가입
         @Init_Clayful
-        def naver_to_clayful():
+        def facebook_to_clayful():
             Customer = Clayful.Customer
-            payload = {'token': naver_access_token}
-            result = Customer.authenticate_by_3rd_party('naver', payload)
+            payload = {'token': facebook_access_token}
+            result = Customer.authenticate_by_3rd_party('facebook', payload)
             # 가입과 동시에 로그인
             if result.data['action'] == 'register':
-                result = Customer.authenticate_by_3rd_party('naver', payload)
+                result = Customer.authenticate_by_3rd_party('facebook', payload)
                 Customer.update(result.data['customer'], {'groups': ['QS8YM3ECBUV4']})
             return result
 
-        result = naver_to_clayful()
+        result = facebook_to_clayful()
         content = "로그인 성공"
         header = {'Custom-Token': result.data['token']}
         return Response(content, headers=header)
