@@ -157,7 +157,7 @@ class ReviewAPI(APIView):
             return Response("알 수 없는 오류가 발생하였습니다.", status=HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
-def review_list_published_api(request):
+def review_list_published_api(request,product_id):
     Clayful.config({
         'client': getattr(settings, 'CLAYFUL_SECRET_KEY', None),
         'language': 'ko',
@@ -170,7 +170,7 @@ def review_list_published_api(request):
 
         options = {
             'query': {
-                'product':request.data['product_id'],
+                'product':product_id,
                 'fields':'-commentedAt,-flagged,-helped,-rating,-totalComment'
             },
         }
@@ -196,7 +196,7 @@ def review_list_published_api(request):
         return Response("알 수 없는 오류가 발생하였습니다.")
 
 @api_view(['GET'])
-def review_list_published_for_me_api(request):
+def review_list_published_for_me_api(request,customer_id):
     Clayful.config({
         'client': getattr(settings, 'CLAYFUL_SECRET_KEY', None),
         'language': 'ko',
@@ -210,7 +210,7 @@ def review_list_published_for_me_api(request):
         options = {
             'query': {
                 'fields':'-commentedAt,-flagged,-helped,-rating,-totalComment',
-                'customer':request.data['customer_id'],
+                'customer':customer_id,
             },
         }
         result = Review.list_published(options)

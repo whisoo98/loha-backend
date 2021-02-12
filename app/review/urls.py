@@ -20,6 +20,6 @@ from .views import *
 urlpatterns = [
     path('', ReviewAPI.as_view()),
     path('<str:review_id>/', ReviewAPI.as_view()),
-    path('list/product/', review_list_published_api),
-    path('list/customer/', review_list_published_for_me_api),
+    path('list/product/<str:product>/', review_list_published_api),
+    path('list/customer/<str:customer_id>/', review_list_published_for_me_api),
 ]
