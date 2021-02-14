@@ -1,5 +1,6 @@
 from django.shortcuts import redirect
 from django.utils.decorators import method_decorator
+from django.http import HttpResponse
 from rest_framework.views import Response
 from rest_framework import status
 from rest_framework.views import APIView
@@ -388,6 +389,7 @@ class Auth(APIView):
 # kakao 소셜 로그인
 
 # 코드 요청
+@api_view(['GET'])
 def kakao_login(request):
     app_rest_api_key = getattr(settings, 'KAKAO_REST_API', None)
     local_host = "https://www.byeolshowco.com/"
@@ -443,9 +445,9 @@ def kakao_callback(request):
             return result
 
         result = kakao_to_clayful()
-        content = "<h1>result.data['token']</h1>"
+        content = f"<h1>{result.data['token']}</h1>"
         header = {'Custom-Token': result.data['token']}
-        return Response(content, headers=header)
+        return HttpResponse(content)
     except Exception as e:
         print(e)
         try:
@@ -509,9 +511,9 @@ def naver_callback(request):
             return result
 
         result = naver_to_clayful()
-        content = "<h1>result.data['token']</h1>"
+        content = f"<h1>{result.data['token']}</h1>"
         header = {'Custom-Token': result.data['token']}
-        return Response(content, headers=header)
+        return HttpResponse(content)
 
     except Exception as e:
         print(e)
@@ -579,9 +581,9 @@ def facebook_callback(request):
             return result
 
         result = facebook_to_clayful()
-        content = "<h1>result.data['token']</h1>"
+        content = f"<h1>{result.data['token']}</h1>"
         header = {'Custom-Token': result.data['token']}
-        return Response(content, headers=header)
+        return HttpResponse(content)
 
     except Exception as e:
         print(e)
