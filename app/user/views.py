@@ -443,11 +443,7 @@ def kakao_callback(request):
             return result
 
         result = kakao_to_clayful()
-        content = {
-            'success': {
-                'message': '로그인 완료.'
-            }
-        }
+        content = "<h1>result.data['token']</h1>"
         header = {'Custom-Token': result.data['token']}
         return Response(content, headers=header)
     except Exception as e:
@@ -513,7 +509,7 @@ def naver_callback(request):
             return result
 
         result = naver_to_clayful()
-        content = "로그인 성공"
+        content = "<h1>result.data['token']</h1>"
         header = {'Custom-Token': result.data['token']}
         return Response(content, headers=header)
 
@@ -583,7 +579,7 @@ def facebook_callback(request):
             return result
 
         result = facebook_to_clayful()
-        content = "로그인 성공"
+        content = "<h1>result.data['token']</h1>"
         header = {'Custom-Token': result.data['token']}
         return Response(content, headers=header)
 
