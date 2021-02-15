@@ -54,7 +54,8 @@ services:
     networks:
       - front
       - back
-  networks:
-    front:
-    back:
+
+networks:
+  front:
+  back:
 
