@@ -28,7 +28,6 @@ RUN pip install -U Daphne
 
 COPY ./requirements.txt .
 RUN pip install -r requirements.txt
-
-RUN pip install django_extensions
+#RUN pip install django_extensions
 # copy project
 COPY . .
