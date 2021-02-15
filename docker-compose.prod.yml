@@ -4,6 +4,7 @@ services:
   nginx:
     build: ./nginx
     image: "nginx:latest"
+    container_name: "nginx-server"
     volumes:
       - ./app/static/:/static/
     networks:
@@ -40,7 +41,7 @@ services:
       - redis
   django:
     build: ./app
-    container_name: "gunicorn-django"
+    container_name: "django-server"
     command: bash -c
       "python manage.py migrate
       &&python manage.py collectstatic --noinput
