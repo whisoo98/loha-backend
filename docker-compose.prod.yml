@@ -54,16 +54,6 @@ services:
       - redis
     links:
       - redis
-  worker:
-    <<: *django
-    container_name: "worker-server"
-    command: python manage.py runworker
-    volumes:
-      - ./app/:/usr/src/app/
-    networks:
-      - back
-    links:
-      - redis
 
 networks:
   front:

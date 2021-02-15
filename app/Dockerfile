@@ -29,5 +29,3 @@ RUN pip install -r requirements.txt
 RUN pip install django_extensions
 # copy project
 COPY . .
-
-EXPOSE 80 8001 8000
