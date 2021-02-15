@@ -25,7 +25,6 @@ services:
       - "6379:6379"
   daphne:
     build: ./app
-    image: "channel_prod:latest"
     working_dir: /usr/src/app/
     command: bash -c
       "daphne -b 0.0.0.0 -p 9001 loha.asgi:application"

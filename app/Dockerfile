@@ -7,8 +7,6 @@ WORKDIR /usr/src/app
 # vim 설치
 RUN apt-get -y update
 RUN apt-get -y upgrade
-RUN apt install -y redis-server
-RUN apt-get -y install vim
 
 # set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1
