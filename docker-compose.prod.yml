@@ -30,11 +30,11 @@ services:
     command: bash -c
       "python manage.py migrate
       &&python manage.py collectstatic --noinput
-      && gunicorn -b 0.0.0.0 -p 8000 loha.wsgi:application"
+      && gunicorn -b 0.0.0.0 -p 5000 loha.wsgi:application"
     volumes:
       - ./app/:/usr/src/app/
     ports:
-      - 8000:8000
+      - 5000:5000
     networks:
       - front
       - back
