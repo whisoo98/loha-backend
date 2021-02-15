@@ -18,13 +18,28 @@ services:
     links:
       - daphne
   redis:
-    image: redis:alpine
+    image: redis:latest
+    container_name: "redis-server"
     networks:
       - back
     ports:
       - "6379:6379"
-  daphne:
+  django: &django
     build: ./app
+    container_name: "django-server"
+    command: bash -c
+      "python manage.py migrate
+      &&python manage.py collectstatic --noinput
+      && gunicorn -b 0.0.0.0 -p 8000 loha.wsgi:application"
+    volumes:
+      - ./app/:/usr/src/app/
+    ports:
+      - 8000:8000
+    networks:
+      - front
+      - back
+  daphne:
+    <<: *django
     container_name: "chat-server"
     command: bash -c
       "daphne -b 0.0.0.0 -p 8001 loha.asgi:application"
@@ -39,20 +54,16 @@ services:
       - redis
     links:
       - redis
-  django:
-    build: ./app
-    container_name: "django-server"
-    command: bash -c
-      "python manage.py migrate
-      &&python manage.py collectstatic --noinput
-      && gunicorn -b 0.0.0.0 -p 8000 loha.wsgi:application"
+  worker:
+    <<: *django
+    container_name: "worker-server"
+    command: python manage.py runworker
     volumes:
       - ./app/:/usr/src/app/
-    ports:
-      - 8000:8000
     networks:
-      - front
       - back
+    links:
+      - redis
 
 networks:
   front:
