@@ -11,7 +11,6 @@ services:
       - back
     ports:
       - "80:80"
-      - "433:433"
     depends_on:
       - daphne
       - django
@@ -25,13 +24,13 @@ services:
       - "6379:6379"
   daphne:
     build: ./app
-    working_dir: /usr/src/app/
+    container_name: "chat-server"
     command: bash -c
-      "daphne -b 0.0.0.0 -p 9001 loha.asgi:application"
+      "daphne -b 0.0.0.0 -p 8001 loha.asgi:application"
     volumes:
-      - .app/:/usr/src/app/
+      - ./app/:/usr/src/app/
     ports:
-      - "9001:9001"
+      - "8001:8001"
     networks:
       - front
       - back
@@ -41,6 +40,7 @@ services:
       - redis
   django:
     build: ./app
+    container_name: "gunicorn-django"
     command: bash -c
       "python manage.py migrate
       &&python manage.py collectstatic --noinput
