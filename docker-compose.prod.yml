@@ -14,7 +14,7 @@ services:
       - "433:433"
     depends_on:
       - daphne
-      - gunicorn
+      - django
     links:
       - daphne
   redis:
