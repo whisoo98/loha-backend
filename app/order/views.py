@@ -152,6 +152,13 @@ def set_raw(order):
 
     order['createdAt']=order['createdAt']['raw']
     order['updatedAt']=order['updatedAt']['raw']
+    if order['paidAt'] is not None:
+        order['paidAt'] = order['paidAt']['raw']
+
+    if order['receivedAt'] is not None:
+        order['receivedAt'] = order['receivedAt']['raw']
+
+
 
     if 'refunds' in order:
         for refund in order['refunds']:
@@ -245,54 +252,32 @@ def order_list_api(request):
         data = result.data
         for order in data:
             order = set_raw(order)
-        '''
+
         for order in data:
+            del(order['tax'])
+            del(order['customer'])
+            if 'vendors' in order['total']:
+                del(order['total']['vendors'])
             del(order['currency'])
-            order['total']['price']['original'] = order['total']['price']['original']['raw']
-            order['total']['price']['sale'] = order['total']['price']['sale']['raw']
-            order['total']['price']['withTax'] = order['total']['price']['withTax']['raw']
-            order['total']['price']['withoutTax'] = order['total']['price']['withoutTax']['raw']
-
             for item in order['items']:
-                item['total']['price']['original'] = item['total']['price']['original']['raw']
-                item['total']['price']['sale'] = item['total']['price']['sale']['raw']
-                item['total']['price']['withTax'] = item['total']['price']['withTax']['raw']
-                item['total']['price']['withoutTax'] = item['total']['price']['withoutTax']['raw']
-
-                item['variant']['price']['original'] = item['variant']['price']['original']['raw']
-                item['variant']['price']['sale'] = item['variant']['price']['sale']['raw']
-                if item['variant']['discount']['value'] is not None:
-                    item['variant']['discount']['value'] = item['variant']['discount']['value']['raw']
-                item['variant']['discount']['discounted'] = item['variant']['discount']['discounted']['raw']
                 del(item['variant']['weight'])
                 del(item['variant']['width'])
                 del(item['variant']['height'])
                 del(item['variant']['depth'])
-            order['createdAt'] = order['createdAt']['raw']
-            if order['cancellation'] is not None:
-                order['cancellation']['cancelledAt']=order['cancellation']['cancelledAt']['raw']
 
             fulfillments = order['fulfillments']
             for fulfillment in fulfillments:
                 for item in fulfillment['items']:
-                    item['item']['variant']['price']['original'] = item['item']['variant']['price']['original']['raw']
-                    item['item']['variant']['price']['sale'] = item['item']['variant']['price']['sale']['raw']
-                    if item['item']['variant']['discount']['value'] is not None:
-                        item['item']['variant']['discount']['value'] = item['item']['variant']['discount']['value']['raw']
-                    item['item']['variant']['discount']['discounted'] = item['item']['variant']['discount']['discounted']['raw']
                     del (item['item']['variant']['weight'])
                     del (item['item']['variant']['width'])
                     del (item['item']['variant']['height'])
                     del (item['item']['variant']['depth'])
-                    item['quantity']=item['quantity']['raw']
-                fulfillment['createdAt']=fulfillment['createdAt']['raw']
-                fulfillment['updatedAt']=fulfillment['updatedAt']['raw']
                 if fulfillment['status'] == 'arrived' and order['done'] == False:
-                    Due = datetime.datetime.strptime(fulfillment['udpdatedAt'], '%Y-%m-%dT%H:%M:%S.%fZ')
+                    Due = datetime.datetime.strptime(fulfillment['updatedAt'], '%Y-%m-%dT%H:%M:%S.%fZ')
                     now = datetime.datetime.now()
                     if now >= Due + datetime.timedelta(days=7):
                         Order.mark_as_done(order['_id'],{})
-        '''
+
         return Response(data)
 
     except ClayfulException as e:
