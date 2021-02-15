@@ -33,8 +33,6 @@ services:
       - .app/:/usr/src/app/
     ports:
       - "9001:9001"
-    env_file:
-      - ./redis.env
     networks:
       - front
       - back
