@@ -5,8 +5,7 @@ FROM python:3.8.6
 WORKDIR /usr/src/app
 
 # vim 설치
-RUN apt-get -y update
-RUN apt-get -y upgrade
+RUN apt-get update && apt-get install -y gettext python3-dev libpq-dev
 
 # set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1
@@ -27,5 +26,10 @@ RUN pip install -U Daphne
 COPY ./requirements.txt .
 RUN pip install -r requirements.txt
 RUN pip install django_extensions
+
+# 옵션 설정
+RUN python manage.py migrate
+RUN python manage.py collectstatic --noinput
+
 # copy project
 COPY . .

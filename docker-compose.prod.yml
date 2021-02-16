@@ -8,60 +8,43 @@ services:
     container_name: "nginx-server"
     volumes:
       - ./app/static/:/static/
-    networks:
-      - front
-      - back
     ports:
       - "80:80"
     depends_on:
       - daphne
       - django
-    links:
-      - django
-      - daphne
   redis:
     image: redis:latest
     container_name: "redis-server"
-    networks:
-      - back
     ports:
       - "6379:6379"
   django: &django
     build: ./app
     container_name: "django-server"
-    command: bash -c
-      "python manage.py migrate
-      &&python manage.py collectstatic --noinput
-      && gunicorn -b 0.0.0.0 -p 7000 loha.wsgi:application"
+    command: bash -c "gunicorn -w 1 -k gevent -b 0.0.0.0:8000 loha.wsgi:application"
     volumes:
       - ./app/:/usr/src/app/
     ports:
-      - "7000:7000"
+      - "8000:8000"
+    depends_on:
+      - redis
+    links:
+      - redis
     expose:
-      - "7000"
-    networks:
-      - front
-      - back
+      - "8000"
   daphne:
     <<: *django
     container_name: "chat-server"
-    command: bash -c
-      "daphne -b 0.0.0.0 -p 9000 loha.asgi:application"
+    command: bash -c "daphne -b 0.0.0.0 -p 8001 dj_chat.asgi:application"
     volumes:
       - ./app/:/usr/src/app/
     ports:
-      - "9000:9000"
+      - "8001:8001"
     expose:
-      - "9000"
-    networks:
-      - front
-      - back
+      - "8001"
     depends_on:
       - redis
     links:
       - redis
 
-networks:
-  front:
-  back:
 
