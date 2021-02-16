@@ -21,7 +21,7 @@ services:
   django: &django
     build: ./app
     container_name: "django-server"
-    command: bash -c "gunicorn -w 1 -k gevent -b 0.0.0.0:8000 loha.wsgi:application"
+    command: bash -c "gunicorn -b 0.0.0.0:8000 loha.wsgi:application"
     volumes:
       - ./app/:/usr/src/app/
     ports:
@@ -35,7 +35,7 @@ services:
   daphne:
     <<: *django
     container_name: "chat-server"
-    command: bash -c "daphne -b 0.0.0.0 -p 8001 dj_chat.asgi:application"
+    command: bash -c "daphne -b 0.0.0.0 -p 8001 loha.asgi:application"
     volumes:
       - ./app/:/usr/src/app/
     ports:
