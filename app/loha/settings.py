@@ -58,8 +58,8 @@ MUX_CLIENT_ID = get_secret('MUX_CLIENT_ID')
 MUX_SECRET_KEY = get_secret('MUX_SECRET_KEY')
 
 # HOST
-ALLOWED_HOSTS = get_secret("DJANGO_ALLOWED_HOSTS")
-# ALLOWED_HOSTS = []
+#ALLOWED_HOSTS = get_secret("DJANGO_ALLOWED_HOSTS")
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
