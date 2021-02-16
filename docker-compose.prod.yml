@@ -40,8 +40,6 @@ services:
       - "7000:7000"
     expose:
       - "7000"
-    links:
-      - nginx
     networks:
       - front
       - back
@@ -63,7 +61,6 @@ services:
       - redis
     links:
       - redis
-      - nginx
 
 networks:
   front:
