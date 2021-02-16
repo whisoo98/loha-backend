@@ -8,6 +8,7 @@ services:
     container_name: "nginx-server"
     volumes:
       - ./app/static/:/static/
+      - ./config/:/etc/nignx.conf.d
     networks:
       - front
       - back
