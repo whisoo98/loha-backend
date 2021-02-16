@@ -21,27 +21,27 @@ services:
   django: &django
     build: ./app
     container_name: "django-server"
-    command: bash -c "gunicorn -b 0.0.0.0:8000 loha.wsgi:application"
+    command: bash -c "gunicorn -b 0.0.0.0:8001 loha.wsgi:application"
     volumes:
       - ./app/:/usr/src/app/
     ports:
-      - "8000:8000"
+      - "8001:8001"
     depends_on:
       - redis
     links:
       - redis
     expose:
-      - "8000"
+      - "8001"
   daphne:
     <<: *django
     container_name: "chat-server"
-    command: bash -c "daphne -b 0.0.0.0 -p 8001 loha.asgi:application"
+    command: bash -c "daphne -b 0.0.0.0 -p 8000 loha.asgi:application"
     volumes:
       - ./app/:/usr/src/app/
     ports:
-      - "8001:8001"
+      - "8000:8000"
     expose:
-      - "8001"
+      - "8000"
     depends_on:
       - redis
     links:
