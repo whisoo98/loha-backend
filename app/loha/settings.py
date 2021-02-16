@@ -9,7 +9,6 @@ https://docs.djangoproject.com/en/2.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.2/ref/settings/
 """
-
 import os, json
 from django.core.exceptions import ImproperlyConfigured
 
@@ -65,14 +64,15 @@ MUX_SECRET_KEY = get_secret('MUX_SECRET_KEY')
 
 # HOST
 ALLOWED_HOSTS = get_secret("DJANGO_ALLOWED_HOSTS")
-# ALLOWED_HOSTS = []
+# ALLOWED_HOSTS = ['*']
 
 
 # Application definition
 
 INSTALLED_APPS = [
-    'chat',
     'channels',
+    'chat',
+    'django_extensions',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -128,13 +128,13 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'loha.wsgi.application'
 
-ASGI_APPLICATION = 'loha.routing.application'
+ASGI_APPLICATION = 'loha.asgi.application'
 
 CHANNEL_LAYERS = {
-    'default' : {
-        'BACKEND' : 'channels_redis.core.RedisChannelLayer',
-        'CONFIG' :{
-            "hosts": [(ALLOWED_HOSTS, 6379)],
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [('redis', 6379)],
         },
     },
 }
@@ -191,8 +191,9 @@ USE_TZ = False
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
-
+STATIC_ROOT = os.path.abspath('./static')
 STATIC_URL = '/static/'
+
 
 # 창 닫으면 로그아웃
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True

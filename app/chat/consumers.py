@@ -1,4 +1,5 @@
 from channels.generic.websocket import AsyncWebsocketConsumer, WebsocketConsumer
+from channels.exceptions import StopConsumer
 from asgiref.sync import async_to_sync
 import json
 import pprint
@@ -9,110 +10,121 @@ from .models import *
 from channels.db import database_sync_to_async
 
 
-class ChatConsumer(WebsocketConsumer):
-    # FOR COMMING
-    def count_user(self, data):
-        room_name = data['room_name']
-        count = RoomUser.objects.filter(
-            room_name=Room.objects.filter(room_name=self.room_name).all()[0]).count()
-        self.count = count
-        content = {
-            'command': 'countUser',
-            'count': str(count)
-        }
-        self.send_message(content)
-
-    def connect(self):
+class ChatConsumer(AsyncWebsocketConsumer):
+    async def connect(self):
         self.username = self.scope['user'].get_username()
+        # if self.username == "":
+        #     raise StopConsumer
         self.room_name = self.scope['url_route']['kwargs']['room_name']
         self.room_group_name = 'chat_%s' % self.room_name
-        # room, is_roomed = Room.objects.get_or_create(room_name=room_name)
+
         # Join room group
-        async_to_sync(self.channel_layer.group_add)(
+
+        await self.channel_layer.group_add(
             self.room_group_name,
             self.channel_name
         )
-        RoomUser.objects.create(
-            room_name=Room.objects.filter(room_name=self.room_name).all()[0],
-            username=self.username
-        )
-        self.accept()
+        await self.make_new_user()
+        await self.accept()
 
-    # FOR GOING OUT
-    def disconnect(self, close_code):
-        # Leave room group
-        RoomUser.objects.filter(
-            room_name=Room.objects.filter(room_name=self.room_name).all()[0]).filter(username=self.username).delete()
-        # RoomUser.objects.filter(room_name=room_name).filter(username=username).delete()
-        async_to_sync(self.channel_layer.group_discard)(
-            self.room_group_name,
-            self.channel_name
-        )
-
-    def fetch_message(self, data):  ## to replay
-        messages = Message.fetch_messages(data['room_name'])
-        content = {
-            'command': 'fetch_messages',
-            'messages': self.messages_to_json(messages)
-        }
-        self.send_message(content)
-
-    def new_message(self, data):
-        author = data['author']
-        room = Room.objects.filter(room_name=self.room_name).all()[0]
-        message = Message.objects.create(
-            room=room,
-            author=author,
-            content=data['message'])
-
-        content = {
-            'command': 'new_message',
-            'message': self.message_to_json(message)
-        }
-
-        return self.send_chat_message(content)
-
-    commands = {
-        'fetch_message': fetch_message,
-        'new_message': new_message,
-        'countUser': count_user
-    }
-
-    def messages_to_json(self, messages):
-        result = []
-        for message in messages:
-            result.append(self.message_to_json(message))
-        return result
-
-    def message_to_json(self, message):
-        return {
-            'author': message.author,
-            'content': message.content,
-            'timestamp': str(message.timestamp)
-        }
-
-    # Receive message from WebSocket
-    def receive(self, text_data):
-        data = json.loads(text_data)
-        self.commands[data['command']](self, data)
-
-    def send_message(self, message):
-        self.send(text_data=json.dumps(message))
-
-    # Receive message from room group
-    # for new message method
-    def chat_message(self, event):
-        message = event['message']
-        # Send message to WebSocket
-        self.send(text_data=json.dumps(message))
-
-    def send_chat_message(self, message):
+        message = f'{self.username}님이 입장하셨습니다.'
+        self.count = await self.get_count()
         # Send message to room group
-        async_to_sync(self.channel_layer.group_send)(
+        await self.channel_layer.group_send(
             self.room_group_name,
             {
-                'type': 'chat_message',
+                'type': 'entry_message',
+                'author': self.username,
+                'count': self.count,
+                'leave':0,
                 'message': message
             }
         )
 
+    # FOR GOING OUT
+    async def disconnect(self, close_code):
+        # delete in RoomUser
+        await self.delete_user()
+
+        message= f'{self.username}님이 나가셨습니다.'
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {
+                'type': 'entry_message',
+                'author': self.username,
+                'leave': 1,
+                'message': message
+            }
+        )
+
+        # Leave room group
+        await self.channel_layer.group_discard(
+            self.room_group_name,
+            self.channel_name
+        )
+
+    # Receive message from WebSocket
+    async def receive(self, text_data):
+        text_data_json = json.loads(text_data)
+        message = text_data_json['message']
+
+        # Send message to room group
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {
+                'type': 'chat_message',
+                'author' : self.username,
+                'message': message
+            }
+        )
+
+
+    async def entry_message(self, event):
+        # print(event)
+        message = event['message']
+        
+        # 인원수 증감
+        if event['leave'] == 1:
+            self.count -= 1
+        elif self.username != event['author']:
+            self.count += 1
+
+
+        # Send message to WebSocket
+        await self.send(text_data=json.dumps({
+            'stat': 'entry',
+            'message': message,
+            'count': self.count,
+            'author': "Byeolshow",
+        }))
+
+    async def chat_message(self, event):
+        # print(event)
+        message = event['message']
+        author = event['author']
+        # Send message to WebSocket
+        await self.send(text_data=json.dumps({
+            'stat': 'chat',
+            'message': message,
+            'author': author
+        }))
+
+
+    @database_sync_to_async
+    def get_count(self):
+        return RoomUser.objects.filter(
+            room_name=Room.objects.filter(room_name=self.room_name).all()[0]
+        ).count()
+
+    @database_sync_to_async
+    def make_new_user(self):
+        return  RoomUser.objects.create(
+            room_name=Room.objects.filter(room_name=self.room_name).all()[0],
+            username=self.username
+        )
+
+    @database_sync_to_async
+    def delete_user(self):
+        return RoomUser.objects.filter(
+            room_name=Room.objects.filter(room_name=self.room_name).all()[0]
+        ).filter(username=self.username).delete()
