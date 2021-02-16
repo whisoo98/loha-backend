@@ -1,4 +1,4 @@
-version: '3.7'
+version: '3'
 # ARG django_port = 8000
 # ARG daphne_port = 9000
 services:
@@ -32,11 +32,15 @@ services:
     command: bash -c
       "python manage.py migrate
       &&python manage.py collectstatic --noinput
-      && gunicorn -b 0.0.0.0 -p 8000 loha.wsgi:application"
+      && gunicorn -b 0.0.0.0 -p 7000 loha.wsgi:application"
     volumes:
       - ./app/:/usr/src/app/
     ports:
-      - "8000:8000"
+      - "7000:7000"
+    expose:
+      - "7000"
+    links:
+      - nginx
     networks:
       - front
       - back
@@ -49,6 +53,8 @@ services:
       - ./app/:/usr/src/app/
     ports:
       - "9000:9000"
+    expose:
+      - "9000"
     networks:
       - front
       - back
@@ -56,6 +62,7 @@ services:
       - redis
     links:
       - redis
+      - nginx
 
 networks:
   front:
