@@ -1,5 +1,6 @@
 from django.shortcuts import redirect
 from django.utils.decorators import method_decorator
+from django.http import HttpResponse
 from rest_framework.views import Response
 from rest_framework import status
 from rest_framework.views import APIView
@@ -388,6 +389,7 @@ class Auth(APIView):
 # kakao 소셜 로그인
 
 # 코드 요청
+@api_view(['GET'])
 def kakao_login(request):
     app_rest_api_key = getattr(settings, 'KAKAO_REST_API', None)
     local_host = "https://www.byeolshowco.com/"
@@ -443,13 +445,9 @@ def kakao_callback(request):
             return result
 
         result = kakao_to_clayful()
-        content = {
-            'success': {
-                'message': '로그인 완료.'
-            }
-        }
+        content = f"<h1>{result.data['token']}</h1>"
         header = {'Custom-Token': result.data['token']}
-        return Response(content, headers=header)
+        return HttpResponse(content)
     except Exception as e:
         print(e)
         try:
@@ -513,9 +511,9 @@ def naver_callback(request):
             return result
 
         result = naver_to_clayful()
-        content = "로그인 성공"
+        content = f"<h1>{result.data['token']}</h1>"
         header = {'Custom-Token': result.data['token']}
-        return Response(content, headers=header)
+        return HttpResponse(content)
 
     except Exception as e:
         print(e)
@@ -533,26 +531,93 @@ def naver_callback(request):
         return Response(content, status=status.HTTP_400_BAD_REQUEST)
 
 
+# Facebook 소셜 로그인
+
+# 코드 발급
+def facebook_login(request):
+    client_id = getattr(settings, 'FACEBOOK_CLIENT_ID', None)
+    host = "https://www.byeolshowco.com/"
+    # host = "http://localhost:8000/"
+    redirect_uri = host + "user/auth/facebook/callback/"
+    state = hash(datetime.datetime.now().strftime('%Y%m%d%H%M%S'))
+    request.session['my_state'] = state
+
+    return redirect(
+        f"https://www.facebook.com/v9.0/dialog/oauth?response_type=code&client_id={client_id}&redirect_uri={redirect_uri}&state={state}")
+
+
+# 토큰 발급 및 정보 저장
+@api_view(['GET'])
+def facebook_callback(request):
+    try:
+        host = "https://www.byeolshowco.com/"
+        client_id = getattr(settings, 'FACEBOOK_CLIENT_ID', None)
+        client_secret = getattr(settings, 'FACEBOOK_SECRET_KEY', None)
+        redirect_uri = host + "user/auth/facebook/callback/"
+        code = request.query_params['code']
+        state = request.query_params['state']
+        my_state = str(request.session['my_state'])
+
+        if state != my_state:
+            return Response('No hack, Csrf')
+
+        # 토큰 발급
+        token_request = requests.get(
+            f"https://graph.facebook.com/v9.0/oauth/access_token?client_id={client_id}&redirect_uri={redirect_uri}&client_secret={client_secret}&code={code}")
+        token_response = token_request.json()
+
+        facebook_access_token = token_response.get('access_token')
+
+        # Clayful에 가입
+        @Init_Clayful
+        def facebook_to_clayful():
+            Customer = Clayful.Customer
+            payload = {'token': facebook_access_token}
+            result = Customer.authenticate_by_3rd_party('facebook', payload)
+            # 가입과 동시에 로그인
+            if result.data['action'] == 'register':
+                result = Customer.authenticate_by_3rd_party('facebook', payload)
+                Customer.update(result.data['customer'], {'groups': ['QS8YM3ECBUV4']})
+            return result
+
+        result = facebook_to_clayful()
+        content = f"<h1>{result.data['token']}</h1>"
+        header = {'Custom-Token': result.data['token']}
+        return HttpResponse(content)
+
+    except Exception as e:
+        print(e)
+        try:
+            print(e.code)
+            print(e.message)
+        except Exception as er:
+            pass
+        content = "로그인 실패"
+        return Response(content, status=status.HTTP_400_BAD_REQUEST)
+
 # Influencer 팔로우
 
 class influencer_like(APIView):
     @require_login
     def get(self, request, result):
         try:
+            Customer = Clayful.Customer
+            options = {
+                'query': {
+                    'ids': ','.join(result.data['meta']['Following']),
+                }
+            }
+
+            res = Customer.list(options)
             contents = {
                 "success":{
-                    "Influencer_List": result.data['meta']['Following']
+                    "Influencer_List": res.data
                 }
             }
             return Response(contents)
         except Exception as e:
             print(e)
             try:
-                print(e.is_clayful)
-                print(e.model)
-                print(e.method)
-                print(e.status)
-                print(e.headers)
                 print(e.code)
                 print(e.message)
             except Exception as er:
@@ -567,15 +632,17 @@ class influencer_like(APIView):
     def post(self, request, result):
         try:
             Customer = Clayful.Customer
+
+            # 현재 팔로잉 상태를 확인
             if request.data.get('InfluencerId') in result.data['meta']['Following']:
-                # 팔로잉 취소
+                # 있으면 팔로잉 취소
                 result.data['meta']['Following'].remove(request.data.get('InfluencerId'))
                 payload = {
                     'meta': {
                         'Following': result.data['meta']['Following']
                     }
                 }
-                Customer.increase_metafield(result.data['_id'], 'Follower', {'value': -1})
+                Customer.increase_metafield(request.data.get('InfluencerId'), 'Follower', {'value': -1})
                 # influencer 없으면 알아서 예외 처리됨
                 Customer.update(result.data['_id'], payload)
                 contents = {
@@ -591,7 +658,7 @@ class influencer_like(APIView):
                     'Following': result.data['meta']['Following'] + [request.data.get('InfluencerId')]
                 }
             }
-            Customer.increase_metafield(result.data['_id'], 'Follower', {'value': 1})
+            Customer.increase_metafield(request.data.get('InfluencerId'), 'Follower', {'value': 1})
             # influencer 없으면 알아서 예외 처리됨
             Customer.update(result.data['_id'], payload)
             contents = {

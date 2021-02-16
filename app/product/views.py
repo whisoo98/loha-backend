@@ -12,9 +12,49 @@ from rest_framework.parsers import JSONParser
 
 from clayful import Clayful,ClayfulException
 import json
+import pprint
 import requests
 
 # Create your views here.
+def set_raw(dict):
+    depth1 = {
+        'price':['original','sale'],
+        #'discount':['discounted'],
+        'discount':['discounted','value'],
+        'rating':['count','sum','average'],
+        'variants':{
+            'price':['original', 'sale'],
+            #'discount':['discounted'],
+            'discount':['discounted','value'],
+            'weight':['weight'],
+            'width':['width'],
+            'height':['height'],
+            'depth':['depth'],
+            'quantity':['quantity']
+        },
+    }
+
+    dict['totalReview']=dict['totalReview']['raw']
+    dict['updatedAt']=dict['updatedAt']['raw']
+    dict['createdAt']=dict['createdAt']['raw']
+
+    for depth2 in depth1.keys():
+        if depth2 != 'variants':
+            for key in depth1[depth2]:
+                if dict[depth2][key] is not None:
+                    dict[depth2][key]=dict[depth2][key]['raw']
+        else:
+            for depth3 in depth1[depth2].keys():
+                for items in dict['variants']:
+                    for key in depth1[depth2][depth3]:
+                        if (depth3 == 'price' or depth3 == 'discount'):
+                            if items[depth3][key] is not None:
+                                items[depth3][key]=items[depth3][key]['raw']
+                        else:
+                            if items[depth3] is not None:
+                                items[depth3] = items[depth3]['raw']
+    return dict
+
 
 class ProductCollectionAPI(APIView):
     Clayful.config({
@@ -30,7 +70,6 @@ class ProductCollectionAPI(APIView):
             Product = Clayful.Product
             options = {
                 'query': {
-                    'raw':True,
                     'available': True,
                     'collection': collection_id,
                 },
@@ -38,7 +77,8 @@ class ProductCollectionAPI(APIView):
             result = Product.list(options)
             headers = result.headers
             data = result.data
-
+            for dict in data:
+                dict = set_raw(dict)
             return Response(data)
 
         except ClayfulException as e:
@@ -74,25 +114,38 @@ class ProductAPI(APIView):
 
             Product = Clayful.Product
             options = {
-                'raw':True,
                 'query': {
                     #'fields' : '_id,name,summary,description,price,discount,shipping,available,brand,thumbnail,collections,options,variants,meta.stream_url'
                 },
             }
             result = Product.get(product_id, options)
-            count = Clayful.Review.count_published({
-                'query':{
-                    'product':product_id
-                }
-            }).data['count']['raw']
             headers = result.headers
             data = result.data
-            data['review_count'] = count
-
+            data = set_raw(data)
+            vendor = data['vendor']['_id']
+            ShippingPolicy = Clayful.ShippingPolicy
+            options['query']['vendor']=vendor
+            shipping = ShippingPolicy.list(options).data
+            data['shipping']['method'] =data['shipping']['methods'][0]
+            del(data['shipping']['methods'])
+            for ele in shipping:
+                for rule in ele['rules']:
+                    if rule['free']['priceOver'] is not None:
+                        rule['free']['priceOver'] = rule['free']['priceOver']['raw']
+                    rule['weightOver']=rule['weightOver']['raw']
+                    rule['fee']=rule['fee']['raw']
+                ele['createdAt']=ele['createdAt']['raw']
+                ele['updatedAt']=ele['updatedAt']['raw']
+            data['ShippingPolicy']=shipping[0]
             return Response(data)
 
+
+        except ClayfulException as e:
+
+            return Response(e.code + ' ' + e.message, status=e.status)
         except Exception as e:
-            return Response(e.code, status=e.status)
+            print(e)
+            return Response('알 수 없는 오류가 발생했습니다.', status=HTTP_400_BAD_REQUEST)
 
     def put(self, request, product_id): #product 수정
         try:
@@ -139,7 +192,6 @@ def product_searchAPI(request):
         Product = Clayful.Product
         options = {
             'query': {
-                'raw':True,
                 'q': request.data['search'],
                 'search': {
                     'name.ko' : '',
@@ -153,7 +205,8 @@ def product_searchAPI(request):
 
         headers = result.headers
         data = result.data
-
+        for dict in data:
+            dict = set_raw(dict)
         return Response(data)
 
     except Exception as e:

@@ -19,9 +19,215 @@ from clayful import Clayful, ClayfulException
 from clayful.exception import ClayfulException
 import json
 import time
-
+import pprint
 
 # Create your views here.
+def ship_raw(shipping):
+    for shipment in shipping:
+        for rule in shipment['rules']:
+            for key in rule:
+                if key == 'free':
+                    if rule[key]['priceOver'] is not None:
+                        rule[key]['priceOver'] = rule[key]['priceOver']['raw']
+                else:
+                    if rule[key] is not None:
+                        rule[key] = rule[key]['raw']
+        for region in shipment['regions']:
+            for rule in region['rules']:
+                for key in rule:
+                    if key == 'free':
+                        if rule[key]['priceOver'] is not None:
+                            rule[key]['priceOver'] = rule[key]['priceOver']['raw']
+                    else:
+                        if rule[key] is not None:
+                            rule[key] = rule[key]['raw']
+
+
+    return shipping
+
+def sort(data, shipping): #배송 조건등 필요
+    shipping = ship_raw(shipping)
+    convert = [{
+        'vendor' : 'byeolshow',
+        'items':[]
+    }]
+    for key in data['items']:
+        dict_temp = {}
+        if 'vendor' in key:
+            chk = False
+            for L in convert:
+                if L['vendor'] == key['vendor']:
+                    chk = True
+                    dict_temp = L
+                    break
+            if chk:
+                print("?")
+                dict_temp['items'].append(key)
+                print("!")
+            else:
+                convert.append({
+                    'vendor':key['vendor'],
+                    'items':[key],
+                })
+        else:
+            for L in convert:
+                if L['vendor'] == 'byeolshow':
+                    dict_temp = L
+                    break
+            dict_temp['items'].append(key)
+
+    for vendor in convert:
+        for shipment in shipping:
+            if vendor['vendor']==shipment['vendor']:
+                vendor['ShippingPolicy']=shipment
+    for item in convert:
+        if not len(item['items']):
+            convert.pop(convert.index(item))
+
+    return convert
+
+def set_raw(dict_):
+    depth = {
+        'items':{
+            'addedAt':['addedAt'],
+            'variant': {
+                'price': {
+                    'original':['original'],
+                    'sale':['sale']
+                },
+                # 'discount':['discounted'],
+                'discount': {
+                    'discounted':['discounted'],
+                    'value':['value']
+                },
+                'weight': ['weight'],
+                'width': ['width'],
+                'height': ['height'],
+                'depth': ['depth'],
+            },
+            'quantity': ['quantity'],
+            'discounted':['discounted'],
+            'discounts':{
+                'discounted':['discounted'],
+                'value': ['value'],
+                'before': ['before'],
+                'after': ['after'],
+            },
+            'taxed':['taxed'],
+            'price':{
+                'original':['original'],
+                'sale':['sale'],
+                'withTax':['withTax'],
+                'withoutTax':['withoutTax']
+            },
+            'total':{
+                'price':{
+                    'original':['original'],
+                    'sale':['sale'],
+                    'withTax':['withTax'],
+                    'withoutTax':['withoutTax']
+                },
+                'discounted': ['discounted'],
+                'taxed': ['taxed'],
+            }
+        },
+        'currency':{
+            'rate':['rate']
+        },
+
+        'total':{
+            'price':{
+                'original':['original'],
+                'sale':['sale'],
+                'withTax':['withTax'],
+                'withoutTax':['withoutTax']
+            },
+            'discounted': ['discounted'],
+            'taxed':['taxed'],
+            'amount': ['amount'],
+            'items':{
+                'price': {
+                    'original': ['original'],
+                    'sale': ['sale'],
+                    'withTax': ['withTax'],
+                    'withoutTax': ['withoutTax']
+                },
+                'discounted': ['discounted'],
+                'taxed': ['taxed'],
+            },
+            'shipping':{
+                'fee':{
+                    'original':['original'],
+                    'sale':['sale'],
+                    'withTax':['withTax'],
+                    'withoutTax':['withoutTax']
+                },
+                'discounted': ['discounted'],
+                'taxed': ['taxed'],
+            }
+        }
+    }
+    for depth1 in depth.keys():
+        t_dict = depth[depth1]
+        #print('depth1 ' + depth1)
+        if(depth1=='items'):
+            for ele in dict_['items']:
+                if isinstance(t_dict, dict):
+                    for depth2 in t_dict.keys():
+                        t2_dict = t_dict[depth2]
+                        if(depth2=='discounts'):
+                            for ele2 in ele['discounts']:
+                                for depth3 in t2_dict.keys():
+                                    if ele2[depth3] is not None:
+                                        ele2[depth3] = ele2[depth3]['raw']
+
+                        else:
+                            #print('depth2 ' + depth2)
+                            if isinstance(t2_dict, dict):
+                                for depth3 in t2_dict.keys():
+                                    #print('depth3 ' + depth3)
+                                    t3_dict = t2_dict[depth3]
+                                    if isinstance(t3_dict, dict):
+                                        for depth4 in t3_dict.keys():
+                                            #print('depth4 ' + depth4)
+                                            if ele[depth2][depth3][depth4] is not None:
+                                                ele[depth2][depth3][depth4] = ele[depth2][depth3][depth4]['raw']
+
+                                    else:
+                                        for key in t3_dict:
+                                            if 'raw' in ele[depth2][key]:
+                                                ele[depth2][key] = ele[depth2][key]['raw']
+
+                            else:
+                                for key1 in t2_dict:
+                                    #print('key1 ' + key1)
+                                    if 'raw' in ele[key1]:
+                                        ele[key1] = ele[key1]['raw']
+                else:
+                    for key2 in t_dict:
+                        #print('key2 ' + key2)
+                        if 'raw' in dict_[depth1][key2]:
+                            dict_[depth1][key2] = dict_[depth1][key2]['raw']
+        else:
+            if isinstance(t_dict,dict):
+                for depth2 in t_dict.keys():
+                    t2_dict = t_dict[depth2]
+                    if isinstance(t2_dict, dict):
+                        for depth3 in t2_dict.keys():
+                            t3_dict = t2_dict[depth3]
+                            if 'raw' in dict_[depth1][depth2][depth3]:
+                                dict_[depth1][depth2][depth3]=dict_[depth1][depth2][depth3]['raw']
+                    else:
+                        for key1 in t2_dict:
+                            if 'raw' in dict_[depth1][key1]:
+                                dict_[depth1][key1]=dict_[depth1][key1]['raw']
+            else:
+                for key2 in t_dict:
+                    if 'raw' in dict_[depth1][key2]:
+                        dict_[depth1][key2]=dict_[depth1][key2]['raw']
+
+    return dict_
+
 
 class CartAPI(APIView):
     Clayful.config({
@@ -36,7 +242,7 @@ class CartAPI(APIView):
         try:
             Cart = Clayful.Cart
             # payload = json.dumps(request.data['payload'])
-            payload = {}
+            payload={}
             if 'payload' in request.data == True:
                 payload = json.dumps(request.data['payload'])
 
@@ -48,11 +254,47 @@ class CartAPI(APIView):
             result = Cart.get_for_me(payload, options)
             headers = result.headers
             data = result.data
+            for L in data['cart']['items']:
+                var_id = L['variant']['_id']
+                prod_id = L['product']['_id']
+                prod_data= Clayful.Product.get(prod_id,{
+                    'query':{
+                        'raw':True,
+                        'fields':'shipping.calculation,variants._id,variants.quantity'
+                    }
+                }).data
+                variants = prod_data['variants']
+                shipCalculation = prod_data['shipping']['calculation']
+                for quantity in variants:
+                    if quantity['_id'] == var_id:
+                        L['stock'] = quantity['quantity']
+                        L['calculation'] = shipCalculation
+            data['cart'] = set_raw(data['cart'])
+            for L in data['cart']['items']:
+                if L['stock'] is not None and L['quantity']>L['stock']:
+                    L['quantity']=L['stock']
+
+            ShippingPolicy = Clayful.ShippingPolicy
+            shipping = ShippingPolicy.list({
+                'query':{
+                    'fields':'method,country,rules,regions,vendor',
+                }
+            }).data
+
+            for l in shipping:
+                if 'vendor' not in l:
+                    shipping.pop(shipping.index(l))
+
+
+            data['cart'] = sort(data['cart'],shipping)
+
+
             return Response(data, status=HTTP_200_OK)
 
         except ClayfulException as e:
-            return Response(e.code, status=e.status)
+            return Response(e.code + ' ' + e.message, status=e.status)
         except Exception as e:
+            print(e)
             return Response("알 수 없는 예외가 발생했습니다.", status=HTTP_400_BAD_REQUEST)
 
     def delete(self, request):  # 고객이 본인 장바구니 비우기
@@ -65,9 +307,15 @@ class CartAPI(APIView):
 
             return Response("장바구니 비우기가 완료되었습니다.", status=HTTP_200_OK)
 
+
         except ClayfulException as e:
-            return Response(e.code, status=e.status)
+
+            return Response(e.code + ' ' + e.message, status=e.status)
+
         except Exception as e:
+
+            print(e)
+
             return Response("알 수 없는 예외가 발생했습니다.", status=HTTP_400_BAD_REQUEST)
 
 
@@ -84,7 +332,8 @@ class CartItemAPI(APIView):
 
         try:
             Cart = Clayful.Cart
-            payload = (request.data['payload'])
+            Product = Clayful.Product
+            payloads = (request.data['payloads'])
             options = {
                 'customer': request.headers['Custom-Token'],
             }
@@ -97,28 +346,40 @@ class CartItemAPI(APIView):
                 })
 
             result = []
-            for key in payload:
+            for payload in payloads:
                 isFind = 0
                 for key2 in cart_id:
-                    if (key['variant'] == key2['variant_id']):
+                    if (payload['payload']['variant'] == key2['variant_id']):
                         isFind=1
-                        result.append(Cart.update_item_for_me(key2['item_id'], key, options).data)
+                        result.append(Cart.update_item_for_me(key2['item_id'], payload['payload'], options).data)
                         break
                 if isFind == 0:
-                    result.append(Cart.add_item_for_me(key, options).data)
+                    shipment_id = Product.get(payload['payload']['product'],{
+                        'query':{
+                            'fields':'shipping.methods'
+                        }
+                    }).data
+                    payload['payload']['shippingMethod']=shipment_id['shipping']['methods'][0]['_id']
+                    result.append(Cart.add_item_for_me(payload['payload'], options).data)
 
             return Response(result, status=HTTP_200_OK)
 
 
+
         except ClayfulException as e:
-            return Response(e.code, status=e.status)
+
+            return Response(e.code + ' ' + e.message, status=e.status)
+
         except Exception as e:
+
+            print(e)
+
             return Response("알 수 없는 예외가 발생했습니다.", status=HTTP_400_BAD_REQUEST)
 
     def put(self, request):  # 자신의 장바구니에서 물품 수정
         try:
             Cart = Clayful.Cart
-            payloads = (request.data['payload'])
+            payloads = (request.data['payloads'])
             options = {
                 'customer': request.headers.get('Custom-Token'),
             }
@@ -128,10 +389,15 @@ class CartItemAPI(APIView):
             return Response(result, status=HTTP_200_OK)
 
 
+
         except ClayfulException as e:
-            return Response(e.code, status=e.status)
+
+            return Response(e.code + ' ' + e.message, status=e.status)
 
         except Exception as e:
+
+            print(e)
+
             return Response("알 수 없는 예외가 발생했습니다.", status=HTTP_400_BAD_REQUEST)
 
     def delete(self, request):  # 자신의 장바구니에서 선택 품목삭제
@@ -148,10 +414,15 @@ class CartItemAPI(APIView):
             return Response("모두 삭제하였습니다.", status=HTTP_200_OK)
 
 
+
         except ClayfulException as e:
-            return Response(e.code, status=e.status)
+
+            return Response(e.code + ' ' + e.message, status=e.status)
 
         except Exception as e:
+
+            print(e)
+
             return Response("알 수 없는 예외가 발생했습니다.", status=HTTP_400_BAD_REQUEST)
 
 
@@ -180,10 +451,15 @@ class CartCheckoutAPI(APIView):
             return Response(data, status=HTTP_200_OK)
 
 
+
         except ClayfulException as e:
-            return Response(e.code, status=e.status)
+
+            return Response(e.code + ' ' + e.message, status=e.status)
 
         except Exception as e:
+
+            print(e)
+
             return Response("알 수 없는 예외가 발생했습니다.", status=HTTP_400_BAD_REQUEST)
 
 

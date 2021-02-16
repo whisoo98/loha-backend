@@ -34,5 +34,6 @@ urlpatterns = [
     path('images/', include('images.urls')),
     path('review/', include('review.urls')),
     path('order/', include('order.urls')),
+    path('webhook/', include('webhook.urls')),
     path('chat/', include('chat.urls')),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

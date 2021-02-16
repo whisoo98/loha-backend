@@ -20,14 +20,11 @@ from .views import *
 
 urlpatterns = [
     path('',order_list_api),
-    path('sync/<str:order_id>/', sync_inventory_api),
     path('refund/<str:order_id>/', request_refund_for_me_api),
-    path('restock/', restock_all_refund_items),
     path('refund/cancel/<str:order_id>/<str:refund_id>/', cancel_refund_for_me_api),
     path('cancel/<str:order_id>/', cancel_for_me_api),
-    path('<str:order_id>/', OrderAPI.as_view),
-    path('markdone/',OrderMarkDoneAPI.as_view),
-    path('<str:order_id>/receivemark/',OrderMarkReceiveAPI.as_view),
-    path('refund/accept/<str:order_id>/<str:refund_id>/',RefundAcceptAPI.as_view),
-    path('fulfill/<str:order_id>/',FulfillAPI.as_view)
+    path('<str:order_id>/', OrderAPI.as_view()),
+    path('<str:order_id>/receivemark/',OrderMarkReceiveAPI.as_view()),
+    path('refund/accept/<str:order_id>/<str:refund_id>/',RefundAcceptAPI.as_view()),
+    path('fulfill/<str:order_id>/',FulfillAPI.as_view())
 ]

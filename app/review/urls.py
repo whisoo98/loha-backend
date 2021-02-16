@@ -18,8 +18,8 @@ from django.urls import path, include
 from .views import *
 
 urlpatterns = [
-    path('list/', review_list_published_api),
-    path('list/<str:custom_id>/', review_list_published_for_me_api),
     path('', ReviewAPI.as_view()),
     path('<str:review_id>/', ReviewAPI.as_view()),
+    path('list/product/<str:product_id>/', review_list_published_api),
+    path('list/customer/<str:customer_id>/', review_list_published_for_me_api),
 ]

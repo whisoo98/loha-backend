@@ -53,6 +53,11 @@ KAKAO_ADMIN_KEY=get_secret('KAKAO_ADMIN_KEY')
 # NAVER
 NAVER_CLIENT_ID=get_secret('NAVER_CLIENT_ID')
 NAVER_SECRET_KEY=get_secret('NAVER_SECRET_KEY')
+
+# FACEBOOK
+FACEBOOK_CLIENT_ID=get_secret('FACEBOOK_CLIENT_ID')
+FACEBOOK_SECRET_KEY=get_secret('FACEBOOK_SECRET_KEY')
+
 # MUX
 MUX_CLIENT_ID = get_secret('MUX_CLIENT_ID')
 MUX_SECRET_KEY = get_secret('MUX_SECRET_KEY')
@@ -89,6 +94,7 @@ INSTALLED_APPS = [
     'images',
     'review',
     'order',
+    'webhook',
 ]
 
 MIDDLEWARE = [
