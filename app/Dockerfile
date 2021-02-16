@@ -28,8 +28,8 @@ RUN pip install -r requirements.txt
 RUN pip install django_extensions
 
 # 옵션 설정
+COPY . .
 RUN python manage.py migrate
 RUN python manage.py collectstatic --noinput
 
-# copy project
-COPY . .
+
