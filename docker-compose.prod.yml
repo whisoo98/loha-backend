@@ -1,5 +1,8 @@
 version: '3.7'
 
+ARG django_port = 8000
+ARG daphne_port = 9000
+
 services:
   nginx:
     build: ./nginx
@@ -16,6 +19,7 @@ services:
       - daphne
       - django
     links:
+      - django
       - daphne
   redis:
     image: redis:latest
@@ -30,11 +34,11 @@ services:
     command: bash -c
       "python manage.py migrate
       &&python manage.py collectstatic --noinput
-      && gunicorn -b 0.0.0.0 -p 5000 loha.wsgi:application"
+      && gunicorn -b 0.0.0.0 -p ${django_port} loha.wsgi:application"
     volumes:
       - ./app/:/usr/src/app/
     ports:
-      - 5000:5000
+      - "${django_port}:${django_port}"
     networks:
       - front
       - back
@@ -42,11 +46,11 @@ services:
     <<: *django
     container_name: "chat-server"
     command: bash -c
-      "daphne -b 0.0.0.0 -p 8001 loha.asgi:application"
+      "daphne -b 0.0.0.0 -p ${daphne_port} loha.asgi:application"
     volumes:
       - ./app/:/usr/src/app/
     ports:
-      - "8001:8001"
+      - "${daphne_port}:${daphne_port}"
     networks:
       - front
       - back
