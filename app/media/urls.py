@@ -9,5 +9,7 @@ urlpatterns = [
     path('edit/', edit_my_vod),
     path('delete/', delete_my_vod),
     path('callback/', mux_callback),
+    path('alarm/', LiveAlarm.as_view()),
+
 ]
 

@@ -103,6 +103,8 @@ celerybeat.pid
 
 # Environments
 app/secrets.json
+app/google-services.json
+app/serviceAccountKey.json
 .env.dev
 .env.prod
 .venv

@@ -16,6 +16,7 @@ RUN pip install psycopg2
 RUN pip install iamporter
 RUN pip install -U channels==2.0.2
 RUN pip install channels_redis
+RUN pip install firebase-admin
 
 COPY ./requirements.txt .
 RUN pip install -r requirements.txt

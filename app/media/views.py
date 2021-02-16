@@ -5,11 +5,13 @@ from rest_framework.views import APIView
 from rest_framework.decorators import api_view
 from influencer.views import is_influencer
 from .models import *
+from push.models import *
+from push.views import *
 from chat.models import *
 from django.db.models import Q
 from .serializers import *
 from user.views import require_login
-from clayful import Clayful
+from clayful import Clayful, ClayfulException
 from django.conf import settings
 import json
 import pprint
@@ -129,20 +131,11 @@ def delete_my_vod(request, result):
     try:
         now_stream = MediaStream.objects.get(Q(pk=request.data['media_id']) & Q(influencer_id=result['_id']))
         now_stream.delete()
-        contents = {
-            'success': {
-                'message': '삭제되었습니다.'
-            }
-        }
-        return Response(contents, status=status.HTTP_200_OK)
+        LiveAlarm.objects.filter(id=request.data['media_id']).all().delete()
+        return Response("삭제되었습니다", status=status.HTTP_200_OK)
     except Exception as e:
         print(e)
-        contents = {
-            'error': {
-                'message': '알 수 없는 오류',
-            }
-        }
-        return Response(contents, status=status.HTTP_400_BAD_REQUEST)
+        return Response("알 수 없는 오류가 발생하였습니다.", status=status.HTTP_400_BAD_REQUEST)
 
 
 # 내 방송 불러오기
@@ -201,4 +194,51 @@ def mux_callback(request):
         print(e)
         return Response('오류 발생')
 
+class LiveAlarm(APIView):
+
+    @require_login
+    def get(self, request, result):
+        try:
+            contents = {
+                "LiveAlarm_List": result.data['meta']['Live_id']
+            }
+            return Response(contents)
+        except ClayfulException as e:
+            print(e)
+            return Response(e.code + ' ' + e.message, status=e.status)
+        except Exception as e:
+            print(e)
+            return Response("알 수 없는 오류가 발생하였습니다.", status=status.HTTP_400_BAD_REQUEST)
+
+    @require_login
+    def post(self, request, result):
+        try:
+            Customer = Clayful.Customer
+            if request.data.get('Live_id') in result.data['meta']['Live_id']: #Live예약 취소
+                result.data['meta']['Live_id'].remove(request.data.get('Live_id'))
+                payload = {
+                    'meta': {
+                        'Live_id': result.data['meta']['Live_id']
+                    }
+                }
+                Customer.update(result.data['_id'], payload)
+                return Response("라이브 예약이 취소되었습니다.", status=status.HTTP_202_ACCEPTED)
+            #Live예약
+            payload = {
+                'meta': {
+                    'Live_id': result.data['meta']['Live_id'] + [request.data.get('Live_id')]
+                }
+            }
+            ##토큰을 저장해야함
+            set_alarm_to_live(request.data.get('Live_id'),request.data['token'])
+
+            Customer.update(result.data['_id'], payload)
+            return Response("라이브 예약이 설정되었습니다.", status=status.HTTP_202_ACCEPTED)
+
+        except ClayfulException as e:
+            print(e)
+            return Response(e.code + ' ' +e.message, status=e.status)
+        except Exception as e:
+            print(e)
+            return Response('알 수 없는 오류가 발생하였습니다.',status=status.HTTP_400_BAD_REQUEST)
 

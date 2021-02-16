@@ -34,4 +34,5 @@ urlpatterns = [
     path('review/', include('review.urls')),
     path('order/', include('order.urls')),
     path('webhook/', include('webhook.urls')),
+    path('push/',include('push.urls')),
 ]
