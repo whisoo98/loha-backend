@@ -82,7 +82,12 @@ def start_live(request, result):
         # 라이브 상태 변경
         now_stream = MediaStream.objects.get(Q(pk=request.data['media_id']) & Q(influencer_id=result['_id']) & (Q(status='ready') | Q(status='live')))
         now_stream.save()
-
+        info = {
+            'influencer':result['alias'],
+            'time': str(now_stream.started_at.hour) + ':' + str(now_stream.started_at.minute)
+        }
+        alarm_by_live(request.data['media_id'],info)
+        alarm_by_influencer(result['_id'],info)
         contents = {
             "success": {
                 "message": "방송이 시작되었습니다.",
