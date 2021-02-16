@@ -49,7 +49,7 @@ def alarm_by_influencer(influencer_id, info):
         print("알 수 없는 오류가 발생하였습니다.")
 
 #라이브 알람 설정에 대한 알람 보내기
-def alarm_by_influencer(id, info):
+def alarm_by_live(id, info):
     try:
         registration_tokens = list(LiveAlarm.objects.filter(id=id).values_list('token',flat=True))
         response = []
