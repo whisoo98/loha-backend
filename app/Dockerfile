@@ -19,6 +19,7 @@ RUN pip install psycopg2
 RUN pip install iamporter
 RUN pip install -U channels
 RUN pip install channels_redis
+RUN pip install firebase-admin
 RUN pip install -U Daphne
 # redis
 # pip install pypiwin32

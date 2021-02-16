@@ -9,6 +9,8 @@ https://docs.djangoproject.com/en/2.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.2/ref/settings/
 """
+import firebase_admin
+from firebase_admin import credentials
 import os, json
 from django.core.exceptions import ImproperlyConfigured
 
@@ -26,9 +28,12 @@ def get_secret(setting, secrets=secrets):
     try:
         return secrets[setting]
     except KeyError:
-        error_msg = "Set the {0} environment variable".format(setting)
-        return None
+            error_msg = "Set the {0} environment variable".format(setting)
+            return None
 
+cred_path = os.path.join(BASE_DIR, "serviceAccountKey.json")
+cred = credentials.Certificate(cred_path)
+firebase_admin.initialize_app(cred)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
@@ -95,6 +100,7 @@ INSTALLED_APPS = [
     'review',
     'order',
     'webhook',
+    'push',
 ]
 
 MIDDLEWARE = [

@@ -1,6 +1,7 @@
 from django.shortcuts import redirect
 from django.utils.decorators import method_decorator
 from django.http import HttpResponse
+from push.views import set_alarm_to_influencer
 from rest_framework.views import Response
 from rest_framework import status
 from rest_framework.views import APIView
@@ -658,7 +659,12 @@ class influencer_like(APIView):
                     'Following': result.data['meta']['Following'] + [request.data.get('InfluencerId')]
                 }
             }
+
             Customer.increase_metafield(request.data.get('InfluencerId'), 'Follower', {'value': 1})
+
+            ##토큰을 저장해야함
+            set_alarm_to_influencer(result.data['_id'],request.data['token'])
+
             # influencer 없으면 알아서 예외 처리됨
             Customer.update(result.data['_id'], payload)
             contents = {
