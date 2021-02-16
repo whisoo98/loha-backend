@@ -589,11 +589,6 @@ def facebook_callback(request):
     except Exception as e:
         print(e)
         try:
-            print(e.is_clayful)
-            print(e.model)
-            print(e.method)
-            print(e.status)
-            print(e.headers)
             print(e.code)
             print(e.message)
         except Exception as er:
@@ -607,20 +602,23 @@ class influencer_like(APIView):
     @require_login
     def get(self, request, result):
         try:
+            Customer = Clayful.Customer
+            options = {
+                'query': {
+                    'ids': ','.join(result.data['meta']['Following']),
+                }
+            }
+
+            res = Customer.list(options)
             contents = {
                 "success":{
-                    "Influencer_List": result.data['meta']['Following']
+                    "Influencer_List": res.data
                 }
             }
             return Response(contents)
         except Exception as e:
             print(e)
             try:
-                print(e.is_clayful)
-                print(e.model)
-                print(e.method)
-                print(e.status)
-                print(e.headers)
                 print(e.code)
                 print(e.message)
             except Exception as er:
@@ -635,15 +633,17 @@ class influencer_like(APIView):
     def post(self, request, result):
         try:
             Customer = Clayful.Customer
+
+            # 현재 팔로잉 상태를 확인
             if request.data.get('InfluencerId') in result.data['meta']['Following']:
-                # 팔로잉 취소
+                # 있으면 팔로잉 취소
                 result.data['meta']['Following'].remove(request.data.get('InfluencerId'))
                 payload = {
                     'meta': {
                         'Following': result.data['meta']['Following']
                     }
                 }
-                Customer.increase_metafield(result.data['_id'], 'Follower', {'value': -1})
+                Customer.increase_metafield(request.data.get('InfluencerId'), 'Follower', {'value': -1})
                 # influencer 없으면 알아서 예외 처리됨
                 Customer.update(result.data['_id'], payload)
                 contents = {
@@ -659,7 +659,8 @@ class influencer_like(APIView):
                     'Following': result.data['meta']['Following'] + [request.data.get('InfluencerId')]
                 }
             }
-            Customer.increase_metafield(result.data['_id'], 'Follower', {'value': 1})
+
+            Customer.increase_metafield(request.data.get('InfluencerId'), 'Follower', {'value': 1})
 
             ##토큰을 저장해야함
             set_alarm_to_influencer(result.data['_id'],request.data['token'])
