@@ -4,10 +4,9 @@ version: '3'
 services:
   nginx:
     build: ./nginx
-    image: "nginx:latest"
     container_name: "nginx-server"
     volumes:
-      - ./app/static/:/static/
+      - ./app/static/:/home/ubuntu/static/
     ports:
       - "80:80"
     depends_on:
@@ -15,32 +14,31 @@ services:
       - django
   redis:
     image: redis:latest
-    container_name: "redis-server"
-    ports:
-      - "6379:6379"
+    restart: always
   django: &django
     build: ./app
     container_name: "django-server"
     command: bash -c "gunicorn -b 0.0.0.0:8000 loha.wsgi:application"
+    depends_on:
+      - redis
+    links:
+      - redis
     volumes:
       - ./app/:/usr/src/app/
-    ports:
-      - "8000:8000"
     expose:
       - "8000"
   daphne:
     <<: *django
     container_name: "chat-server"
-    command: bash -c "daphne -b 0.0.0.0 -p 9000 loha.asgi:application"
-    volumes:
-      - ./app/:/usr/src/app/
-    ports:
-      - "9000:9000"
-    expose:
-      - "9000"
+    command: bash -c "daphne -b 0.0.0.0 -p 8001 loha.asgi:application"
     depends_on:
       - redis
     links:
       - redis
+    volumes:
+      - ./app/:/usr/src/app/
+    expose:
+      - "8001"
+
 
 
