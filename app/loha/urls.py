@@ -37,5 +37,6 @@ urlpatterns = [
     path('webhook/', include('webhook.urls')),
     path('push/',include('push.urls')),
     path('chat/', include('chat.urls')),
+    path('forgetuser/', include('forgetuser.urls')),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
