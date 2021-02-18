@@ -135,7 +135,7 @@ def delete_my_vod(request, result):
     try:
         now_stream = MediaStream.objects.get(Q(pk=request.data['media_id']) & Q(influencer_id=result['_id']))
         now_stream.delete()
-        LiveAlarm.objects.filter(id=request.data['media_id']).all().delete()
+        LiveAlarm.objects.filter(Live_id=request.data['media_id']).all().delete()
         return Response("삭제되었습니다", status=status.HTTP_200_OK)
     except Exception as e:
         print(e)
