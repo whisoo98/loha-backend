@@ -201,24 +201,28 @@ class User(APIView):
         try:
             Customer = Clayful.Customer
             options = {'customer': request.headers.get('Custom-Token')}
-            # 로그인 정보 수정 (이메일, 비밀번호)
-            if request.data.get('old_password') is not None:
-                payload = {
-                    'password': request.data['old_password'],
-                    'credentials': {
-                        'userId': result.data['userId'],
-                        'email': result.data['email'] if request.data['email'] == "" else request.data['email'],
-                        'password': request.data['old_password'] if request.data['new_password'] == "" else request.data['new_password'],
+
+
+            # 네이티브 로그인은 비밀번호 필요
+            if not result.data['social']:
+                # 로그인 정보 수정 (이메일, 비밀번호)
+                if request.data.get('old_password') is not None:
+                    payload = {
+                        'password': request.data['old_password'],
+                        'credentials': {
+                            'userId': result.data['userId'],
+                            'email': result.data['email'] if request.data['email'] == "" else request.data['email'],
+                            'password': request.data['old_password'] if request.data['new_password'] == "" else request.data['new_password'],
+                        }
                     }
-                }
-                Customer.update_credentials_for_me(payload, options)
-            else:
-                content = {
-                    'error': {
-                        'message': '비밀번호 입력해 주세요.'
+                    Customer.update_credentials_for_me(payload, options)
+                else:
+                    content = {
+                        'error': {
+                            'message': '비밀번호 입력해 주세요.'
+                        }
                     }
-                }
-                return Response(content, status=status.HTTP_400_BAD_REQUEST)
+                    return Response(content, status=status.HTTP_400_BAD_REQUEST)
             # 개인 정보 수정 (이름, 번호, 별명)
 
             payload = {
