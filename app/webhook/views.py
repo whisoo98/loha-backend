@@ -15,8 +15,12 @@ import json
 import requests
 from clayful import Clayful, ClayfulException
 
+from refund.views import Refund
+
 # Create your views here.
 
+#TODO: 환불 완료 알람 해주기
+# 환불처리가 승인되었습니다. 곧 환불이 될 예정입니다~~
 @api_view(['POST'])
 def restock_all_refund_items(request):
     Clayful.config({
@@ -27,10 +31,26 @@ def restock_all_refund_items(request):
         'debug_language': 'ko',
     })
     try:
-
         order_id = request.data['params']['orderId']
         refund_id = request.data['params']['refundId']
         Order = Clayful.Order
+        refunds = Order.get(order_id,{}).data['refunds']
+        refunded = None
+        amount = 0
+        for refund in refunds:
+            if refund['_id'] == refund_id:
+                refunded = refund
+                break
+
+        payload = {
+            'order_id' : order_id,
+            'amount' : refunded['total']['price']['withTax'],
+            'reaseon' : refunded['reason'],
+            # 가상계좌 관련 정보
+        }
+        res_iamport = Refund(payload)
+        if res_iamport.status_code == HTTP_401_UNAUTHORIZED:
+            return Response("유효하지 않은 환불 시도입니다. 다시 시도해주세요", status=res_iamport.status_code)
         options = {
         }
 
@@ -38,7 +58,7 @@ def restock_all_refund_items(request):
 
         headers = result.headers
         data = result.data
-
+        ## 환불 알람 해주기
         return Response(data)
 
     except ClayfulException as e:

@@ -102,6 +102,7 @@ INSTALLED_APPS = [
     'webhook',
     'push',
     'forgetuser',
+    'refund',
 ]
 
 MIDDLEWARE = [
