@@ -26,7 +26,7 @@ class NotEnoughDataError(Exception):
     def __str__(self):
         return "잘못된 입력입니다."
 
-# 방송 예약
+# TODO: 방송 예약
 @api_view(['POST'])
 @is_influencer
 def reserve_live(request, result):
@@ -70,7 +70,7 @@ def reserve_live(request, result):
         }
         return Response(contents, status=status.HTTP_400_BAD_REQUEST)
 
-# 방송 시작
+# TODO 방송 시작
 @api_view(['POST'])
 @is_influencer
 def start_live(request, result):
@@ -103,7 +103,7 @@ def start_live(request, result):
         }
         return Response(contents, status=status.HTTP_400_BAD_REQUEST)
 
-# 방송 수정
+# TODO 방송 수정
 @api_view(['POST'])
 @is_influencer
 def edit_my_vod(request, result):
@@ -128,7 +128,7 @@ def edit_my_vod(request, result):
         }
         return Response(contents, status=status.HTTP_400_BAD_REQUEST)
 
-# 방송 취소
+# TODO 방송 취소
 @api_view(['Delete'])
 @is_influencer
 def delete_my_vod(request, result):
@@ -142,7 +142,7 @@ def delete_my_vod(request, result):
         return Response("알 수 없는 오류가 발생하였습니다.", status=status.HTTP_400_BAD_REQUEST)
 
 
-# 내 방송 불러오기
+#TODO 내 방송 불러오기
 @api_view(['GET'])
 @is_influencer
 def get_my_vod(request, result):
@@ -167,11 +167,16 @@ def get_my_vod(request, result):
 
 
 
-# 내가 좋아요 한 VOD 불러오기
+# TODO 내가 좋아요 한 VOD 불러오기
 
-# 상품에 추가된 VOD 불러오기
+# TODO 상품에 추가된 VOD 불러오기
 
-# VOD 좋아요
+# TODO VOD 좋아요
+
+# TODO 방송일정 불러오기
+
+# TODO 지금 핫한 방송
+
 @require_login
 def like_Vod(request, result):
     pass
@@ -227,13 +232,13 @@ class LiveAlarm(APIView):
                 }
                 Customer.update(result.data['_id'], payload)
                 return Response("라이브 예약이 취소되었습니다.", status=status.HTTP_202_ACCEPTED)
-            #Live예약
+            # Live예약
             payload = {
                 'meta': {
                     'Live_id': result.data['meta']['Live_id'] + [request.data.get('Live_id')]
                 }
             }
-            ##토큰을 저장해야함
+            # 토큰을 저장해야함
             set_alarm_to_live(request.data.get('Live_id'),request.data['token'])
 
             Customer.update(result.data['_id'], payload)
