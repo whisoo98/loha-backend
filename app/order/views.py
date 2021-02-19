@@ -430,27 +430,6 @@ class OrderAPI(APIView):#주문 가져오기 수정 삭제
         except Exception as e:
             return Response("알 수 없는 오류가 발생하였습니다.", status=HTTP_400_BAD_REQUEST)
 
-    def delete(self, request, order_id):
-        try:
-
-            Order = Clayful.Order
-            options = {
-
-            }
-
-            result = Order.delete(order_id, options)
-            headers = result.headers
-            data = result.data
-
-            return Response("주문 삭제가 완료되었습니다.")
-
-        except ClayfulException as e:
-            return Response(e.code + ' ' + e.message, status=e.status)
-
-        except Exception as e:
-            return Response("알 수 없는 오류가 발생하였습니다.", status=HTTP_400_BAD_REQUEST)
-
-
 class RefundAcceptAPI(APIView): #환불 승인여부
 
     def __init__(self):
