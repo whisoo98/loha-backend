@@ -232,9 +232,9 @@ def list_product_catalog(request, discount_type):
             },
         }
         if discount_type == 'percentage':
-            options['query']['discountValueMin'] = request.GET.get('max',100)
+            options['query']['discountValueMax'] = request.GET.get('max',100)
         else:
-            options['query']['discountValueMin'] = request.GET.get('max',None)
+            options['query']['discountValueMax'] = request.GET.get('max',None)
         result = Product.list(options)
         headers = result.headers
         data = result.data
