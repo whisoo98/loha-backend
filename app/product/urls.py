@@ -19,6 +19,7 @@ from .views import *
 
 urlpatterns = [
     path('', ProductAPI.as_view()),
+    path('catalog/<str:discount_type>/', list_product_catalog),
     path('collection/', ProductCollectionAPI.as_view()),
     path('collection/<str:collection_id>/', ProductCollectionAPI.as_view()),
     path('search/', product_searchAPI),
