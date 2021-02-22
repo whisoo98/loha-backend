@@ -14,6 +14,7 @@ import datetime
 
 import urllib
 
+
 # 로그인 확인 decorator
 def require_login(func):
     def wrapper(self, request, *args, **kwargs):
@@ -117,7 +118,7 @@ class User(APIView):
                 content = "비밀번호가 일치하지 않습니다."
                 return Response(content, status=status.HTTP_400_BAD_REQUEST)
             payload = {
-                'groups': ['ZZ9HGQBGPLTA'], # 일반고객으로 추가
+                'groups': ['ZZ9HGQBGPLTA'],  # 일반고객으로 추가
                 'userId': request.data['userId'],
                 'email': request.data['email'],
                 'password': request.data['password'],
@@ -130,23 +131,35 @@ class User(APIView):
                 'gender': None if request.data['gender'] == "" else request.data['gender'],
                 'birthdate': None if request.data['birthdate'] == "" else request.data['birthdate']
             }
-            if request.data['address']['primary']['name']['full'] != "" :
+            if request.data['address']['primary']['name']['full'] != "":
                 payload['address'] = {
                     "primary": {
                         "name": {
-                            "first": None if request.data['address']['primary']['name']['first'] =="" else request.data['address']['primary']['name']['first'],
-                            "last": None if request.data['address']['primary']['name']['last'] =="" else request.data['address']['primary']['name']['last'],
-                            "full": None if request.data['address']['primary']['name']['full'] =="" else request.data['address']['primary']['name']['full']
+                            "first": None if request.data['address']['primary']['name']['first'] == "" else
+                            request.data['address']['primary']['name']['first'],
+                            "last": None if request.data['address']['primary']['name']['last'] == "" else
+                            request.data['address']['primary']['name']['last'],
+                            "full": None if request.data['address']['primary']['name']['full'] == "" else
+                            request.data['address']['primary']['name']['full']
                         },
-                        "mobile": None if request.data['address']['primary']['mobile'] =="" else request.data['address']['primary']['mobile'],
-                        "phone": None if request.data['address']['primary']['phone'] =="" else request.data['address']['primary']['phone'],
-                        "country": None if request.data['address']['primary']['country'] =="" else request.data['address']['primary']['country'],
-                        "state": None if request.data['address']['primary']['country'] =="" else request.data['address']['primary']['country'],
-                        "city": None if request.data['address']['primary']['city'] =="" else request.data['address']['primary']['city'],
-                        "address1": None if request.data['address']['primary']['address1'] =="" else request.data['address']['primary']['address1'],
-                        "address2": None if request.data['address']['primary']['address2'] =="" else request.data['address']['primary']['address2'],
-                        "postcode": None if request.data['address']['primary']['postcode'] =="" else request.data['address']['primary']['postcode'],
-                        "company": None if request.data['address']['primary']['company'] =="" else request.data['address']['primary']['company'],
+                        "mobile": None if request.data['address']['primary']['mobile'] == "" else
+                        request.data['address']['primary']['mobile'],
+                        "phone": None if request.data['address']['primary']['phone'] == "" else
+                        request.data['address']['primary']['phone'],
+                        "country": None if request.data['address']['primary']['country'] == "" else
+                        request.data['address']['primary']['country'],
+                        "state": None if request.data['address']['primary']['country'] == "" else
+                        request.data['address']['primary']['country'],
+                        "city": None if request.data['address']['primary']['city'] == "" else
+                        request.data['address']['primary']['city'],
+                        "address1": None if request.data['address']['primary']['address1'] == "" else
+                        request.data['address']['primary']['address1'],
+                        "address2": None if request.data['address']['primary']['address2'] == "" else
+                        request.data['address']['primary']['address2'],
+                        "postcode": None if request.data['address']['primary']['postcode'] == "" else
+                        request.data['address']['primary']['postcode'],
+                        "company": None if request.data['address']['primary']['company'] == "" else
+                        request.data['address']['primary']['company'],
                     }
                 }
             result = Customer.create(payload)
@@ -208,7 +221,8 @@ class User(APIView):
                     'credentials': {
                         'userId': result.data['userId'],
                         'email': result.data['email'] if request.data['email'] == "" else request.data['email'],
-                        'password': request.data['old_password'] if request.data['new_password'] == "" else request.data['new_password'],
+                        'password': request.data['old_password'] if request.data['new_password'] == "" else
+                        request.data['new_password'],
                     }
                 }
                 Customer.update_credentials_for_me(payload, options)
@@ -231,30 +245,42 @@ class User(APIView):
                 'gender': None if request.data['gender'] == "" else request.data['gender'],
                 'birthdate': None if request.data['birthdate'] == "" else request.data['birthdate']
             }
-            if request.data['address']['primary']['name']['full'] != "" :
+            if request.data['address']['primary']['name']['full'] != "":
                 payload['address'] = {
                     "primary": {
                         "name": {
-                            "first": None if request.data['address']['primary']['name']['first'] =="" else request.data['address']['primary']['name']['first'],
-                            "last": None if request.data['address']['primary']['name']['last'] =="" else request.data['address']['primary']['name']['last'],
-                            "full": None if request.data['address']['primary']['name']['full'] =="" else request.data['address']['primary']['name']['full']
+                            "first": None if request.data['address']['primary']['name']['first'] == "" else
+                            request.data['address']['primary']['name']['first'],
+                            "last": None if request.data['address']['primary']['name']['last'] == "" else
+                            request.data['address']['primary']['name']['last'],
+                            "full": None if request.data['address']['primary']['name']['full'] == "" else
+                            request.data['address']['primary']['name']['full']
                         },
-                        "mobile": None if request.data['address']['primary']['mobile'] =="" else request.data['address']['primary']['mobile'],
-                        "phone": None if request.data['address']['primary']['phone'] =="" else request.data['address']['primary']['phone'],
-                        "country": None if request.data['address']['primary']['country'] =="" else request.data['address']['primary']['country'],
-                        "state": None if request.data['address']['primary']['country'] =="" else request.data['address']['primary']['country'],
-                        "city": None if request.data['address']['primary']['city'] =="" else request.data['address']['primary']['city'],
-                        "address1": None if request.data['address']['primary']['address1'] =="" else request.data['address']['primary']['address1'],
-                        "address2": None if request.data['address']['primary']['address2'] =="" else request.data['address']['primary']['address2'],
-                        "postcode": None if request.data['address']['primary']['postcode'] =="" else request.data['address']['primary']['postcode'],
-                        "company": None if request.data['address']['primary']['company'] =="" else request.data['address']['primary']['company'],
+                        "mobile": None if request.data['address']['primary']['mobile'] == "" else
+                        request.data['address']['primary']['mobile'],
+                        "phone": None if request.data['address']['primary']['phone'] == "" else
+                        request.data['address']['primary']['phone'],
+                        "country": "KR" if request.data['address']['primary']['country'] == "" else
+                        request.data['address']['primary']['country'],
+                        "state": None if request.data['address']['primary']['country'] == "" else
+                        request.data['address']['primary']['country'],
+                        "city": None if request.data['address']['primary']['city'] == "" else
+                        request.data['address']['primary']['city'],
+                        "address1": None if request.data['address']['primary']['address1'] == "" else
+                        request.data['address']['primary']['address1'],
+                        "address2": None if request.data['address']['primary']['address2'] == "" else
+                        request.data['address']['primary']['address2'],
+                        "postcode": None if request.data['address']['primary']['postcode'] == "" else
+                        request.data['address']['primary']['postcode'],
+                        "company": None if request.data['address']['primary']['company'] == "" else
+                        request.data['address']['primary']['company'],
                     }
                 }
             Customer.update_me(payload, options)
         except Exception as e:
             self.print_error(e)
             if 'duplicated' in e.code:
-                #content = "이미 가입된 아이디 입니다."
+                # content = "이미 가입된 아이디 입니다."
                 content = {
                     'error': {
                         'message': e.message,
@@ -263,7 +289,7 @@ class User(APIView):
                 }
                 return Response(content, status=status.HTTP_400_BAD_REQUEST)
             elif 'password' in e.code:
-                #content = "잘못된 비밀번호입니다."  # 로그인 정보 변경시
+                # content = "잘못된 비밀번호입니다."  # 로그인 정보 변경시
                 content = {
                     'error': {
                         'message': e.message,
@@ -596,23 +622,32 @@ def facebook_callback(request):
         content = "로그인 실패"
         return Response(content, status=status.HTTP_400_BAD_REQUEST)
 
+
 # Influencer 팔로우
 
 class influencer_like(APIView):
+    # 팔로잉한 인플루엔서 불러오기
     @require_login
     def get(self, request, result):
         try:
-            Customer = Clayful.Customer
-            options = {
-                'query': {
-                    'ids': ','.join(result.data['meta']['Following']),
+            ids_list = result.data['meta']['Following'][1:]
+            ids = ','.join(ids_list)
+            if ids!= "":
+                Customer = Clayful.Customer
+                options = {
+                    'query': {
+                        'raw': True,
+                        'ids': ids,
+                        'fields': "_id,alias,avatar,country,name,meta.Follower"
+                    }
                 }
-            }
-
-            res = Customer.list(options)
+                print(options)
+                res = Customer.list(options).data
+            else :
+                res = [""]
             contents = {
-                "success":{
-                    "Influencer_List": res.data
+                "success": {
+                    "Influencer_List": res
                 }
             }
             return Response(contents)
@@ -629,6 +664,7 @@ class influencer_like(APIView):
                 }
             }
             return Response(contents, status=status.HTTP_400_BAD_REQUEST)
+
     @require_login
     def post(self, request, result):
         try:
@@ -638,14 +674,26 @@ class influencer_like(APIView):
             if request.data.get('InfluencerId') in result.data['meta']['Following']:
                 # 있으면 팔로잉 취소
                 result.data['meta']['Following'].remove(request.data.get('InfluencerId'))
+                # payload = {
+                #     'meta': {
+                #         'Following': result.data['meta']['Following']
+                #     }
+                # }
+
                 payload = {
-                    'meta': {
-                        'Following': result.data['meta']['Following']
-                    }
+                    'value': [
+                        request.data.get('InfluencerId')
+                    ]
                 }
+                try:
+                    Customer.pull_from_metafield(result.data['_id'], 'Following', payload)
+                except Exception as e:
+                    print(e)
+                    return Response("hihi")
+
                 Customer.increase_metafield(request.data.get('InfluencerId'), 'Follower', {'value': -1})
                 # influencer 없으면 알아서 예외 처리됨
-                Customer.update(result.data['_id'], payload)
+                # Customer.update(result.data['_id'], payload)
                 contents = {
                     "success": {
                         "message": "팔로잉 취소",
@@ -654,19 +702,28 @@ class influencer_like(APIView):
                 }
                 return Response(contents, status=status.HTTP_202_ACCEPTED)
             # 팔로잉
+            # payload = {
+            #     'meta': {
+            #         'Following': result.data['meta']['Following'] + [request.data.get('InfluencerId')]
+            #     }
+            # }
             payload = {
-                'meta': {
-                    'Following': result.data['meta']['Following'] + [request.data.get('InfluencerId')]
-                }
+                'value': [
+                    request.data.get('InfluencerId')
+                ],
+                'unique': True
             }
-
+            try:
+                Customer.push_to_metafield(result.data['_id'], 'Following', payload)
+            except Exception as e :
+                print(e)
+                return Response("hihi2")
             Customer.increase_metafield(request.data.get('InfluencerId'), 'Follower', {'value': 1})
-
             ##토큰을 저장해야함
-            set_alarm_to_influencer(result.data['_id'],request.data['token'])
+            # set_alarm_to_influencer(result.data['_id'], request.data['token'])
 
             # influencer 없으면 알아서 예외 처리됨
-            Customer.update(result.data['_id'], payload)
+            # Customer.update(result.data['_id'], payload)
             contents = {
                 "success": {
                     "message": "팔로잉",
