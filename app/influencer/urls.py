@@ -19,5 +19,6 @@ from .views import *
 
 urlpatterns = [
     path('streamkey/', get_stream_key),
-    path('list/live/', live_influencer)
+    path('list/live/', live_influencer),
+    path('list/<str:sort_by>/', list_influencer)
 ]
