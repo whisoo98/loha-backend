@@ -5,6 +5,12 @@ from rest_framework.views import APIView
 from rest_framework.decorators import api_view
 from clayful import Clayful
 from django.conf import settings
+
+# for vod
+from media.models import *
+from django.db.models import Q
+from media.serializers import *
+
 import json
 import pprint
 import requests
@@ -110,3 +116,37 @@ def get_stream_key(request, result):
         }
         return Response(contents, status=status.HTTP_400_BAD_REQUEST)
 
+# TODO now live Influencer
+@api_view(['GET'])
+def live_influencer(request):
+    # influencer_ids = MediaSerializer(
+    #     MediaStream.objects.filter(status='live').values('influencer_id')
+    #     , many=True)
+    ids_list = MediaStream.objects.filter(status='live').values_list('influencer_id', flat=True).distinct('influencer_id')
+    ids= ','.join(ids_list)
+    if ids != "":
+        Customer = Clayful.Customer
+        options = {
+            'query': {
+                'raw': True,
+                'ids': ids,
+                'fields': "_id,alias,avatar,country,name,meta.Follower"
+            }
+        }
+        res = Customer.list(options).data
+    else:
+        res = [""]
+    contents = {
+        "success": {
+            "Influencer_List": res
+        }
+    }
+    return Response(contents)
+
+# TODO Influencer list (popular, new)
+
+# TODO product of Influencer
+
+# TODO VOD of Influencer
+
+# TODO
