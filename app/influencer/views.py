@@ -205,8 +205,66 @@ def list_influencer(request, sort_by):
 
 
 
-# TODO product of Influencer
+# product of Influencer
+@is_influencer
+@api_view(['GET'])
+def get_my_product(request, result):
+    try:
+        my_product = MediaStream.objects.filter(
+            Q(influencer_id=result['_id']) & Q(status='completed')
+        ).values_list('product_list', flat=True)
+        ids = ','.join(my_product)
 
-# TODO VOD of Influencer
+        Product = Clayful.Product
 
-# TODO
+        options = {
+            'query': {
+                'ids': ids
+            }
+        }
+
+        res = Product.list(options)
+        contents = {
+            'success': {
+                'message': '성공',
+                'product_list': res.data
+            }
+        }
+        return Response(contents, status=status.HTTP_200_OK)
+    except Exception as e:
+        print(e)
+        contents = {
+            'error': {
+                'message': '알 수 없는 오류',
+                'code': e
+            }
+        }
+        return Response(contents, status=status.HTTP_400_BAD_REQUEST)
+    pass
+
+# 내 방송 불러오기
+@api_view(['GET'])
+@is_influencer
+def get_my_vod(request, result):
+    try:
+        my_vod = MediaSerializer(
+            MediaStream.objects.filter(influencer_id=result['_id']).order_by('-started_at'),
+                        many=True)
+        contents = {
+            'success': {
+                'message': '성공',
+                'data': my_vod.data
+            }
+        }
+        return Response(contents, status=status.HTTP_200_OK)
+    except Exception as e:
+        print(e)
+        contents = {
+            'error': {
+                'message': '알 수 없는 오류',
+                'code': e
+            }
+        }
+        return Response(contents, status=status.HTTP_400_BAD_REQUEST)
+
+
