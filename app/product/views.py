@@ -10,6 +10,12 @@ from rest_framework.views import APIView
 from rest_framework.decorators import api_view,parser_classes
 from rest_framework.parsers import JSONParser
 
+# for vod
+from media.models import *
+from django.db.models import Q
+from media.serializers import *
+
+
 from clayful import Clayful,ClayfulException
 import json
 import pprint
@@ -118,9 +124,18 @@ class ProductAPI(APIView):
                     #'fields' : '_id,name,summary,description,price,discount,shipping,available,brand,thumbnail,collections,options,variants,meta.stream_url'
                 },
             }
+
             result = Product.get(product_id, options)
             headers = result.headers
             data = result.data
+
+            # VOD 불러오기
+
+            product_vod = MediaSerializer(
+                MediaStream.objects.filter(id__in = data['meta']['my_vod']).order_by('-started_at')
+                , many=True)
+            data['vod_list'] = product_vod.data
+
             data = set_raw(data)
             vendor = data['vendor']['_id']
             ShippingPolicy = Clayful.ShippingPolicy
