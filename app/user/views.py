@@ -8,6 +8,9 @@ from rest_framework.views import APIView
 from rest_framework.decorators import api_view
 from clayful import Clayful
 from django.conf import settings
+from django.db.models import Q
+from media.serializers import *
+from media.models import *
 import json
 import requests
 import datetime
@@ -641,7 +644,6 @@ class influencer_like(APIView):
                         'fields': "_id,alias,avatar,country,name,meta.Follower"
                     }
                 }
-                print(options)
                 res = Customer.list(options).data
             else :
                 res = [""]
@@ -672,28 +674,18 @@ class influencer_like(APIView):
 
             # 현재 팔로잉 상태를 확인
             if request.data.get('InfluencerId') in result.data['meta']['Following']:
-                # 있으면 팔로잉 취소
-                result.data['meta']['Following'].remove(request.data.get('InfluencerId'))
-                # payload = {
-                #     'meta': {
-                #         'Following': result.data['meta']['Following']
-                #     }
-                # }
-
+                # 존재하면
+                # 팔로워 수 감소
+                Customer.increase_metafield(request.data.get('InfluencerId'), 'Follower', {'value': -1})
+                # influencer 없으면 알아서 예외 처리됨
+                # 팔로잉 취소
                 payload = {
                     'value': [
                         request.data.get('InfluencerId')
                     ]
                 }
-                try:
-                    Customer.pull_from_metafield(result.data['_id'], 'Following', payload)
-                except Exception as e:
-                    print(e)
-                    return Response("hihi")
+                Customer.pull_from_metafield(result.data['_id'], 'Following', payload)
 
-                Customer.increase_metafield(request.data.get('InfluencerId'), 'Follower', {'value': -1})
-                # influencer 없으면 알아서 예외 처리됨
-                # Customer.update(result.data['_id'], payload)
                 contents = {
                     "success": {
                         "message": "팔로잉 취소",
@@ -701,29 +693,21 @@ class influencer_like(APIView):
                     }
                 }
                 return Response(contents, status=status.HTTP_202_ACCEPTED)
+
+            # 팔로워 수 증가
+            Customer.increase_metafield(request.data.get('InfluencerId'), 'Follower', {'value': 1})
+            # influencerId 없으면 예외처리 됨
             # 팔로잉
-            # payload = {
-            #     'meta': {
-            #         'Following': result.data['meta']['Following'] + [request.data.get('InfluencerId')]
-            #     }
-            # }
             payload = {
                 'value': [
                     request.data.get('InfluencerId')
                 ],
                 'unique': True
             }
-            try:
-                Customer.push_to_metafield(result.data['_id'], 'Following', payload)
-            except Exception as e :
-                print(e)
-                return Response("hihi2")
-            Customer.increase_metafield(request.data.get('InfluencerId'), 'Follower', {'value': 1})
-            ##토큰을 저장해야함
-            # set_alarm_to_influencer(result.data['_id'], request.data['token'])
+            Customer.push_to_metafield(result.data['_id'], 'Following', payload)
 
-            # influencer 없으면 알아서 예외 처리됨
-            # Customer.update(result.data['_id'], payload)
+            #토큰을 저장해야함
+            # set_alarm_to_influencer(result.data['_id'], request.data['token'])
             contents = {
                 "success": {
                     "message": "팔로잉",
@@ -738,6 +722,85 @@ class influencer_like(APIView):
                 print(e.message)
             except Exception as er:
                 pass
+            contents = {
+                "error": {
+                    "message": "잘못된 요청입니다."
+                }
+            }
+            return Response(contents, status=status.HTTP_400_BAD_REQUEST)
+
+
+class vod_like(APIView):
+    # 팔로잉한 인플루엔서 불러오기
+    @require_login
+    def get(self, request, result):
+        try:
+            my_vod = MediaSerializer(
+                MediaStream.objects.filter(id__in=result.data['meta']['my_vod']).order_by('-started_at')
+                , many=True)
+            contents = {
+                "success": {
+                    "my_vod": my_vod.data
+                }
+            }
+            return Response(contents)
+        except Exception as e:
+            print(e)
+            contents = {
+                "error": {
+                    "message": "잘못된 요청입니다."
+                }
+            }
+            return Response(contents, status=status.HTTP_400_BAD_REQUEST)
+
+    @require_login
+    def post(self, request, result):
+        try:
+            Customer = Clayful.Customer
+
+            # 현재 좋아요 상태를 확인
+            if request.data.get('vod_id') in result.data['meta']['my_vod']:
+                # 존재하면
+                # TODO 좋아요수 감소
+                # Customer.increase_metafield(request.data.get('InfluencerId'), 'Follower', {'value': -1})
+
+                # 좋아요 취소
+                payload = {
+                    'value': [
+                        request.data.get('vod_id')
+                    ]
+                }
+                Customer.pull_from_metafield(result.data['_id'], 'my_vod', payload)
+
+                contents = {
+                    "success": {
+                        "message": "좋아요 취소",
+                        "status": "0"
+                    }
+                }
+                return Response(contents, status=status.HTTP_202_ACCEPTED)
+
+            # TODO 영상 좋아요 수 증가 for 인기 VOD
+            # Customer.increase_metafield(request.data.get('InfluencerId'), 'Follower', {'value': 1})
+
+            # 좋아요
+            payload = {
+                'value': [
+                    request.data.get('vod_id')
+                ],
+                'unique': True
+            }
+            Customer.push_to_metafield(result.data['_id'], 'my_vod', payload)
+
+            contents = {
+                "success": {
+                    "message": "좋아요",
+                    "status": "1"
+                }
+            }
+            return Response(contents, status=status.HTTP_202_ACCEPTED)
+        except Exception as e:
+            print(e)
             contents = {
                 "error": {
                     "message": "잘못된 요청입니다."
