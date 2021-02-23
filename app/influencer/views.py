@@ -5,27 +5,36 @@ from rest_framework.views import APIView
 from rest_framework.decorators import api_view
 from clayful import Clayful
 from django.conf import settings
+
+# for vod
+from media.models import *
+from django.db.models import Q
+from media.serializers import *
+
 import json
 import pprint
 import requests
 import datetime
 
 import urllib
+
+
 # Create your views here.
 
 class AuthorizationError(Exception):
     def __str__(self):
         return "접근 권한이 없습니다."
 
+
 # 인플루엔서 확인 decorator
 def is_influencer(func):
     def wrapper(request, *args, **kwargs):
         try:
             Customer = Clayful.Customer
-            token= request.headers.get('Custom-Token')
+            token = request.headers.get('Custom-Token')
             # 이름, 별명, 이메일, 그룹 불러오기
             query = {
-                'raw' : True,
+                'raw': True,
                 'fields': "userId,country,name,alias,email,groups,phone,meta"
             }
             options = {
@@ -57,7 +66,9 @@ def is_influencer(func):
             return Response(content, status=status.HTTP_401_UNAUTHORIZED)
 
         return func(request, *args, **kwargs)
+
     return wrapper
+
 
 # 스트림 키 가져오기
 @api_view(['GET'])
@@ -68,12 +79,12 @@ def get_stream_key(request, result):
             headers = {'Content-Type': 'application/json'}
             data = '{ "playback_policy": "public", "new_asset_settings": { "playback_policy": "public" } }'
             mux_response = requests.post('https://api.mux.com/video/v1/live-streams', headers=headers, data=data, auth=(
-            getattr(settings, 'MUX_CLIENT_ID', None),
-            getattr(settings, 'MUX_SECRET_KEY', None)))
+                getattr(settings, 'MUX_CLIENT_ID', None),
+                getattr(settings, 'MUX_SECRET_KEY', None)))
             mux_data = mux_response.json()
             Customer = Clayful.Customer
-            payload ={
-                'meta':{
+            payload = {
+                'meta': {
                     'Stream_key': mux_data['data']['stream_key'],
                     'Stream_url': 'https://stream.mux.com/' + mux_data['data']['playback_ids'][0]['id'],
                     'Stream_id': mux_data['data']['id']
@@ -109,4 +120,151 @@ def get_stream_key(request, result):
             }
         }
         return Response(contents, status=status.HTTP_400_BAD_REQUEST)
+
+
+# now live Influencer
+@api_view(['GET'])
+def live_influencer(request):
+    try:
+        ids_list = MediaStream.objects.filter(status='live').values_list('influencer_id', flat=True).distinct(
+            'influencer_id')
+        ids = ','.join(ids_list)
+        if ids != "":
+            Customer = Clayful.Customer
+            options = {
+                'query': {
+                    'raw': True,
+                    'ids': ids,
+                    'fields': "_id,alias,avatar,country,name,meta.Follower"
+                }
+            }
+            res = Customer.list(options).data
+        else:
+            res = [""]
+        contents = {
+            "success": {
+                "Influencer_List": res
+            }
+        }
+        return Response(contents)
+    except Exception as e:
+        print(e)
+        try:
+            print(e.code)
+            print(e.message)
+        except Exception as er:
+            pass
+        content = {
+            "error": {
+                "message": "잘못된 요청입니다."
+            }
+        }
+        return Response(contents, status=status.HTTP_400_BAD_REQUEST)
+
+
+# Influencer list (popular, new)
+@api_view(['GET'])
+def list_influencer(request, sort_by):
+    try :
+        Customer = Clayful.Customer
+
+        options = {
+            'query': {
+                'raw': True,
+                'group': 'XU79MY58Q2C4',
+                'fields': "_id,alias,avatar,country,name,meta.Follower"
+            }
+        }
+
+        # 만들어진 순서로 정렬
+        res = Customer.list(options).data
+        # 인기순 정렬
+        if sort_by == 'popular':
+            res = sorted(res, key=lambda r: r['meta']['Follower'], reverse=True)
+
+        contents = {
+            "success": {
+                "Influencer_List": res
+            }
+        }
+        return Response(contents)
+
+    except Exception as e:
+        print(e)
+        try:
+            print(e.code)
+            print(e.message)
+        except Exception as er:
+            pass
+        content = {
+            "error": {
+                "message": "잘못된 요청입니다."
+            }
+        }
+        return Response(contents, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+# product of Influencer
+@is_influencer
+@api_view(['GET'])
+def get_my_product(request, result):
+    try:
+        my_product = MediaStream.objects.filter(
+            Q(influencer_id=result['_id']) & Q(status='completed')
+        ).values_list('product_list', flat=True)
+        ids = ','.join(my_product)
+
+        Product = Clayful.Product
+
+        options = {
+            'query': {
+                'ids': ids
+            }
+        }
+
+        res = Product.list(options)
+        contents = {
+            'success': {
+                'message': '성공',
+                'product_list': res.data
+            }
+        }
+        return Response(contents, status=status.HTTP_200_OK)
+    except Exception as e:
+        print(e)
+        contents = {
+            'error': {
+                'message': '알 수 없는 오류',
+                'code': e
+            }
+        }
+        return Response(contents, status=status.HTTP_400_BAD_REQUEST)
+    pass
+
+# 내 방송 불러오기
+@api_view(['GET'])
+@is_influencer
+def get_my_vod(request, result):
+    try:
+        my_vod = MediaSerializer(
+            MediaStream.objects.filter(influencer_id=result['_id']).order_by('-started_at'),
+                        many=True)
+        contents = {
+            'success': {
+                'message': '성공',
+                'data': my_vod.data
+            }
+        }
+        return Response(contents, status=status.HTTP_200_OK)
+    except Exception as e:
+        print(e)
+        contents = {
+            'error': {
+                'message': '알 수 없는 오류',
+                'code': e
+            }
+        }
+        return Response(contents, status=status.HTTP_400_BAD_REQUEST)
+
 

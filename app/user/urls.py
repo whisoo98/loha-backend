@@ -19,6 +19,7 @@ from .views import *
 urlpatterns = [
     path('', User.as_view()),
     path('influencer/like/', influencer_like.as_view()),
+    path('myvod/', vod_like.as_view()),
     path('auth/', Auth.as_view()),
     path('auth/kakao/login/', kakao_login),
     path('auth/kakao/callback/', kakao_callback),
