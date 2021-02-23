@@ -229,8 +229,9 @@ def set_raw(order):
 
     return order
 
+
 @api_view(['GET'])
-def order_list_api(request):
+def order_list_api(request): #본인의 주문 내역 list
     Clayful.config({
         'client': getattr(settings, 'CLAYFUL_SECRET_KEY', None),
         'language': 'ko',
@@ -288,7 +289,7 @@ def order_list_api(request):
         return Response("알 수 없는 오류가 발생하였습니다.", status=HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
-def cancel_for_me_api(request, order_id):
+def cancel_for_me_api(request, order_id): #본인의 주문 하나 취소
     Clayful.config({
         'client': getattr(settings, 'CLAYFUL_SECRET_KEY', None),
         'language': 'ko',
@@ -316,7 +317,7 @@ def cancel_for_me_api(request, order_id):
     except Exception as e:
         return Response("알 수 없는 오류가 발생하였습니다.", status=HTTP_400_BAD_REQUEST)
 
-class OrderAPI(APIView):#주문 가져오기 수정 삭제
+class OrderAPI(APIView):#주문 가져오기 수정
 
     def __init__(self):
         Clayful.config({
@@ -372,7 +373,7 @@ class OrderAPI(APIView):#주문 가져오기 수정 삭제
 
 
 
-class OrderMarkReceiveAPI(APIView):
+class OrderMarkReceiveAPI(APIView): #주문 수령 체크
     def __init__(self):
         Clayful.config({
             'client': getattr(settings, 'CLAYFUL_SECRET_KEY', None),
@@ -426,7 +427,8 @@ class OrderMarkReceiveAPI(APIView):
         except Exception as e:
             return Response("알 수 없는 오류가 발생하였습니다.", status=HTTP_400_BAD_REQUEST)
 
-class FulfillAPI(APIView):
+
+class FulfillAPI(APIView): #배송 생성 수정 삭제
     def __init__(self):
         Clayful.config({
             'client': getattr(settings, 'CLAYFUL_SECRET_KEY', None),
