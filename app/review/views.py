@@ -79,20 +79,21 @@ class ReviewAPI(APIView):
 
             headers = result.headers
             data = result.data
-            data['publishedAt']['raw']=data['publishedAt']
-            data['createdAt']['raw']=data['createdAt']
-            data['updatedAt']['raw']=data['updatedAt']
+            data['publishedAt']=data['publishedAt']['raw']
+            data['createdAt']=data['createdAt']['raw']
+            data['updatedAt']=data['updatedAt']['raw']
             data['product']['price']['original']=data['product']['price']['original']['raw']
             data['product']['price']['sale']=data['product']['price']['sale']['raw']
-            data['discount']['discounted']=data['discount']['discounted']['raw']
-            if data['discount']['value'] is not None:
-                data['discount']['value']=data['discount']['value']['raw']
+            data['product']['discount']['discounted']=data['product']['discount']['discounted']['raw']
+            if data['product']['discount']['value'] is not None:
+                data['product']['discount']['value']=data['product']['discount']['value']['raw']
 
             return Response(data)
         except ClayfulException as e:
             return Response(e.code, status=e.status)
 
         except Exception as e:
+            print(e)
             return Response("알 수 없는 오류가 발생하였습니다.", status=HTTP_400_BAD_REQUEST)
 
     def delete(self, request, review_id):
@@ -118,42 +119,48 @@ class ReviewAPI(APIView):
         try:
             Review = Clayful.Review
             Image = Clayful.Image
-            payload = json.dumps(request.data['payload'])
+            payload = request.data
             options = {
                 'customer': request.headers['Custom-Token'],
             }
 
-            img_list = request.data['images']
+            before = Review.get_published(review_id, {}).data
+            img_list = request.FILES.getlist('images')
 
-            before = Review.get_published(review_id, {
-                'customer': request.headers['Custom-Token'],
-                'field': 'images'
-            }).data
+            if img_list is None:
+                res = Review.update_for_me(review_id,payload,options)
+                return Response(res.data)
+            else:
+                before_img = before['images']
+                for img in before_img:
+                    Image.delete_for_me(img['_id'],options)
 
-            for img in before:
-                Image.delete_for_me(img,options)
+                after = []
+                img_payload = {
+                    'model': (None, 'Review'),
+                    'application': (None, 'images'),
+                }
+                for img in img_list:
+                    img_payload['file'] = (
+                        'image.jpg',
+                        img,
+                        'image/jpeg'
+                    )
+                    after.append(Image.create_for_me(img_payload, options).data['_id'])
 
-            after = []
-            img_payload = {
-                'model': 'Review',
-                'application': 'images'
-            }
-            for img in img_list:
-                img_payload['file'] = img
-                after.append(Image.create_for_me(img_payload, options))
+                payload['images'] = after
+                result = Review.update_for_me(review_id, json.dumps(payload), options)
 
-            payload['images'] = after
-            result = Review.update_for_me(review_id, payload, options)
+                headers = result.headers
+                data = result.data
 
-            headers = result.headers
-            data = result.data
-
-            return Response(data)
+                return Response(data)
 
         except ClayfulException as e:
             return Response(e.code, status=e.status)
 
         except Exception as e:
+            print(e)
             return Response("알 수 없는 오류가 발생하였습니다.", status=HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
