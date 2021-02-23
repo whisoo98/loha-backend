@@ -166,7 +166,7 @@ def delete_my_vod(request, result):
     try:
         now_stream = MediaStream.objects.get(Q(pk=request.data['media_id']) & Q(influencer_id=result['_id']))
         now_stream.delete()
-        LiveAlarm.objects.filter(id=request.data['media_id']).all().delete()
+        LiveAlarm.objects.filter(Live_id=request.data['media_id']).all().delete()
         return Response("삭제되었습니다", status=status.HTTP_200_OK)
     except Exception as e:
         print(e)
@@ -250,8 +250,8 @@ class LiveAlarm(APIView):
     def post(self, request, result):
         try:
             Customer = Clayful.Customer
-            if request.data.get('Live_id') in result.data['meta']['Live_id']:  # Live예약 취소
-                result.data['meta']['Live_id'].remove(request.data.get('Live_id'))
+            if request.data.get('_id') in result.data['meta']['Live_id']: #Live예약 취소
+                result.data['meta']['Live_id'].remove(request.data.get('_id'))
                 payload = {
                     'meta': {
                         'Live_id': result.data['meta']['Live_id']
@@ -262,11 +262,11 @@ class LiveAlarm(APIView):
             # Live예약
             payload = {
                 'meta': {
-                    'Live_id': result.data['meta']['Live_id'] + [request.data.get('Live_id')]
+                    'Live_id': result.data['meta']['Live_id'] + [request.data.get('_id')]
                 }
             }
-            # 토큰을 저장해야함
-            set_alarm_to_live(request.data.get('Live_id'), request.data['token'])
+            ##토큰을 저장해야함
+            set_alarm_to_live(request.data.get('_id'),request.data['token'])
 
             Customer.update(result.data['_id'], payload)
             return Response("라이브 예약이 설정되었습니다.", status=status.HTTP_202_ACCEPTED)

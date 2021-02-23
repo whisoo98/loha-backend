@@ -101,6 +101,8 @@ INSTALLED_APPS = [
     'order',
     'webhook',
     'push',
+    'forgetuser',
+    'refund',
 ]
 
 MIDDLEWARE = [
@@ -206,3 +208,13 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
 # Datetime format
 DATETIME_FORMAT = 'Y-m-d H:i:s'
+
+
+# Send Email
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = get_secret('EMAIL_HOST') or None
+EMAIL_HOST_USER = get_secret('EMAIL_HOST_USER') or None
+EMAIL_HOST_PASSWORD = get_secret('EMAIL_HOST_PASSWORD') or None
+EMAIL_PORT = get_secret('EMAIL_PORT') or None
+EMAIL_USE_TLS = True
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER

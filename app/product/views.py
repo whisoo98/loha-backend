@@ -226,3 +226,40 @@ def product_searchAPI(request):
 
     except Exception as e:
         return Response("잘못된 검색입니다.")
+
+@api_view(['GET'])
+def list_product_catalog(request, discount_type):
+    Clayful.config({
+        'client': getattr(settings, 'CLAYFUL_SECRET_KEY', None),
+        'language': 'ko',
+        'currency': 'KRW',
+        'time_zone': 'Asia/Seoul',
+        'debug_language': 'ko',
+    })
+    try:
+        Product = Clayful.Product
+        options = {
+            'query': {
+                'available': True,
+                'discountType': discount_type,
+                'discountValueMin':request.GET.get('min',0),
+
+            },
+        }
+        if discount_type == 'percentage':
+            options['query']['discountValueMax'] = request.GET.get('max',100)
+        else:
+            options['query']['discountValueMax'] = request.GET.get('max',None)
+        result = Product.list(options)
+        headers = result.headers
+        data = result.data
+
+        for dict in data:
+            dict = set_raw(dict)
+
+        return Response(data)
+
+    except ClayfulException as e:
+        return Response(e.code + " " + e.message, status=e.status)
+    except Exception as e:
+        return Response("알 수 없는 예외가 발생하였습니다.", status=HTTP_400_BAD_REQUEST)
