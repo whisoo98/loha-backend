@@ -201,17 +201,16 @@ def list_influencer(request, sort_by):
                 "message": "잘못된 요청입니다."
             }
         }
-        return Response(contents, status=status.HTTP_400_BAD_REQUEST)
+        return Response(content, status=status.HTTP_400_BAD_REQUEST)
 
 
 
 # product of Influencer
-@is_influencer
 @api_view(['GET'])
 def get_my_product(request, result):
     try:
         my_product = MediaStream.objects.filter(
-            Q(influencer_id=result['_id']) & Q(status='completed')
+            Q(influencer_id=request.data['influencer_id']) & Q(status='completed')
         ).values_list('product_list', flat=True)
         ids = ','.join(my_product)
 
@@ -244,11 +243,10 @@ def get_my_product(request, result):
 
 # 내 방송 불러오기
 @api_view(['GET'])
-@is_influencer
-def get_my_vod(request, result):
+def get_my_vod(request):
     try:
         my_vod = MediaSerializer(
-            MediaStream.objects.filter(influencer_id=result['_id']).order_by('-started_at'),
+            MediaStream.objects.filter(influencer_id=request.data['influencer_id']).order_by('-started_at'),
                         many=True)
         contents = {
             'success': {
