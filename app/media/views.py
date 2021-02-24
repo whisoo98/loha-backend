@@ -13,6 +13,7 @@ from .serializers import *
 from user.views import require_login
 from clayful import Clayful, ClayfulException
 from chat.models import *
+from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
 import json
 import pprint
@@ -28,7 +29,6 @@ class NoStreamKeyError(Exception):
 class NotEnoughDataError(Exception):
     def __str__(self):
         return "잘못된 입력입니다."
-
 
 # TODO: 방송 예약
 @api_view(['POST'])
@@ -149,6 +149,13 @@ def edit_my_vod(request, result):
             }
         }
         return Response(contents, status=status.HTTP_200_OK)
+    except ObjectDoesNotExist:
+        contents = {
+            'error': {
+                'message': '존재하지 않는 방송입니다.'
+            }
+        }
+        return Response(contents, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
         print(e)
         contents = {
@@ -158,19 +165,41 @@ def edit_my_vod(request, result):
         }
         return Response(contents, status=status.HTTP_400_BAD_REQUEST)
 
-
-# TODO 방송 취소
+# TODO 방송 삭제
 @api_view(['Delete'])
 @is_influencer
 def delete_my_vod(request, result):
     try:
         now_stream = MediaStream.objects.get(Q(pk=request.data['media_id']) & Q(influencer_id=result['_id']))
+
+        # TODO MUX에서 영상 삭제
+
         now_stream.delete()
-        LiveAlarm.objects.filter(Live_id=request.data['media_id']).all().delete()
-        return Response("삭제되었습니다", status=status.HTTP_200_OK)
+
+        #LiveAlarm.objects.filter(Live_id=request.data['media_id']).all().delete()
+
+        contents = {
+            'success': {
+                'message': '삭제 완료'
+            }
+        }
+        return Response(contents, status=status.HTTP_202_ACCEPTED)
+    except ObjectDoesNotExist:
+        contents = {
+            'error': {
+                'message': '존재하지 않는 방송입니다.'
+            }
+        }
+        return Response(contents, status=status.HTTP_400_BAD_REQUEST)
+
     except Exception as e:
         print(e)
-        return Response("알 수 없는 오류가 발생하였습니다.", status=status.HTTP_400_BAD_REQUEST)
+        contents = {
+            'error': {
+                'message': '알 수 없는 오류',
+            }
+        }
+        return Response(contents, status=status.HTTP_400_BAD_REQUEST)
 
 # Today byeolshow schedule
 @api_view(["GET"])
@@ -188,7 +217,6 @@ def get_future_schedule(request):
         MediaStream.objects.filter(Q(started_at__gt=datetime.date.today())).order_by('-started_at'), many=True)
 
     return Response(today_media.data)
-
 
 # TODO 지금 핫한 방송
 def get_hot_live(request):

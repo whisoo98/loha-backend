@@ -49,11 +49,6 @@ def is_influencer(func):
         except Exception as e:
             print(e)
             try:
-                print(e.is_clayful)
-                print(e.model)
-                print(e.method)
-                print(e.status)
-                print(e.headers)
                 print(e.code)
                 print(e.message)
             except Exception as er:
@@ -70,7 +65,7 @@ def is_influencer(func):
     return wrapper
 
 
-# 스트림 키 가져오기
+# 스트림 키 생성 및 가져오기
 @api_view(['GET'])
 @is_influencer
 def get_stream_key(request, result):
@@ -93,9 +88,9 @@ def get_stream_key(request, result):
             Customer.update(result['_id'], payload)
             contents = {
                 "success": {
-                    'Stream_key': result['meta']['Stream_key'],
-                    'Stream_url': result['meta']['Stream_url'],
-                    'Stream_id': result['meta']['Stream_id']
+                    'Stream_key': mux_data['data']['stream_key'],
+                    'Stream_url': 'https://stream.mux.com/' + mux_data['data']['playback_ids'][0]['id'],
+                    'Stream_id': mux_data['data']['id']
                 }
             }
             return Response(contents)
@@ -114,9 +109,9 @@ def get_stream_key(request, result):
             print(e.message)
         except Exception as er:
             pass
-        content = {
+        contents = {
             "error": {
-                "message": "잘못된 요청입니다."
+                "message": "잘못된 요청입니다.",
             }
         }
         return Response(contents, status=status.HTTP_400_BAD_REQUEST)

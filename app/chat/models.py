@@ -12,25 +12,9 @@ class RoomUser(models.Model):
 
 
 class Room(models.Model):
-    room_name = models.TextField(primary_key=True)
-    room_streamer = models.TextField(null=True)
+    room_name = models.CharField(max_length=200)
+    room_streamer = models.CharField(max_length=200)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.room_name
-
-
-class Message(models.Model):
-    room = models.ForeignKey('Room', on_delete=models.CASCADE, db_index=False, db_column='room')
-    # room = models.TextField()
-    author = models.TextField()
-    content = models.TextField()
-    timestamp = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return self.author
-
-    def fetch_messages(room_name):
-        return Message.objects.filter(room=room_name).order_by('timestamp').all()
-
-    fetch_messages = staticmethod(fetch_messages)
