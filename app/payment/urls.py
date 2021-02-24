@@ -18,7 +18,6 @@ from django.urls import path, include
 from .views import *
 
 urlpatterns = [
-    path('', create_payment),
-    path('cancel/', cancel_payment),
-    path('find/', find_payment),
+    path('verify/',verify_payment),
+
 ]
