@@ -340,8 +340,9 @@ class OrderAPI(APIView):#주문 가져오기 수정
 
             headers = result.headers
             data = result.data
+            print("@")
             data = set_raw(data)
-
+            print("!")
             return Response(data)
 
         except ClayfulException as e:

@@ -34,64 +34,80 @@ IMP_PG_EXIMBAY = "eximbay"  # 엑심베이
 IMP_PG_NAVERPAY = "naverco"  # 네이버페이
 '''
 
-
-
-
-
-
-
-
-
-
-
-
 @api_view(['POST'])
-def cancel_payment(request):
+def verify_payment(request):
+    
+    #토큰 발급
     client = Iamport(imp_key=getattr(settings, 'IAMPORT_REST_KEY', None),
                      imp_secret=getattr(settings, 'IAMPORT_SECRET_REST_KEY', None))
 
-    """승인된 결제를 취소합니다.
-            Args:
-                imp_uid (str): 아임포트 고유 번호
-                merchant_uid (str): 가맹점지정 고유 번호. imp_uid와 merchant_uid 중 하나는 필수이어야합니다. 두 값이 모두 넘어오면 imp_uid를 우선 적용합니다.
-                amount (float): 취소 요청 금액. 누락 시 전액을 취소합니다.
-                tax_free (float): 취소 요청 금액 중 면세 금액. 누락 시 0원으로 간주합니다.
-                reason (str): 취소 사유
-            Returns:
-                dict
-            """
+    try:
+        #프론트로 부터 결제 정보 받음
+        imp_uid=request.data.get('imp_uid')
+        merchant_uid=request.data.get('merchant_uid')
+        amount_to_be_paid = request.data['amount']
+        #결제정보 조회
+        response = client.find(imp_uid=imp_uid,merchant_uid=merchant_uid)
+        is_paid = client.is_paid(amount=amount_to_be_paid, imp_uid=imp_uid,merchant_uid=merchant_uid)
+        if is_paid is True: # 납부 완료
+            content = {
+                'status':'success',
+                'message':'결제가 완료되었습니다.'
+            }
+            return Response(content)
+        # 가상계좌는 현재로서는 구현하지 않음
+        # elif response['status'] == 'ready': # 가상계좌
+        #     # TODO: 카톡으로 가상계좌정보 보내기
+        #     # webhook을 통해서 클레이풀에 가상계좌 정보 입력됨
+        #     content = {
+        #         'status': 'vbank',
+        #         'message': '가상계좌가 발급되었습니다.'
+        #     }
+        #     return Response(content)
+        else: # 결제 오류
+            content = {
+                'status':'fail',
+                'message':'결제금액과 주문금액이 일치하지 않습니다.'
+            }
+            return Response(content)
 
-    body = json.dumps(request.data)
+    except Exception as e:
+        print(e)
+        print(e.code)
+        print(e.message)
+        return Response("에러 발생 백에 문의하세요", status=e.status)
+
+
+def cancel_payment(order_id, refund_id):
+    # 토큰 발급
+    client = Iamport(imp_key=getattr(settings, 'IAMPORT_REST_KEY', None),
+                     imp_secret=getattr(settings, 'IAMPORT_SECRET_REST_KEY', None))
 
     try:
 
-        response = client.cancel_payment(
-            imp_uid=body['imp_uid'],
-            merchant_uid=body['merchant_uid'],
-            amount=body['amount'],
-            tax_free=body['tax_free'],
-            reason=body['reason'],
-        )
+        Order = Clayful.Order
+        order = Order.get(order_id, {}).data
 
-        return Response(response)
+        refunds = order['refunds']
+        for refund in refunds: # target what i want 'refund'
+            if refund['_id'] == refund_id:
+                break
+
+        merchant_uid = order_id
+        cancel_request_amount = refund['total']['price']['withTax']
+        reason = refund['reason']
+
+        try:
+            response = client.cancel(reason, merchant_uid=merchant_uid, amount=cancel_request_amount)
+            return Response(response)
+        except Iamport.ResponseError as e:
+            print(e.code)
+            print(e.message)  # 에러난 이유를 알 수 있음
+            return Response(e.code + ' ' + e.message, status=e.status)
+        except Iamport.HttpError as http_error:
+            print(http_error.code)
+            print(http_error.reason)# HTTP not 200 에러난 이유를 알 수 있음
+            return Response('알 수 없는 에러가 발생했습니다.')
 
     except Exception as e:
         return Response(e.response)
-
-@api_view(['GET'])
-def find_payment(request):
-    client = Iamport(imp_key=getattr(settings, 'IAMPORT_REST_KEY', None),
-                     imp_secret=getattr(settings, 'IAMPORT_SECRET_REST_KEY', None))
-
-    body = json.dumps(request.data)
-
-    try:
-        response = client.find(merchant_uid = body['order_id'])
-        return Response(response)
-
-    except Exception as e:
-        return Response(e.message)
-
-
-
-

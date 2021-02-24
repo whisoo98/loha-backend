@@ -16,11 +16,10 @@ import requests
 from clayful import Clayful, ClayfulException
 
 from refund.views import Refund
-
+from payment.views import cancel_payment
 # Create your views here.
 
-#TODO: 환불 완료 알람 해주기
-# 환불처리가 승인되었습니다. 곧 환불이 될 예정입니다~~
+
 @api_view(['POST'])
 def restock_all_refund_items(request):
     Clayful.config({
@@ -34,34 +33,18 @@ def restock_all_refund_items(request):
         order_id = request.data['params']['orderId']
         refund_id = request.data['params']['refundId']
         Order = Clayful.Order
-        refunds = Order.get(order_id,{}).data['refunds']
-        refunded = None
-        amount = 0
-        for refund in refunds:
-            if refund['_id'] == refund_id:
-                refunded = refund
-                break
 
-        payload = {
-            'order_id' : order_id,
-            'amount' : refunded['total']['price']['withTax'],
-            'reaseon' : refunded['reason'],
-            # 가상계좌 관련 정보
-        }
-        res_iamport = Refund(payload)
-        if res_iamport.status_code == HTTP_401_UNAUTHORIZED:
-            return Response("유효하지 않은 환불 시도입니다. 다시 시도해주세요", status=res_iamport.status_code)
-        options = {
-        }
+        response = cancel_payment(order_id=order_id, refund_id=refund_id)
 
-        result = Order.restock_all_refund_items(order_id, refund_id, options)
+        Order.restock_all_refund_items(order_id, refund_id, {})
 
-        headers = result.headers
-        data = result.data
-        ## 환불 알람 해주기
-        return Response(data)
+        # TODO: 환불 승인 문자 해주기
+        # 환불처리가 승인되었습니다.
+
 
     except ClayfulException as e:
+        print(e.code)
+        print(e.message)
         return Response(e.code + ' ' + e.message, status=e.status)
 
     except Exception as e:
