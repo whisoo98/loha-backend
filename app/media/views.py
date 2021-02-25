@@ -30,7 +30,7 @@ class NotEnoughDataError(Exception):
     def __str__(self):
         return "잘못된 입력입니다."
 
-# TODO: 방송 예약
+# 방송 예약
 @api_view(['POST'])
 @is_influencer
 def reserve_live(request, result):
@@ -137,7 +137,15 @@ def start_live(request, result):
 @is_influencer
 def edit_my_vod(request, result):
     try:
-        now_stream = MediaStream.objects.get(Q(pk=request.data['media_id']) & Q(influencer_id=result['_id']))
+        now_stream = MediaStream.objects.get(pk=request.data['media_id'])
+        if now_stream.influencer_id != result['_id']:
+            contents = {
+                "error": {
+                    "message": "잘못된 요청입니다.",
+                    "detail": "인플루엔서의 방송이 아닙니다.",
+                }
+            }
+            return Response(contents, status=status.HTTP_400_BAD_REQUEST)
         now_stream.title = request.data.get('title') if request.data.get('title') is not None else now_stream.title
         now_stream.description = request.data.get('description') if request.data.get(
             'description') is not None else now_stream.description
@@ -173,6 +181,10 @@ def delete_my_vod(request, result):
         now_stream = MediaStream.objects.get(Q(pk=request.data['media_id']) & Q(influencer_id=result['_id']))
 
         # TODO MUX에서 영상 삭제
+        if now_stream.status == 'completed':
+            response = requests.delete(f'https://api.mux.com/video/v1/assets/{now_stream.mux_asset_id}', auth=(
+                getattr(settings, 'MUX_CLIENT_ID', None),
+                getattr(settings, 'MUX_SECRET_KEY', None)))
 
         now_stream.delete()
 

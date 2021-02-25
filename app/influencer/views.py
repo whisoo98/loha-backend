@@ -72,7 +72,14 @@ def get_stream_key(request, result):
     try:
         if result['meta']['Stream_key'] is None:
             headers = {'Content-Type': 'application/json'}
-            data = '{ "playback_policy": "public", "new_asset_settings": { "playback_policy": "public" } }'
+            data = {
+                "playback_policy": "public",
+                "new_asset_settings": {
+                    "playback_policy": "public",
+                    "per_title_encode": True
+                }
+            }
+            # "reduced_latency" : True -> 방송 딜레이 줄이기
             mux_response = requests.post('https://api.mux.com/video/v1/live-streams', headers=headers, data=data, auth=(
                 getattr(settings, 'MUX_CLIENT_ID', None),
                 getattr(settings, 'MUX_SECRET_KEY', None)))
@@ -81,7 +88,7 @@ def get_stream_key(request, result):
             payload = {
                 'meta': {
                     'Stream_key': mux_data['data']['stream_key'],
-                    'Stream_url': 'https://stream.mux.com/' + mux_data['data']['playback_ids'][0]['id'],
+                    'Stream_url': mux_data['data']['playback_ids'][0]['id'],
                     'Stream_id': mux_data['data']['id']
                 }
             }
@@ -89,7 +96,7 @@ def get_stream_key(request, result):
             contents = {
                 "success": {
                     'Stream_key': mux_data['data']['stream_key'],
-                    'Stream_url': 'https://stream.mux.com/' + mux_data['data']['playback_ids'][0]['id'],
+                    'Stream_url': mux_data['data']['playback_ids'][0]['id'],
                     'Stream_id': mux_data['data']['id']
                 }
             }
@@ -116,6 +123,55 @@ def get_stream_key(request, result):
         }
         return Response(contents, status=status.HTTP_400_BAD_REQUEST)
 
+# 스트림 키 재발급
+@api_view(['GET'])
+@is_influencer
+def reset_stream_key(request, result):
+    try:
+        if result['meta']['Stream_key'] is None:
+            contents = {
+                "error": {
+                    "message": "잘못된 요청입니다.",
+                }
+            }
+            return Response(contents, status=status.HTTP_400_BAD_REQUEST)
+
+        mux_response = requests.post(f"https://api.mux.com/video/v1/live-streams/{result['meta']['Stream_id']}/reset-stream-key", auth=(
+                getattr(settings, 'MUX_CLIENT_ID', None),
+                getattr(settings, 'MUX_SECRET_KEY', None)))
+
+        mux_data = mux_response.json()
+        Customer = Clayful.Customer
+        payload = {
+            'meta': {
+                'Stream_key': mux_data['data']['stream_key'],
+                'Stream_url': mux_data['data']['playback_ids'][0]['id'],
+                'Stream_id': mux_data['data']['id']
+            }
+        }
+        Customer.update(result['_id'], payload)
+        contents = {
+            "success": {
+                'message' : '재발급 되었습니다.',
+                'Stream_key': mux_data['data']['stream_key'],
+                'Stream_url': mux_data['data']['playback_ids'][0]['id'],
+                'Stream_id': mux_data['data']['id']
+            }
+        }
+        return Response(contents)
+    except Exception as e:
+        print(e)
+        try:
+            print(e.code)
+            print(e.message)
+        except Exception as er:
+            pass
+        contents = {
+            "error": {
+                "message": "잘못된 요청입니다.",
+            }
+        }
+        return Response(contents, status=status.HTTP_400_BAD_REQUEST)
 
 # now live Influencer
 @api_view(['GET'])
@@ -160,7 +216,7 @@ def live_influencer(request):
 # Influencer list (popular, new)
 @api_view(['GET'])
 def list_influencer(request, sort_by):
-    try :
+    try:
         Customer = Clayful.Customer
 
         options = {
@@ -199,7 +255,6 @@ def list_influencer(request, sort_by):
         return Response(content, status=status.HTTP_400_BAD_REQUEST)
 
 
-
 # product of Influencer
 @api_view(['GET'])
 def get_my_product(request, result):
@@ -236,13 +291,14 @@ def get_my_product(request, result):
         return Response(contents, status=status.HTTP_400_BAD_REQUEST)
     pass
 
+
 # 내 방송 불러오기
 @api_view(['GET'])
 def get_my_vod(request):
     try:
         my_vod = MediaSerializer(
             MediaStream.objects.filter(influencer_id=request.data['influencer_id']).order_by('-started_at'),
-                        many=True)
+            many=True)
         contents = {
             'success': {
                 'message': '성공',
@@ -259,5 +315,3 @@ def get_my_vod(request):
             }
         }
         return Response(contents, status=status.HTTP_400_BAD_REQUEST)
-
-
