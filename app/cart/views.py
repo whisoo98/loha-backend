@@ -2,8 +2,6 @@ from django.shortcuts import render, redirect
 from django.conf import settings
 from django.http import JsonResponse
 
-from iamporter.errors import ImpUnAuthorized, ImpApiError
-from iamporter import *
 from pip._internal import req
 
 from rest_framework.decorators import api_view, parser_classes
