@@ -30,8 +30,6 @@ def require_login(func):
         except Exception as e:
             print(e)
             try:
-                print(e.model)
-                print(e.method)
                 print(e.code)
                 print(e.message)
             except Exception as er:
@@ -91,7 +89,6 @@ class User(APIView):
     # 현재 회원정보 출력
     @require_login
     def get(self, request, result):
-        print(result.data)
         if result.data['address']['primary'] is None:
             result.data['address'] = {
                 "primary": {
@@ -474,9 +471,8 @@ def kakao_callback(request):
                 result = Customer.authenticate_by_3rd_party('kakao', payload)
                 Customer.update(result.data['customer'], {'groups': ['QS8YM3ECBUV4']})
             return result
-
         result = kakao_to_clayful()
-        content = f"<h1>{result.data['token']}</h1>"
+        content = f"<h1 style='color:#ffffff'>{result.data['token']}</h1>"
         header = {'Custom-Token': result.data['token']}
         return HttpResponse(content)
     except Exception as e:
@@ -542,7 +538,7 @@ def naver_callback(request):
             return result
 
         result = naver_to_clayful()
-        content = f"<h1>{result.data['token']}</h1>"
+        content = f"<h1 style='color:#ffffff'>{result.data['token']}</h1>"
         header = {'Custom-Token': result.data['token']}
         return HttpResponse(content)
 
@@ -612,7 +608,7 @@ def facebook_callback(request):
             return result
 
         result = facebook_to_clayful()
-        content = f"<h1>{result.data['token']}</h1>"
+        content = f"<h1 style='color:#ffffff'>{result.data['token']}</h1>"
         header = {'Custom-Token': result.data['token']}
         return HttpResponse(content)
 
