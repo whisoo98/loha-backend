@@ -245,7 +245,8 @@ def order_list_api(request): #본인의 주문 내역 list
         options = {
             'customer': request.headers['Custom-Token'],
             'query': {
-
+                'limit':120,
+                'page':request.GET.get('page',1),
             },
         }
         result = Order.list_for_me(options)
@@ -299,7 +300,7 @@ def cancel_for_me_api(request, order_id): #본인의 주문 하나 취소
     })
     try:
         Order = Clayful.Order
-        payload = json.dumps(request.data['payload'])
+        payload = (request.data['payload'])
 
         options = {
             'customer': request.headers['Custom-Token'],
@@ -328,7 +329,7 @@ class OrderAPI(APIView):#주문 가져오기 수정
             'debug_language': 'ko',
         })
 
-    def get(self, request, order_id):
+    def get(self, request, order_id):#주문 가져오기
         try:
             Order = Clayful.Order
             options = {
@@ -340,9 +341,7 @@ class OrderAPI(APIView):#주문 가져오기 수정
 
             headers = result.headers
             data = result.data
-            print("@")
             data = set_raw(data)
-            print("!")
             return Response(data)
 
         except ClayfulException as e:
@@ -352,10 +351,10 @@ class OrderAPI(APIView):#주문 가져오기 수정
             print(e)
             return Response("알 수 없는 오류가 발생하였습니다.", status=HTTP_400_BAD_REQUEST)
 
-    def put(self, request, order_id):
+    def put(self, request, order_id):# 주문 수정하기
         try:
             Order = Clayful.Order
-            payload = json.dumps(request.data['payload'])
+            payload = (request.data['payload'])
             options = {
                 'customer': request.headers['Custom-Token'],
             }

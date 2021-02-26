@@ -178,6 +178,8 @@ def review_list_published_api(request,product_id):
         options = {
             'query': {
                 'product':product_id,
+                'limit': 120,
+                'page': request.GET.get('page', 1),
                 'fields':'-commentedAt,-flagged,-helped,-rating,-totalComment'
             },
         }
@@ -217,6 +219,8 @@ def review_list_published_for_me_api(request,customer_id):
         options = {
             'query': {
                 'fields':'-commentedAt,-flagged,-helped,-rating,-totalComment',
+                'limit': 120,
+                'page': request.GET.get('page', 1),
                 'customer':customer_id,
             },
         }

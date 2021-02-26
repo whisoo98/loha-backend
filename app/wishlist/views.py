@@ -30,8 +30,8 @@ class ProductWishList(APIView):
             options = {'customer': request.headers.get('Custom-Token')}
             result = WishList.list_for_me(options)
             query = {
-                'limit': 6,
-                'page': int(request.GET.get('offset', 1))
+                'limit': 120,
+                'page': request.GET.get('page',1)
             }
             options['query'] = query
             result2 = WishList.list_products_for_me(result.data[0]['_id'], options)
