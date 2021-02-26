@@ -133,7 +133,7 @@ class ProductAPI(APIView):
             # VOD 불러오기
 
             product_vod = MediaSerializer(
-                MediaStream.objects.filter(id__in = data['meta']['my_vod']).order_by('-started_at')
+                MediaStream.objects.filter(vod_id__in = data['meta']['my_vod']).order_by('-started_at')
                 , many=True)
             data['vod_list'] = product_vod.data
 

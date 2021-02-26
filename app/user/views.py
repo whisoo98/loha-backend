@@ -11,6 +11,7 @@ from django.conf import settings
 from django.db.models import Q
 from media.serializers import *
 from media.models import *
+from django.core.exceptions import ObjectDoesNotExist
 import json
 import requests
 import datetime
@@ -223,7 +224,8 @@ class User(APIView):
                         'credentials': {
                             'userId': result.data['userId'],
                             'email': result.data['email'] if request.data['email'] == "" else request.data['email'],
-                            'password': request.data['old_password'] if request.data['new_password'] == "" else request.data['new_password'],
+                            'password': request.data['old_password'] if request.data['new_password'] == "" else
+                            request.data['new_password'],
                         }
                     }
                     Customer.update_credentials_for_me(payload, options)
@@ -246,7 +248,8 @@ class User(APIView):
                 'gender': None if request.data['gender'] == "" else request.data['gender'],
                 'birthdate': None if request.data['birthdate'] == "" else request.data['birthdate']
             }
-            if request.data['address']['primary']['name']['full'] != "":
+            print(request.data['address']['primary']['postcode'])
+            if request.data['address']['primary']['postcode']!= "":
                 payload['address'] = {
                     "primary": {
                         "name": {
@@ -271,12 +274,16 @@ class User(APIView):
                         request.data['address']['primary']['address1'],
                         "address2": None if request.data['address']['primary']['address2'] == "" else
                         request.data['address']['primary']['address2'],
-                        "postcode": None if request.data['address']['primary']['postcode'] == "" else
-                        request.data['address']['primary']['postcode'],
+                        "postcode": request.data['address']['primary']['postcode'],
                         "company": None if request.data['address']['primary']['company'] == "" else
                         request.data['address']['primary']['company'],
                     }
                 }
+            if not request.data['address']['secondaries']:
+                pass
+            else:
+                payload['address']['secondaries'] = request.data['address']['secondaries']
+            print(payload)
             Customer.update_me(payload, options)
         except Exception as e:
             self.print_error(e)
@@ -632,7 +639,7 @@ class influencer_like(APIView):
         try:
             ids_list = result.data['meta']['Following'][1:]
             ids = ','.join(ids_list)
-            if ids!= "":
+            if ids != "":
                 Customer = Clayful.Customer
                 options = {
                     'query': {
@@ -642,7 +649,7 @@ class influencer_like(APIView):
                     }
                 }
                 res = Customer.list(options).data
-            else :
+            else:
                 res = [""]
             contents = {
                 "success": {
@@ -703,7 +710,7 @@ class influencer_like(APIView):
             }
             Customer.push_to_metafield(result.data['_id'], 'Following', payload)
 
-            #토큰을 저장해야함
+            # 토큰을 저장해야함
             # set_alarm_to_influencer(result.data['_id'], request.data['token'])
             contents = {
                 "success": {
@@ -727,13 +734,13 @@ class influencer_like(APIView):
             return Response(contents, status=status.HTTP_400_BAD_REQUEST)
 
 
+# VOD 좋아요
 class vod_like(APIView):
-    # 팔로잉한 인플루엔서 불러오기
     @require_login
     def get(self, request, result):
         try:
-            my_vod = MediaSerializer(
-                MediaStream.objects.filter(id__in=result.data['meta']['my_vod']).order_by('-started_at')
+            my_vod = MediaSerializerforClient(
+                MediaStream.objects.filter(vod_id__in=result.data['meta']['my_vod'][1:]).order_by('-started_at')
                 , many=True)
             contents = {
                 "success": {
@@ -753,15 +760,14 @@ class vod_like(APIView):
     @require_login
     def post(self, request, result):
         try:
+            now_vod = MediaStream.objects.get(vod_id=request.data['vod_id'])
             Customer = Clayful.Customer
 
             # 현재 좋아요 상태를 확인
             if request.data.get('vod_id') in result.data['meta']['my_vod']:
-                # 존재하면
-                # TODO 좋아요수 감소
-                # Customer.increase_metafield(request.data.get('InfluencerId'), 'Follower', {'value': -1})
-
                 # 좋아요 취소
+                now_vod.vod_view_count -= 1
+                now_vod.save()
                 payload = {
                     'value': [
                         request.data.get('vod_id')
@@ -776,11 +782,10 @@ class vod_like(APIView):
                     }
                 }
                 return Response(contents, status=status.HTTP_202_ACCEPTED)
-
-            # TODO 영상 좋아요 수 증가 for 인기 VOD
-            # Customer.increase_metafield(request.data.get('InfluencerId'), 'Follower', {'value': 1})
-
             # 좋아요
+            now_vod.vod_view_count += 1
+            now_vod.save()
+
             payload = {
                 'value': [
                     request.data.get('vod_id')
@@ -796,6 +801,14 @@ class vod_like(APIView):
                 }
             }
             return Response(contents, status=status.HTTP_202_ACCEPTED)
+        except ObjectDoesNotExist:
+            contents = {
+                "error": {
+                    "message": "잘못된 요청입니다.",
+                    "detail": "존재하지 않는 방송입니다.",
+                }
+            }
+            return Response(contents, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             print(e)
             contents = {
