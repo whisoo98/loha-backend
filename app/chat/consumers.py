@@ -112,19 +112,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
     def get_count(self):
-        return RoomUser.objects.filter(
-            room_name=Room.objects.filter(room_name=self.room_name).all()[0]
-        ).count()
+        return RoomUser.objects.filter(room_name=self.room_name).count()
 
     @database_sync_to_async
     def make_new_user(self):
         return  RoomUser.objects.create(
-            room_name=Room.objects.filter(room_name=self.room_name).all()[0],
+            room_name=Room.objects.get(room_streamer=self.room_name),
             username=self.username
         )
 
     @database_sync_to_async
     def delete_user(self):
-        return RoomUser.objects.filter(
-            room_name=Room.objects.filter(room_name=self.room_name).all()[0]
-        ).filter(username=self.username).delete()
+        return RoomUser.objects.get(room_name=self.room_name, username=self.username).delete()
