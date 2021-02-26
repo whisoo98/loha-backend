@@ -270,3 +270,36 @@ def list_product_catalog(request, discount_type):
         return Response(e.code + " " + e.message, status=e.status)
     except Exception as e:
         return Response("알 수 없는 예외가 발생하였습니다.", status=HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+def about_this(request,collection_id='any'):
+    Clayful.config({
+        'client': getattr(settings, 'CLAYFUL_SECRET_KEY', None),
+        'language': 'ko',
+        'currency': 'KRW',
+        'time_zone': 'Asia/Seoul',
+        'debug_language': 'ko',
+    })
+
+     # 특정 콜렉션 ID 없으면 모두 부름
+    try:
+        Product = Clayful.Product
+        options = {
+            'query': {
+                'available': True,
+                'collection': collection_id,
+                'limit': 10,
+            },
+        }
+        result = Product.list(options)
+        headers = result.headers
+        data = result.data
+        for dict in data:
+            dict = set_raw(dict)
+
+        return Response(data)
+
+    except ClayfulException as e:
+        return Response(e.code + " " + e.message, status=e.status)
+    except Exception as e:
+        return Response("알 수 없는 예외가 발생하였습니다.", status=HTTP_400_BAD_REQUEST)
