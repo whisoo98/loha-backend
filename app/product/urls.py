@@ -13,6 +13,8 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from abc import abstractclassmethod
+
 from django.contrib import admin
 from django.urls import path, include
 from .views import *
@@ -23,5 +25,6 @@ urlpatterns = [
     path('collection/', ProductCollectionAPI.as_view()),
     path('collection/<str:collection_id>/', ProductCollectionAPI.as_view()),
     path('search/', product_searchAPI),
+    path('about/<str:collection_id>/', about_this),
     path('<str:product_id>/', ProductAPI.as_view()),
 ]
