@@ -640,12 +640,22 @@ class influencer_like(APIView):
                 Customer = Clayful.Customer
                 options = {
                     'query': {
-                        'raw': True,
-                        'ids': ids,
-                        'fields': "_id,alias,avatar,country,name,meta.Follower"
+                        'group': 'XU79MY58Q2C4'
                     }
                 }
                 res = Customer.list(options).data
+                # 개인 정보 삭제
+                for info in res:
+                    info['Follower'] = info['meta']['Follower']['raw']
+                    if not info['avatar']:
+                        pass
+                    else:
+                        info['avatar'] = info['avatar']['url']
+                    del (
+                        info['name'], info['address'], info['connect'], info['verified'], info['groups'],
+                        info['userId'],
+                        info['email'], info['gender'], info['birthdate'], info['mobile'], info['phone'],
+                        info['lastLoggedInAt'], info['createdAt'], info['updatedAt'], info['meta'])
             else:
                 res = [""]
             contents = {
