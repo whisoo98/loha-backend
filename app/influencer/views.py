@@ -11,6 +11,7 @@ from media.models import *
 from django.db.models import Q
 from media.serializers import *
 from chat.models import Room
+from django.core.exceptions import ObjectDoesNotExist
 import json
 import pprint
 import requests
@@ -35,14 +36,14 @@ def is_influencer(func):
             # 이름, 별명, 이메일, 그룹 불러오기
             query = {
                 'raw': True,
-                'fields': "userId,country,name,alias,email,groups,phone,meta"
+                'fields': "userId,country,name,alias,email,groups,phone,meta,avatar"
             }
             options = {
                 'customer': token,
-                'query': query
+                'query':query
             }
-
             kwargs['result'] = Customer.get_me(options).data
+
             if 'XU79MY58Q2C4' not in kwargs['result']['groups']:
                 raise AuthorizationError()
 
@@ -182,27 +183,21 @@ def reset_stream_key(request, result):
 @api_view(['GET'])
 def live_influencer(request):
     try:
-        ids_list = MediaStream.objects.filter(status='live').values_list('influencer_id', flat=True).distinct(
-            'influencer_id')
-        ids = ','.join(ids_list)
-        if ids != "":
-            Customer = Clayful.Customer
-            options = {
-                'query': {
-                    'raw': True,
-                    'ids': ids,
-                    'fields': "_id,alias,avatar,country,name,meta.Follower"
-                }
-            }
-            res = Customer.list(options).data
-        else:
-            res = [""]
+        live_list = MediaStream.objects.filter(status='live').distinct('influencer_id')
         contents = {
             "success": {
-                "Influencer_List": res
+                "Influencer_List":MediaSerializerforClient(live_list, many=True).data
             }
         }
         return Response(contents)
+    except ObjectDoesNotExist:
+        contents = {
+            "error": {
+                "message": "잘못된 요청입니다.",
+                "detail": "존재하지 않는 방송입니다.",
+            }
+        }
+        return Response(contents, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
         print(e)
         try:
@@ -226,17 +221,26 @@ def list_influencer(request, sort_by):
 
         options = {
             'query': {
-                'raw': True,
+         #       'raw': True,
                 'group': 'XU79MY58Q2C4',
-                'fields': "_id,alias,avatar,country,name,meta.Follower"
+        #        'fields': "_id,alias,avatar,country,name,meta.Follower"
             }
         }
 
         # 만들어진 순서로 정렬
         res = Customer.list(options).data
+        # 개인 정보 삭제
+        for info in res:
+            info['Follower'] = info['meta']['Follower']['raw']
+            if not info['avatar']:
+                pass
+            else:
+                info['avatar'] = info['avatar']['url']
+            del(info['name'],info['address'],info['connect'],info['verified'],info['groups'], info['userId'], info['email'],info['gender'],info['birthdate'],info['mobile'],info['phone'],info['lastLoggedInAt'],info['createdAt'],info['updatedAt'], info['meta'])
+
         # 인기순 정렬
         if sort_by == 'popular':
-            res = sorted(res, key=lambda r: r['meta']['Follower'], reverse=True)
+            res = sorted(res, key=lambda r: r['Follower'], reverse=True)
 
         contents = {
             "success": {
@@ -262,13 +266,20 @@ def list_influencer(request, sort_by):
 
 # product of Influencer
 @api_view(['GET'])
-def get_my_product(request, result):
+def get_my_product(request):
     try:
         my_product = MediaStream.objects.filter(
             Q(influencer_id=request.data['influencer_id']) & Q(status='completed')
         ).values_list('product_list', flat=True)
         ids = ','.join(my_product)
-
+        if not ids:
+            contents = {
+                'success': {
+                    'message': '성공',
+                    'product_list': []
+                }
+            }
+            return Response(contents, status=status.HTTP_200_OK)
         Product = Clayful.Product
 
         options = {
@@ -301,7 +312,7 @@ def get_my_product(request, result):
 @api_view(['GET'])
 def get_my_vod(request):
     try:
-        my_vod = MediaSerializer(
+        my_vod = MediaSerializerforClient(
             MediaStream.objects.filter(influencer_id=request.data['influencer_id']).order_by('-started_at'),
             many=True)
         contents = {

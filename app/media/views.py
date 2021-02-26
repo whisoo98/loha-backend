@@ -37,16 +37,22 @@ def reserve_live(request, result):
     try:
         if result['meta']['Stream_key'] is None:
             raise NoStreamKeyError()
+        avatar = ""
+        if not result['avatar']:
+            pass
+        else:
+            Image = Clayful.Image
+            avatar = Image.get(result['avatar'], {'raw': True, 'fields' : 'url'}).data['url']
 
         # live 정보 저장
         new_media = MediaStream.objects.create(
             mux_livestream_playback_id=result['meta']['Stream_url'],
             mux_livestream_id=result['meta']['Stream_id'],
             title=request.data['title'],
-            description=request.data.get('description'),
+            description=request.data['description'],
             influencer_name=result['name']['full'],
             influencer_id=result['_id'],
-            influencer_thunmbnail = result['avatar'].get('url'),
+            influencer_thunmbnail = avatar,
             product_name=request.data['product_name'],
             product_price=request.data['product_price'],
             product_sale=request.data['product_sale'],
@@ -98,12 +104,13 @@ def start_live(request, result):
             try:
                 payload = {
                     "value": [
-                        str(now_stream.id)
+                        str(now_stream.vod_id)
                     ],
                     "unique": True
                 }
                 Product.push_to_metafield(product, "my_vod", payload)
             except Exception:
+                print('error')
                 continue
 
         # 알람 날리기
@@ -145,10 +152,20 @@ def edit_my_vod(request, result):
         now_stream = MediaStream.objects.get(
             vod_id=request.data['media_id'],influencer_id=result['_id'])
 
+        avatar = ""
+        if not result['avatar']:
+            pass
+        else:
+            Image = Clayful.Image
+            avatar = Image.get(result['avatar'], {'raw': True, 'fields': 'url'}).data['url']
+
+        now_stream.mux_livestream_playback_id = result['meta']['Stream_url']
+        now_stream.mux_livestream_id = result['meta']['Stream_id']
         now_stream.title = request.data['title']
         now_stream.description = request.data['description']
         now_stream.influencer_name = result['name']['full']
-        now_stream.influencer_thunmbnail = result['avatar'].get('url')
+        now_stream.influencer_id = result['_id']
+        now_stream.influencer_thunmbnail = avatar
         now_stream.product_name = request.data['product_name']
         now_stream.product_price = request.data['product_price']
         now_stream.product_sale = request.data['product_sale']
@@ -162,7 +179,7 @@ def edit_my_vod(request, result):
         contents = {
             'success': {
                 'message': '수정되었습니다.',
-                'data': now_stream.data
+                'data': MediaSerializer(now_stream).data
             }
         }
         return Response(contents, status=status.HTTP_200_OK)
@@ -197,10 +214,12 @@ def delete_my_vod(request, result):
                 getattr(settings, 'MUX_CLIENT_ID', None),
                 getattr(settings, 'MUX_SECRET_KEY', None)))
 
+        # 상품에서 제거 -> table에 없으면 어차피 못 불러옴
+
         now_stream.delete()
 
         # 알람 삭제
-        #LiveAlarm.objects.filter(Live_id=request.data['media_id']).all().delete()
+        # LiveAlarm.objects.filter(Live_id=request.data['media_id']).all().delete()
 
         contents = {
             'success': {
@@ -229,7 +248,7 @@ def delete_my_vod(request, result):
 # Today byeolshow schedule
 @api_view(["GET"])
 def get_today_schedule(request):
-    today_media = MediaSerializer(
+    today_media = MediaSerializerforClient(
         MediaStream.objects.filter(Q(started_at__contains=datetime.date.today())).order_by('-started_at'), many=True)
 
     return Response(today_media.data)
@@ -238,7 +257,7 @@ def get_today_schedule(request):
 # Tomorrow ~ byeolshow schedule
 @api_view(["GET"])
 def get_future_schedule(request):
-    today_media = MediaSerializer(
+    today_media = MediaSerializerforClient(
         MediaStream.objects.filter(Q(started_at__gt=datetime.date.today())).order_by('-started_at'), many=True)
 
     return Response(today_media.data)
@@ -268,7 +287,7 @@ def mux_callback(request):
         if request.data['type'] == "video.asset.live_stream_completed":
             # Stream status -> live, create 시간 추가
             stream_id = request.data['data']['live_stream_id']
-            now_stream = MediaStream.objects.filter(Q(stream_id=stream_id) & Q(status='live')).order_by('started_at')[0]
+            now_stream = MediaStream.objects.get(mux_livestream_id=stream_id, status='live')
             now_stream.mux_asset_id = request.data['data']['id']
             now_stream.mux_asset_playback_id = request.data['data']['playback_ids'][0]['id']
             now_stream.finished_at = datetime.datetime.now()

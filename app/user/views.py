@@ -11,6 +11,7 @@ from django.conf import settings
 from django.db.models import Q
 from media.serializers import *
 from media.models import *
+from django.core.exceptions import ObjectDoesNotExist
 import json
 import requests
 import datetime
@@ -730,14 +731,13 @@ class influencer_like(APIView):
             }
             return Response(contents, status=status.HTTP_400_BAD_REQUEST)
 
-
+# VOD 좋아요
 class vod_like(APIView):
-    # 팔로잉한 인플루엔서 불러오기
     @require_login
     def get(self, request, result):
         try:
-            my_vod = MediaSerializer(
-                MediaStream.objects.filter(id__in=result.data['meta']['my_vod']).order_by('-started_at')
+            my_vod = MediaSerializerforClient(
+                MediaStream.objects.filter(vod_id__in=result.data['meta']['my_vod'][1:]).order_by('-started_at')
                 , many=True)
             contents = {
                 "success": {
@@ -757,15 +757,14 @@ class vod_like(APIView):
     @require_login
     def post(self, request, result):
         try:
+            now_vod = MediaStream.objects.get(vod_id=request.data['vod_id'])
             Customer = Clayful.Customer
 
             # 현재 좋아요 상태를 확인
             if request.data.get('vod_id') in result.data['meta']['my_vod']:
-                # 존재하면
-                # TODO 좋아요수 감소
-                # Customer.increase_metafield(request.data.get('InfluencerId'), 'Follower', {'value': -1})
-
                 # 좋아요 취소
+                now_vod.vod_view_count -= 1
+                now_vod.save()
                 payload = {
                     'value': [
                         request.data.get('vod_id')
@@ -780,11 +779,10 @@ class vod_like(APIView):
                     }
                 }
                 return Response(contents, status=status.HTTP_202_ACCEPTED)
-
-            # TODO 영상 좋아요 수 증가 for 인기 VOD
-            # Customer.increase_metafield(request.data.get('InfluencerId'), 'Follower', {'value': 1})
-
             # 좋아요
+            now_vod.vod_view_count += 1
+            now_vod.save()
+
             payload = {
                 'value': [
                     request.data.get('vod_id')
@@ -800,6 +798,14 @@ class vod_like(APIView):
                 }
             }
             return Response(contents, status=status.HTTP_202_ACCEPTED)
+        except ObjectDoesNotExist:
+            contents = {
+                "error": {
+                    "message": "잘못된 요청입니다.",
+                    "detail": "존재하지 않는 방송입니다.",
+                }
+            }
+            return Response(contents, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             print(e)
             contents = {
