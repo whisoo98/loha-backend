@@ -732,7 +732,7 @@ class influencer_like(APIView):
 
 
 class vod_like(APIView):
-    # 팔로잉한 인플루엔서 불러오기
+    # 팔로잉한 vod 불러오기
     @require_login
     def get(self, request, result):
         try:

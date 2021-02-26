@@ -17,7 +17,7 @@ from clayful import Clayful
 
 @api_view(['GET'])
 @parser_classes((JSONParser,))
-def collection_list(reqeust):
+def collection_list(request):
     Clayful.config({
         'client': getattr(settings, 'CLAYFUL_SECRET_KEY', None),
         'language': 'ko',
@@ -32,6 +32,8 @@ def collection_list(reqeust):
         options = {
             'query': {
                 'fields': 'name',
+                'limit':120,
+                'page':request.GET.get('page',1),
                 'parent': 'none', # 최상위 카테고리만 가져옴
             },
         }

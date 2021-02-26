@@ -109,11 +109,15 @@ class Coupon(APIView):
             options = {
                 'customer': request.headers['Custom-Token'],
                 'query': {
-
                 },
             }
+            count = Customer.count_coupons_for_me(options)
+
+            options['query']['limit']=120
+            options['query']['page']=request.GET.get('page',1)
+
             result = Customer.list_coupons_for_me(options)
-            count = len(result.data)
+
 
             headers = result.headers
             data = result.data
