@@ -5,16 +5,18 @@ from django.db import models
 
 class MediaStream(models.Model):
     # from mux
-    mux_stream_url = models.URLField(null=True)
-    mux_stream_id = models.CharField(max_length=200)
+    mux_livestream_playback_id = models.URLField(null=True)
+    mux_livestream_id = models.CharField(max_length=200)
     mux_asset_id = models.CharField(max_length=200, null=True)
     mux_asset_playback_id = models.URLField(null=True)
 
     # About Media
+    vod_id = models.AutoField(primary_key=True)
     title = models.CharField(max_length=200)
     description = models.TextField(null=True)
     influencer_name = models.CharField(max_length=200)
     influencer_id = models.CharField(max_length=200)
+    influencer_thunmbnail = models.URLField(null=True)
 
     #About product
     product_name = models.CharField(max_length=200) # 대표 상품
@@ -35,4 +37,5 @@ class MediaStream(models.Model):
     vod_view_count = models.IntegerField(default=0) # vod 시청 수
     like_count = models.IntegerField(default=0) # vod 좋아요 수
 
-
+    class Meta:
+        unique_together = (('vod_id', 'influencer_id'),)

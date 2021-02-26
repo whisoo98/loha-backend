@@ -10,7 +10,7 @@ from django.conf import settings
 from media.models import *
 from django.db.models import Q
 from media.serializers import *
-
+from chat.models import Room
 import json
 import pprint
 import requests
@@ -70,15 +70,16 @@ def is_influencer(func):
 @is_influencer
 def get_stream_key(request, result):
     try:
-        if result['meta']['Stream_key'] is None:
+        if not result['meta']['Stream_key']:
             headers = {'Content-Type': 'application/json'}
-            data = {
-                "playback_policy": "public",
-                "new_asset_settings": {
-                    "playback_policy": "public",
-                    "per_title_encode": True
-                }
-            }
+            # data = {
+            #     "playback_policy": "public",
+            #     "new_asset_settings": {
+            #         "playback_policy": "public"
+            #     }
+            # }
+            data = '{ "playback_policy": "public", "new_asset_settings": { "playback_policy": "public" } }'
+            # "per_title_encode": True
             # "reduced_latency" : True -> 방송 딜레이 줄이기
             mux_response = requests.post('https://api.mux.com/video/v1/live-streams', headers=headers, data=data, auth=(
                 getattr(settings, 'MUX_CLIENT_ID', None),
@@ -93,6 +94,9 @@ def get_stream_key(request, result):
                 }
             }
             Customer.update(result['_id'], payload)
+
+            Room.objects.create(room_streamer=result['_id'])
+
             contents = {
                 "success": {
                     'Stream_key': mux_data['data']['stream_key'],
@@ -101,6 +105,7 @@ def get_stream_key(request, result):
                 }
             }
             return Response(contents)
+        print(result)
         contents = {
             "success": {
                 'Stream_key': result['meta']['Stream_key'],

@@ -35,28 +35,27 @@ class NotEnoughDataError(Exception):
 @is_influencer
 def reserve_live(request, result):
     try:
-        if result['meta']['Stream_url'] is None:
+        if result['meta']['Stream_key'] is None:
             raise NoStreamKeyError()
+
         # live 정보 저장
-        # result['meta']['Stream_id'],
         new_media = MediaStream.objects.create(
+            mux_livestream_playback_id=result['meta']['Stream_url'],
+            mux_livestream_id=result['meta']['Stream_id'],
             title=request.data['title'],
-            stream_url=result['meta']['Stream_url'],
-            stream_id=result['meta']['Stream_id'],
-            product_id=request.data['product_id'],
-            product_name=request.data['product_name'],
-            product_list=request.data['product_list'],
+            description=request.data.get('description'),
             influencer_name=result['name']['full'],
             influencer_id=result['_id'],
-            description=request.data.get('description'),
-            thumbnail_url=request.data.get('thumnail_url'),
+            influencer_thunmbnail = result['avatar'].get('url'),
+            product_name=request.data['product_name'],
+            product_price=request.data['product_price'],
+            product_sale=request.data['product_sale'],
+            product_brand=request.data['product_brand'],
+            product_thumbnail=request.data['product_thumbnail'],
+            product_list=request.data['product_list'],
             started_at=request.data['started_at']
         )
 
-        Room.objects.create(room_name=new_media.id,
-                            room_streamer=result['_id'])
-
-        # 상품에 URL 추가
         contents = {
             "success": {
                 "message": "방송이 예약되었습니다.",
@@ -76,26 +75,25 @@ def reserve_live(request, result):
         return Response(contents, status=status.HTTP_400_BAD_REQUEST)
 
 
-# TODO 방송 시작
+# 방송 시작
 @api_view(['POST'])
 @is_influencer
 def start_live(request, result):
     try:
-        if result['meta']['Stream_url'] is None:
+        if result['meta']['Stream_key'] is None:
             raise NoStreamKeyError()
 
         # 라이브 상태 변경
         now_stream = MediaStream.objects.get(
-            Q(pk=request.data['media_id']) & Q(influencer_id=result['_id']) & Q(status='ready'))
+            vod_id=request.data['media_id'],influencer_id=result['_id'])
 
-        # TODO 잘못된 방송 접근 에러 처리해야됨
-        #now_stream = MediaStream.objects.get(pk=request.data['media_id'])
         now_stream.status = 'live'
         now_stream.save()
-        # 상품에 추가
+
+        # 상품에 VOD 추가
         stream_product = (now_stream.product_list).split(',')
         Product = Clayful.Product
-        # return Response(Product.get('DVKPWMZ8DKJ9').data)
+
         for product in stream_product:
             try:
                 payload = {
@@ -108,12 +106,13 @@ def start_live(request, result):
             except Exception:
                 continue
 
-        info = {
-            'influencer': result['alias'],
-            'time': str(now_stream.started_at.hour) + ':' + str(now_stream.started_at.minute)
-        }
-        alarm_by_live(request.data['media_id'], info)
-        alarm_by_influencer(result['_id'], info)
+        # 알람 날리기
+        # info = {
+        #     'influencer': result['alias'],
+        #     'time': str(now_stream.started_at.hour) + ':' + str(now_stream.started_at.minute)
+        # }
+        # alarm_by_live(request.data['media_id'], info)
+        # alarm_by_influencer(result['_id'], info)
         contents = {
             "success": {
                 "message": "방송이 시작되었습니다.",
@@ -121,7 +120,13 @@ def start_live(request, result):
             }
         }
         return Response(contents, status=status.HTTP_202_ACCEPTED)
-
+    except ObjectDoesNotExist:
+        contents = {
+            'error': {
+                'message': '존재하지 않는 방송입니다.'
+            }
+        }
+        return Response(contents, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
         contents = {
             "error": {
@@ -132,24 +137,28 @@ def start_live(request, result):
         return Response(contents, status=status.HTTP_400_BAD_REQUEST)
 
 
-# TODO 방송 수정
+# 방송 수정
 @api_view(['POST'])
 @is_influencer
 def edit_my_vod(request, result):
     try:
-        now_stream = MediaStream.objects.get(pk=request.data['media_id'])
-        if now_stream.influencer_id != result['_id']:
-            contents = {
-                "error": {
-                    "message": "잘못된 요청입니다.",
-                    "detail": "인플루엔서의 방송이 아닙니다.",
-                }
-            }
-            return Response(contents, status=status.HTTP_400_BAD_REQUEST)
-        now_stream.title = request.data.get('title') if request.data.get('title') is not None else now_stream.title
-        now_stream.description = request.data.get('description') if request.data.get(
-            'description') is not None else now_stream.description
+        now_stream = MediaStream.objects.get(
+            vod_id=request.data['media_id'],influencer_id=result['_id'])
+
+        now_stream.title = request.data['title']
+        now_stream.description = request.data['description']
+        now_stream.influencer_name = result['name']['full']
+        now_stream.influencer_thunmbnail = result['avatar'].get('url')
+        now_stream.product_name = request.data['product_name']
+        now_stream.product_price = request.data['product_price']
+        now_stream.product_sale = request.data['product_sale']
+        now_stream.product_brand = request.data['product_brand']
+        now_stream.product_thumbnail = request.data['product_thumbnail']
+        now_stream.product_list = request.data['product_list']
+        now_stream.started_at = request.data['started_at']
+
         now_stream.save()
+
         contents = {
             'success': {
                 'message': '수정되었습니다.',
@@ -159,8 +168,9 @@ def edit_my_vod(request, result):
         return Response(contents, status=status.HTTP_200_OK)
     except ObjectDoesNotExist:
         contents = {
-            'error': {
-                'message': '존재하지 않는 방송입니다.'
+            "error": {
+                "message": "잘못된 요청입니다.",
+                "detail": "존재하지 않는 방송이거나 다른 인플루엔서의 방송입니다.",
             }
         }
         return Response(contents, status=status.HTTP_400_BAD_REQUEST)
@@ -173,21 +183,23 @@ def edit_my_vod(request, result):
         }
         return Response(contents, status=status.HTTP_400_BAD_REQUEST)
 
-# TODO 방송 삭제
+# 방송 삭제
 @api_view(['Delete'])
 @is_influencer
 def delete_my_vod(request, result):
     try:
-        now_stream = MediaStream.objects.get(Q(pk=request.data['media_id']) & Q(influencer_id=result['_id']))
+        now_stream = MediaStream.objects.get(
+            vod_id=request.data['media_id'],influencer_id=result['_id'])
 
         # TODO MUX에서 영상 삭제
-        if now_stream.status == 'completed':
-            response = requests.delete(f'https://api.mux.com/video/v1/assets/{now_stream.mux_asset_id}', auth=(
+        if now_stream.mux_asset_id is not None:
+            requests.delete(f'https://api.mux.com/video/v1/assets/{now_stream.mux_asset_id}', auth=(
                 getattr(settings, 'MUX_CLIENT_ID', None),
                 getattr(settings, 'MUX_SECRET_KEY', None)))
 
         now_stream.delete()
 
+        # 알람 삭제
         #LiveAlarm.objects.filter(Live_id=request.data['media_id']).all().delete()
 
         contents = {
@@ -199,7 +211,7 @@ def delete_my_vod(request, result):
     except ObjectDoesNotExist:
         contents = {
             'error': {
-                'message': '존재하지 않는 방송입니다.'
+                'message': '존재하지 않는 방송입니다.',
             }
         }
         return Response(contents, status=status.HTTP_400_BAD_REQUEST)
@@ -209,6 +221,7 @@ def delete_my_vod(request, result):
         contents = {
             'error': {
                 'message': '알 수 없는 오류',
+                'detail': e
             }
         }
         return Response(contents, status=status.HTTP_400_BAD_REQUEST)
@@ -256,14 +269,12 @@ def mux_callback(request):
             # Stream status -> live, create 시간 추가
             stream_id = request.data['data']['live_stream_id']
             now_stream = MediaStream.objects.filter(Q(stream_id=stream_id) & Q(status='live')).order_by('started_at')[0]
-            now_stream.vod_url = request.data['data']['playback_ids'][0]['id']
-            now_stream.vod_id = request.data['data']['id']
+            now_stream.mux_asset_id = request.data['data']['id']
+            now_stream.mux_asset_playback_id = request.data['data']['playback_ids'][0]['id']
             now_stream.finished_at = datetime.datetime.now()
             now_stream.status = 'completed'
             now_stream.save()
-            Room.objects.filter(room_streamer=now_stream['id']).delete()
             return Response("completed")
-
         return Response("OK")
     except Exception as e:
         print(e)
@@ -271,7 +282,6 @@ def mux_callback(request):
 
 
 class LiveAlarm(APIView):
-
     @require_login
     def get(self, request, result):
         try:
