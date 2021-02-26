@@ -208,7 +208,7 @@ def delete_my_vod(request, result):
         now_stream = MediaStream.objects.get(
             vod_id=request.data['media_id'],influencer_id=result['_id'])
 
-        # TODO MUX에서 영상 삭제
+        # MUX에서 영상 삭제
         if now_stream.mux_asset_id is not None:
             requests.delete(f'https://api.mux.com/video/v1/assets/{now_stream.mux_asset_id}', auth=(
                 getattr(settings, 'MUX_CLIENT_ID', None),
@@ -282,8 +282,9 @@ def get_hot_live(request):
 # mux callback 처리 (방송 시작, 방송 종료)
 @api_view(['GET', 'POST'])
 def mux_callback(request):
-    # mux 암호화 확인 (추후에 추가 예정)
+    # TODO mux 암호화 확인
     try:
+        print(request.data)
         if request.data['type'] == "video.asset.live_stream_completed":
             # Stream status -> live, create 시간 추가
             stream_id = request.data['data']['live_stream_id']
@@ -294,6 +295,8 @@ def mux_callback(request):
             now_stream.status = 'completed'
             now_stream.save()
             return Response("completed")
+
+        # TODO 오류 상황에 대한 예외 처리 필요할듯
         return Response("OK")
     except Exception as e:
         print(e)

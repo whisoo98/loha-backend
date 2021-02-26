@@ -251,6 +251,7 @@ class User(APIView):
                 'gender': None if request.data['gender'] == "" else request.data['gender'],
                 'birthdate': None if request.data['birthdate'] == "" else request.data['birthdate']
             }
+            print(request.data['address']['primary']['postcode'])
             if request.data['address']['primary']['postcode']!= "":
                 payload['address'] = {
                     "primary": {
@@ -284,9 +285,7 @@ class User(APIView):
             if not request.data['address']['secondaries']:
                 pass
             else:
-                payload['address'] = {
-                    'secondaries': request.data['address']['secondaries']
-                }
+                payload['address']['secondaries'] = request.data['address']['secondaries']
             print(payload)
             Customer.update_me(payload, options)
         except Exception as e:
