@@ -151,7 +151,7 @@ def edit_my_vod(request, result):
     try:
         now_stream = MediaStream.objects.get(
             vod_id=request.data['media_id'],influencer_id=result['_id'])
-
+        
         avatar = ""
         if not result['avatar']:
             pass
@@ -207,12 +207,13 @@ def delete_my_vod(request, result):
     try:
         now_stream = MediaStream.objects.get(
             vod_id=request.data['media_id'],influencer_id=result['_id'])
-
+       
         # MUX에서 영상 삭제
         if now_stream.mux_asset_id is not None:
             requests.delete(f'https://api.mux.com/video/v1/assets/{now_stream.mux_asset_id}', auth=(
                 getattr(settings, 'MUX_CLIENT_ID', None),
                 getattr(settings, 'MUX_SECRET_KEY', None)))
+
 
         # 상품에서 제거 -> table에 없으면 어차피 못 불러옴
 
@@ -220,7 +221,7 @@ def delete_my_vod(request, result):
 
         # 알람 삭제
         # LiveAlarm.objects.filter(Live_id=request.data['media_id']).all().delete()
-
+        
         contents = {
             'success': {
                 'message': '삭제 완료'
@@ -297,6 +298,7 @@ def mux_callback(request):
             return Response("completed")
 
         # TODO 오류 상황에 대한 예외 처리 필요할듯
+        
         return Response("OK")
     except Exception as e:
         print(e)

@@ -2,8 +2,6 @@ from django.shortcuts import render, redirect
 from django.conf import settings
 from django.http import JsonResponse
 
-from iamporter.errors import ImpUnAuthorized, ImpApiError
-from iamporter import *
 from pip._internal import req
 
 from rest_framework.decorators import api_view, parser_classes
@@ -438,28 +436,20 @@ class CartCheckoutAPI(APIView):
     def post(self, request):
         try:
             Cart = Clayful.Cart
-            payload = json.dumps(request.data['payload'])
+            payload = (request.data['payload'])
             options = {
                 'customer': request.headers.get('Custom-Token'),
-                'query': {
-
-                }
+                'query':{}
             }
             result = Cart.checkout_for_me('order', payload, options)
             headers = result.headers
             data = result.data
             return Response(data, status=HTTP_200_OK)
-
-
-
         except ClayfulException as e:
-
             return Response(e.code + ' ' + e.message, status=e.status)
 
         except Exception as e:
-
             print(e)
-
             return Response("알 수 없는 예외가 발생했습니다.", status=HTTP_400_BAD_REQUEST)
 
 

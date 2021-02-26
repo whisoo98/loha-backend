@@ -112,12 +112,12 @@ class Coupon(APIView):
 
                 },
             }
-            count = Customer.count_coupons(options)
-            result = Customer.list_coupons(options)
+            result = Customer.list_coupons_for_me(options)
+            count = len(result.data)
 
             headers = result.headers
             data = result.data
-            data['Count'] = count.data
+            data['Count'] = count
 
             return Response(data, status=status.HTTP_200_OK)
 

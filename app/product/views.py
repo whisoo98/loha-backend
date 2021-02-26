@@ -85,6 +85,7 @@ class ProductCollectionAPI(APIView):
             data = result.data
             for dict in data:
                 dict = set_raw(dict)
+
             return Response(data)
 
         except ClayfulException as e:
