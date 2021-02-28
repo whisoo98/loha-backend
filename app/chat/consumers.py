@@ -27,6 +27,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             {
                 'type': 'entry_message',
                 'username': self.username,
+                'id': self.id,
                 'leave': 1,
                 'message': message
             }
@@ -61,6 +62,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     'type': 'entry_message',
                     'username': self.username,
                     'count': self.count,
+                    'id': self.id,
                     'leave': 0,
                     'message': message
                 }
@@ -86,7 +88,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         # 인원수 증감
         if event['leave'] == 1:
             self.count -= 1
-        elif self.username != event['username']:
+        elif self.id != event['id']:
             self.count += 1
 
 
