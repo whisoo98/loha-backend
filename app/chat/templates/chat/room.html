@@ -6,64 +6,59 @@
     <title>Chat Room</title>
 </head>
 <body>
-    <input id="chat-count" type="number" value='0' />
-    <textarea id="chat-log" cols="100" rows="20"></textarea><br>
-    <input id="chat-message-input" type="text" size="100"><br>
-    <input id="chat-message-submit" type="button" value="Send">
+<input id="chat-count" type="number" value='0'/>
+<textarea id="chat-log" cols="100" rows="20"></textarea><br>
+<input id="chat-message-input" type="text" size="100"><br>
+<input id="chat-message-submit" type="button" value="Send">
 
-    <script>
-        const roomName = window.location.pathname;
-        console.log(roomName);
+<script>
+    const roomName = window.location.pathname;
+    console.log(roomName);
 
-        const chatSocket = new WebSocket(
-            'ws://'
-            + window.location.host
-            + '/ws'
-            + roomName
-        );
+    const chatSocket = new WebSocket(
+        'ws://'
+        + window.location.host
+        + '/ws'
+        + roomName
+    );
 
-        chatSocket.onopen = function (msg){
-            if(msg.message == "success"){
-                chatSocket.send(JSON.stringify({
-                    'username': '사용자1',
-                    'stat': 'entry',
-                }));
-            }
-            else {
-                alert('연결에 오류가 발생하였습니다.')
-            }
+    chatSocket.onopen = function (msg) {
+        chatSocket.send(JSON.stringify({
+            'username': '사용자1',
+            'stat': 'entry',
+        }));
+    }
+
+
+    chatSocket.onmessage = function (e) {
+        const data = JSON.parse(e.data);
+        if (data.stat == "entry") {
+            document.querySelector('#chat-count').value = data.count;
         }
+        document.querySelector('#chat-log').value += (data.username + ": " + data.message + '\n');
+    };
 
+    chatSocket.onclose = function (e) {
+        console.error('Chat socket closed unexpectedly');
+    };
 
-        chatSocket.onmessage = function(e) {
-            const data = JSON.parse(e.data);
-            if(data.stat == "entry"){
-                document.querySelector('#chat-count').value = data.count;
-            }
-            document.querySelector('#chat-log').value += (data.username + ": "+data.message + '\n');
-        };
+    document.querySelector('#chat-message-input').focus();
+    document.querySelector('#chat-message-input').onkeyup = function (e) {
+        if (e.keyCode === 13) {  // enter, return
+            document.querySelector('#chat-message-submit').click();
+        }
+    };
 
-        chatSocket.onclose = function(e) {
-            console.error('Chat socket closed unexpectedly');
-        };
-
-        document.querySelector('#chat-message-input').focus();
-        document.querySelector('#chat-message-input').onkeyup = function(e) {
-            if (e.keyCode === 13) {  // enter, return
-                document.querySelector('#chat-message-submit').click();
-            }
-        };
-
-        document.querySelector('#chat-message-submit').onclick = function(e) {
-            const messageInputDom = document.querySelector('#chat-message-input');
-            const message = messageInputDom.value;
-            chatSocket.send(JSON.stringify({
-                'username': '사용자2',
-                'stat': 'chat',
-                'message': message
-            }));
-            messageInputDom.value = '';
-        };
-    </script>
+    document.querySelector('#chat-message-submit').onclick = function (e) {
+        const messageInputDom = document.querySelector('#chat-message-input');
+        const message = messageInputDom.value;
+        chatSocket.send(JSON.stringify({
+            'username': '사용자2',
+            'stat': 'chat',
+            'message': message
+        }));
+        messageInputDom.value = '';
+    };
+</script>
 </body>
 </html>
