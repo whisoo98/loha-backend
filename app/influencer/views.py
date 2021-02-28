@@ -10,7 +10,6 @@ from django.conf import settings
 from media.models import *
 from django.db.models import Q
 from media.serializers import *
-from chat.models import Room
 from django.core.exceptions import ObjectDoesNotExist
 import json
 import pprint
@@ -95,9 +94,6 @@ def get_stream_key(request, result):
                 }
             }
             Customer.update(result['_id'], payload)
-
-            Room.objects.create(room_streamer=result['_id'])
-
             contents = {
                 "success": {
                     'Stream_key': mux_data['data']['stream_key'],

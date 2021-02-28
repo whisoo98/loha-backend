@@ -15,9 +15,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
         self.room_name = self.scope['url_route']['kwargs']['room_name']
         self.room_group_name = 'chat_%s' % self.room_name
         await self.accept()
-        await self.send(text_data=json.dumps({
-            'message': 'success',
-        }))
 
     # FOR GOING OUT
     async def disconnect(self, close_code):
