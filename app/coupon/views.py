@@ -111,7 +111,6 @@ class Coupon(APIView):
                 'query': {
                 },
             }
-            count = Customer.count_coupons_for_me(options)
 
             options['query']['limit']=120
             options['query']['page']=request.GET.get('page',1)
@@ -121,7 +120,6 @@ class Coupon(APIView):
 
             headers = result.headers
             data = result.data
-            data['Count'] = count
 
             return Response(data, status=status.HTTP_200_OK)
 
@@ -129,6 +127,7 @@ class Coupon(APIView):
             return Response(e.code, status=status.HTTP_400_BAD_REQUEST)
 
         except Exception as e:
+            print(e)
             return Response("알 수 없는 예외가 발생했습니다.", status=status.HTTP_400_BAD_REQUEST)
 
     @require_login
