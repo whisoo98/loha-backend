@@ -12,35 +12,12 @@ from channels.db import database_sync_to_async
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        self.username = 'testing'
-        # if self.username == "":
-        #     raise StopConsumer
         self.room_name = self.scope['url_route']['kwargs']['room_name']
         self.room_group_name = 'chat_%s' % self.room_name
-
-        print(self.scope)
-        # Join room group
-
-        await self.channel_layer.group_add(
-            self.room_group_name,
-            self.channel_name
-        )
-        await self.make_new_user()
         await self.accept()
-
-        message = f'{self.username}님이 입장하셨습니다.'
-        self.count = await self.get_count()
-        # Send message to room group
-        await self.channel_layer.group_send(
-            self.room_group_name,
-            {
-                'type': 'entry_message',
-                'author': self.username,
-                'count': self.count,
-                'leave':0,
-                'message': message
-            }
-        )
+        await self.send(text_data=json.dumps({
+            'message': 'success',
+        }))
 
     # FOR GOING OUT
     async def disconnect(self, close_code):
@@ -52,7 +29,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             self.room_group_name,
             {
                 'type': 'entry_message',
-                'author': self.username,
+                'username': self.username,
                 'leave': 1,
                 'message': message
             }
@@ -67,17 +44,42 @@ class ChatConsumer(AsyncWebsocketConsumer):
     # Receive message from WebSocket
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)
-        message = text_data_json['message']
+        if text_data_json['stat'] == 'entry':
+            self.username = text_data_json['username']
 
-        # Send message to room group
-        await self.channel_layer.group_send(
-            self.room_group_name,
-            {
-                'type': 'chat_message',
-                'author' : self.username,
-                'message': message
-            }
-        )
+            # Join room group
+            await self.channel_layer.group_add(
+                self.room_group_name,
+                self.channel_name
+            )
+            await self.make_new_user()
+
+            message = f'{self.username}님이 입장하셨습니다.'
+            self.count = await self.get_count()
+
+            # Send message to room group
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    'type': 'entry_message',
+                    'username': self.username,
+                    'count': self.count,
+                    'leave': 0,
+                    'message': message
+                }
+            )
+        else:
+            message = text_data_json['message']
+
+            # Send message to room group
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    'type': 'chat_message',
+                    'username' : self.username,
+                    'message': message
+                }
+            )
 
 
     async def entry_message(self, event):
@@ -96,7 +98,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             'stat': 'entry',
             'message': message,
             'count': self.count,
-            'author': "Byeolshow",
+            'username': "Byeolshow",
         }))
 
     async def chat_message(self, event):
@@ -106,7 +108,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         # Send message to WebSocket
         await self.send(text_data=json.dumps({
             'stat': 'chat',
-            'message': message,
+            'username': message,
             'author': author
         }))
 
@@ -118,7 +120,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
     @database_sync_to_async
     def make_new_user(self):
         return  RoomUser.objects.create(
-            room_name=Room.objects.get(room_streamer=self.room_name),
+            room_name=self.room_name,
             username=self.username
         )
 

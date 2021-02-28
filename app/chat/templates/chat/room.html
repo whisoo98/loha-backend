@@ -22,12 +22,25 @@
             + roomName
         );
 
+        chatSocket.onopen = function (msg){
+            if(msg.message == "success"){
+                chatSocket.send(JSON.stringify({
+                    'username': '사용자1',
+                    'stat': 'entry',
+                }));
+            }
+            else {
+                alert('연결에 오류가 발생하였습니다.')
+            }
+        }
+
+
         chatSocket.onmessage = function(e) {
             const data = JSON.parse(e.data);
             if(data.stat == "entry"){
                 document.querySelector('#chat-count').value = data.count;
             }
-            document.querySelector('#chat-log').value += (data.author + ": "+data.message + '\n');
+            document.querySelector('#chat-log').value += (data.username + ": "+data.message + '\n');
         };
 
         chatSocket.onclose = function(e) {
@@ -45,7 +58,8 @@
             const messageInputDom = document.querySelector('#chat-message-input');
             const message = messageInputDom.value;
             chatSocket.send(JSON.stringify({
-                'author': '테스트',
+                'username': '사용자2',
+                'stat': 'chat',
                 'message': message
             }));
             messageInputDom.value = '';
