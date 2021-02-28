@@ -49,7 +49,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 self.room_group_name,
                 self.channel_name
             )
-            await self.make_new_user()
+            self.id = await self.make_new_user()
 
             message = f'{self.username}님이 입장하셨습니다.'
             self.count = await self.get_count()
@@ -116,11 +116,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
     def make_new_user(self):
-        return  RoomUser.objects.create(
+        now_user = RoomUser.objects.create(
             room_name=self.room_name,
             username=self.username
         )
+        return now_user.id
+
 
     @database_sync_to_async
     def delete_user(self):
-        return RoomUser.objects.get(room_name=self.room_name, username=self.username).delete()
+        return RoomUser.objects.get(pk=self.id).delete()
