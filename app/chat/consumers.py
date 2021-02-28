@@ -12,12 +12,13 @@ from channels.db import database_sync_to_async
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        self.username = self.scope['user'].get_username()
+        self.username = 'testing'
         # if self.username == "":
         #     raise StopConsumer
         self.room_name = self.scope['url_route']['kwargs']['room_name']
         self.room_group_name = 'chat_%s' % self.room_name
 
+        print(self.scope)
         # Join room group
 
         await self.channel_layer.group_add(
