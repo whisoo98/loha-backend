@@ -15,10 +15,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.room_name = self.scope['url_route']['kwargs']['room_name']
         self.room_group_name = 'chat_%s' % self.room_name
-        try:
-            MediaStream.objects.get(influencer_id = self.room_name, status='live')
-        except:
-            await self.close()
+        await self.check_room()
         await self.accept()
 
     # FOR GOING OUT
@@ -120,6 +117,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
     @database_sync_to_async
     def get_count(self):
         return RoomUser.objects.filter(room_name=self.room_name).count()
+
+    @database_sync_to_async
+    def check_room(self):
+        return MediaStream.objects.get(influencer_id = self.room_name, status='live')
 
     @database_sync_to_async
     def make_new_user(self):
