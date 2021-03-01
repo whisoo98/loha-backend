@@ -7,6 +7,7 @@ from clayful import Clayful
 from clayful import ClayfulException
 from channels.auth import login
 from .models import *
+from media.models import MediaStream
 from channels.db import database_sync_to_async
 
 
@@ -14,6 +15,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.room_name = self.scope['url_route']['kwargs']['room_name']
         self.room_group_name = 'chat_%s' % self.room_name
+        try:
+            MediaStream.objects.get(influencer_id = self.room_name, status='live')
+        except:
+            await self.close()
         await self.accept()
 
     # FOR GOING OUT

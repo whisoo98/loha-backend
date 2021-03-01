@@ -17,7 +17,7 @@
 
     const chatSocket = new WebSocket(
         'ws://'
-        + window.location.host
+        + 'byeolshowco.com'
         + '/ws'
         + roomName
     );
@@ -28,7 +28,7 @@
             'stat': 'entry',
         }));
     }
-
+    //chatSocket.close()
 
     chatSocket.onmessage = function (e) {
         const data = JSON.parse(e.data);
@@ -53,7 +53,6 @@
         const messageInputDom = document.querySelector('#chat-message-input');
         const message = messageInputDom.value;
         chatSocket.send(JSON.stringify({
-            'username': '사용자2',
             'stat': 'chat',
             'message': message
         }));
