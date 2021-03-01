@@ -17,32 +17,35 @@ class ChatConsumer(AsyncWebsocketConsumer):
         self.room_group_name = 'chat_%s' % self.room_name
         try:
             await self.check_room()
+            await self.accept()
         except:
-            self.close()
-        await self.accept()
+            await self.close()
+
 
     # FOR GOING OUT
     async def disconnect(self, close_code):
-        # delete in RoomUser
-        await self.delete_user()
+        try:
+            # delete in RoomUser
+            await self.delete_user()
+            message= f'{self.username}님이 나가셨습니다.'
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    'type': 'entry_message',
+                    'username': self.username,
+                    'id': self.id,
+                    'leave': 1,
+                    'message': message
+                }
+            )
 
-        message= f'{self.username}님이 나가셨습니다.'
-        await self.channel_layer.group_send(
-            self.room_group_name,
-            {
-                'type': 'entry_message',
-                'username': self.username,
-                'id': self.id,
-                'leave': 1,
-                'message': message
-            }
-        )
-
-        # Leave room group
-        await self.channel_layer.group_discard(
-            self.room_group_name,
-            self.channel_name
-        )
+            # Leave room group
+            await self.channel_layer.group_discard(
+                self.room_group_name,
+                self.channel_name
+            )
+        except:
+            print('error on WS')
 
     # Receive message from WebSocket
     async def receive(self, text_data):
