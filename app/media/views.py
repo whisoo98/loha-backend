@@ -250,7 +250,7 @@ def delete_my_vod(request, result):
 @api_view(["GET"])
 def get_today_schedule(request):
     today_media = MediaSerializerforClient(
-        MediaStream.objects.filter(Q(started_at__contains=datetime.date.today())).order_by('-started_at'), many=True)
+        MediaStream.objects.filter(Q(started_at__contains=datetime.date.today())).order_by('started_at'), many=True)
 
     return Response(today_media.data)
 
@@ -259,7 +259,15 @@ def get_today_schedule(request):
 @api_view(["GET"])
 def get_future_schedule(request):
     today_media = MediaSerializerforClient(
-        MediaStream.objects.filter(Q(started_at__gt=datetime.date.today())).order_by('-started_at'), many=True)
+        MediaStream.objects.filter(Q(started_at__gt=datetime.date.today())).order_by('started_at'), many=True)
+
+    return Response(today_media.data)
+
+# All Byeolshow 'ready' schedule
+@api_view(["GET"])
+def get_ready_schedule(request):
+    today_media = MediaSerializerforClient(
+        MediaStream.objects.filter(status='ready').order_by('started_at'), many=True)
 
     return Response(today_media.data)
 

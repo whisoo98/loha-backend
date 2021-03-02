@@ -10,5 +10,6 @@ urlpatterns = [
     path('alarm/', LiveAlarm.as_view()),
     path('schedule/today/', get_today_schedule),
     path('schedule/future/', get_future_schedule),
+    path('schedule/ready/', get_ready_schedule),
 ]
 
