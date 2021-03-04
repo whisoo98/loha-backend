@@ -375,7 +375,7 @@ def add_view(request):
         contents = {
             'success': {
                 'message': '완료',
-                'media_id': now_stream.id,
+                'media_id': now_stream.vod_id,
                 'now_view_count' : now_stream.vod_view_count
             }
         }
