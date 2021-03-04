@@ -234,7 +234,7 @@ def list_influencer(request, sort_by):
                 pass
             else:
                 info['avatar'] = info['avatar']['url']
-            print(info['group'])
+
             del(info['name'],info['address'],info['connect'],info['verified'],info['groups'], info['userId'], info['email'],info['gender'],info['birthdate'],info['mobile'],info['phone'],info['lastLoggedInAt'],info['createdAt'],info['updatedAt'], info['meta'])
 
         # 인기순 정렬
