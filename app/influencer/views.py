@@ -10,7 +10,6 @@ from django.conf import settings
 from media.models import *
 from django.db.models import Q
 from media.serializers import *
-from chat.models import Room
 from django.core.exceptions import ObjectDoesNotExist
 import json
 import pprint
@@ -95,9 +94,6 @@ def get_stream_key(request, result):
                 }
             }
             Customer.update(result['_id'], payload)
-
-            Room.objects.create(room_streamer=result['_id'])
-
             contents = {
                 "success": {
                     'Stream_key': mux_data['data']['stream_key'],
@@ -238,6 +234,7 @@ def list_influencer(request, sort_by):
                 pass
             else:
                 info['avatar'] = info['avatar']['url']
+            print(info['group'])
             del(info['name'],info['address'],info['connect'],info['verified'],info['groups'], info['userId'], info['email'],info['gender'],info['birthdate'],info['mobile'],info['phone'],info['lastLoggedInAt'],info['createdAt'],info['updatedAt'], info['meta'])
 
         # 인기순 정렬
