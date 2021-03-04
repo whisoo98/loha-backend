@@ -640,7 +640,7 @@ class influencer_like(APIView):
                 Customer = Clayful.Customer
                 options = {
                     'query': {
-                        'group': 'XU79MY58Q2C4'
+                        'ids': ids,
                     }
                 }
                 res = Customer.list(options).data
@@ -773,7 +773,7 @@ class vod_like(APIView):
             # 현재 좋아요 상태를 확인
             if request.data.get('vod_id') in result.data['meta']['my_vod']:
                 # 좋아요 취소
-                now_vod.vod_view_count -= 1
+                now_vod.like_count -= 1
                 now_vod.save()
                 payload = {
                     'value': [
@@ -790,7 +790,7 @@ class vod_like(APIView):
                 }
                 return Response(contents, status=status.HTTP_202_ACCEPTED)
             # 좋아요
-            now_vod.vod_view_count += 1
+            now_vod.like_count += 1
             now_vod.save()
 
             payload = {
