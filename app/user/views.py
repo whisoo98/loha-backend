@@ -641,6 +641,7 @@ class influencer_like(APIView):
                 options = {
                     'query': {
                         'ids': ids,
+                        'group': 'XU79MY58Q2C4',
                     }
                 }
                 res = Customer.list(options).data
