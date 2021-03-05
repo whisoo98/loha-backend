@@ -32,8 +32,7 @@ def collection_list(request):
         options = {
             'query': {
                 'fields': 'name',
-                #'limit':120,
-                'limit':3,
+                'limit':120,
                 'page':request.GET.get('page',1),
                 'parent': 'none', # 최상위 카테고리만 가져옴
             },
