@@ -91,9 +91,7 @@ class Coupon(APIView):
                 'value':customer_id,
                 'unique':False
             }
-            pprint.pprint(payload)
             result2 = Coupon.push_to_metafield(coupon_id, 'user_ids', payload, options).data
-            pprint.pprint(result2)
             data = result.data
 
             return Response(data, status=status.HTTP_200_OK)
@@ -118,7 +116,8 @@ class Coupon(APIView):
                 },
             }
 
-            options['query']['limit']=120
+            #options['query']['limit']=120
+            options['query']['limit']=3
             options['query']['page']=request.GET.get('page',1)
 
             result = Customer.list_coupons_for_me(options)

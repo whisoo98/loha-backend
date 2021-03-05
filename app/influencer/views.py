@@ -219,7 +219,8 @@ def list_influencer(request, sort_by):
             'query': {
          #       'raw': True,
                 'group': 'XU79MY58Q2C4',
-                'limit':120,
+                #'limit':120,
+                'limit':3,
                 'page':request.GET.get('page',1),
         #        'fields': "_id,alias,avatar,country,name,meta.Follower"
             }

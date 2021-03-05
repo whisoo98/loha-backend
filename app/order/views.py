@@ -245,7 +245,8 @@ def order_list_api(request): #본인의 주문 내역 list
         options = {
             'customer': request.headers['Custom-Token'],
             'query': {
-                'limit':120,
+                #'limit':120,
+                'limit':3,
                 'page':request.GET.get('page',1),
             },
         }
