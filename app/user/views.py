@@ -691,9 +691,7 @@ class influencer_like(APIView):
                 # influencer 없으면 알아서 예외 처리됨
                 # 팔로잉 취소
                 payload = {
-                    'value': [
-                        request.data.get('InfluencerId')
-                    ]
+                    'value':request.data.get('InfluencerId')
                 }
                 Customer.pull_from_metafield(result.data['_id'], 'Following', payload)
 
@@ -710,9 +708,7 @@ class influencer_like(APIView):
             # influencerId 없으면 예외처리 됨
             # 팔로잉
             payload = {
-                'value': [
-                    request.data.get('InfluencerId')
-                ],
+                'value': request.data.get('InfluencerId'),
                 'unique': True
             }
             Customer.push_to_metafield(result.data['_id'], 'Following', payload)
