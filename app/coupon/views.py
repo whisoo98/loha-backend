@@ -15,6 +15,7 @@ from clayful import Clayful, ClayfulException
 
 import json
 import requests
+import pprint
 
 @api_view(['GET'])
 def manager_coupon_list(request):
@@ -79,16 +80,20 @@ class Coupon(APIView):
     def post(self, request, result):
         try:
             Customer = Clayful.Customer
-            options = {
-                'customer': request.headers['Custom-Token'],
-                'query': {},
-            }
-            customer_id = Customer.get_me(options).data['_id']
-            payload = json.dumps(request.data['payload'])
-
+            Coupon = Clayful.Coupon
+            customer_id = result.data['_id']
+            payload = (request.data['payload'])
+            coupon_id = payload['coupon']
             options = {
             }
-            result = Customer.add_coupon(customer_id, payload, options)
+            result = Customer.add_coupon(customer_id, payload, options) #고객에게 쿠폰 발급
+            payload = {
+                'value':customer_id,
+                'unique':False
+            }
+            pprint.pprint(payload)
+            result2 = Coupon.push_to_metafield(coupon_id, 'user_ids', payload, options).data
+            pprint.pprint(result2)
             data = result.data
 
             return Response(data, status=status.HTTP_200_OK)
@@ -96,9 +101,10 @@ class Coupon(APIView):
 
         except ClayfulException as e:
 
-            return Response(e.code, status=status.HTTP_400_BAD_REQUEST)
+            return Response(e.code + ' ' + e.message, status=e.status)
 
         except Exception as e:
+            print(e)
             return Response("알 수 없는 예외가 발생하였습니다.", status=status.HTTP_400_BAD_REQUEST)
 
     @require_login
