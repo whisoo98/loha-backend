@@ -49,6 +49,7 @@ def reserve_live(request, result):
             mux_livestream_playback_id=result['meta']['Stream_url'],
             mux_livestream_id=result['meta']['Stream_id'],
             title=request.data['title'],
+            notice=request.data['notice'],
             description=request.data['description'],
             influencer_name=result['name']['full'],
             influencer_id=result['_id'],
@@ -162,6 +163,7 @@ def edit_my_vod(request, result):
         now_stream.mux_livestream_playback_id = result['meta']['Stream_url']
         now_stream.mux_livestream_id = result['meta']['Stream_id']
         now_stream.title = request.data['title']
+        now_stream.notice = request.data['notice']
         now_stream.description = request.data['description']
         now_stream.influencer_name = result['name']['full']
         now_stream.influencer_id = result['_id']
@@ -250,7 +252,7 @@ def delete_my_vod(request, result):
 @api_view(["GET"])
 def get_today_schedule(request):
     today_media = MediaSerializerforClient(
-        MediaStream.objects.filter(Q(started_at__contains=datetime.date.today())).order_by('-started_at'), many=True)
+        MediaStream.objects.filter(Q(started_at__contains=datetime.date.today())).order_by('started_at'), many=True)
 
     return Response(today_media.data)
 
@@ -259,7 +261,15 @@ def get_today_schedule(request):
 @api_view(["GET"])
 def get_future_schedule(request):
     today_media = MediaSerializerforClient(
-        MediaStream.objects.filter(Q(started_at__gt=datetime.date.today())).order_by('-started_at'), many=True)
+        MediaStream.objects.filter(Q(started_at__gt=datetime.date.today())).order_by('started_at'), many=True)
+
+    return Response(today_media.data)
+
+# All Byeolshow 'ready' schedule
+@api_view(["GET"])
+def get_ready_schedule(request):
+    today_media = MediaSerializerforClient(
+        MediaStream.objects.filter(status='ready').order_by('started_at'), many=True)
 
     return Response(today_media.data)
 
@@ -351,3 +361,39 @@ class LiveAlarm(APIView):
         except Exception as e:
             print(e)
             return Response('알 수 없는 오류가 발생하였습니다.', status=status.HTTP_400_BAD_REQUEST)
+
+
+# 누적 시청자수 증가
+@api_view(['GET', 'POST'])
+def add_view(request):
+    try:
+        now_stream = MediaStream.objects.get(
+            vod_id=request.data['media_id'])
+
+        now_stream.vod_view_count +=1
+        now_stream.save()
+        contents = {
+            'success': {
+                'message': '완료',
+                'media_id': now_stream.vod_id,
+                'now_view_count' : now_stream.vod_view_count
+            }
+        }
+        return Response(contents, status=status.HTTP_202_ACCEPTED)
+    except ObjectDoesNotExist:
+        contents = {
+            'error': {
+                'message': '존재하지 않는 방송입니다.',
+            }
+        }
+        return Response(contents, status=status.HTTP_400_BAD_REQUEST)
+
+    except Exception as e:
+        print(e)
+        contents = {
+            'error': {
+                'message': '알 수 없는 오류',
+                'detail': e
+            }
+        }
+        return Response(contents, status=status.HTTP_400_BAD_REQUEST)

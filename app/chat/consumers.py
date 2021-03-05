@@ -7,76 +7,87 @@ from clayful import Clayful
 from clayful import ClayfulException
 from channels.auth import login
 from .models import *
+from media.models import MediaStream
 from channels.db import database_sync_to_async
 
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        self.username = self.scope['user'].get_username()
-        # if self.username == "":
-        #     raise StopConsumer
         self.room_name = self.scope['url_route']['kwargs']['room_name']
         self.room_group_name = 'chat_%s' % self.room_name
+        await self.accept() 
+        # try:
+        #     await self.check_room()
+        #     await self.accept()
+        # except:
+        #     await self.close()
 
-        # Join room group
-
-        await self.channel_layer.group_add(
-            self.room_group_name,
-            self.channel_name
-        )
-        await self.make_new_user()
-        await self.accept()
-
-        message = f'{self.username}님이 입장하셨습니다.'
-        self.count = await self.get_count()
-        # Send message to room group
-        await self.channel_layer.group_send(
-            self.room_group_name,
-            {
-                'type': 'entry_message',
-                'author': self.username,
-                'count': self.count,
-                'leave':0,
-                'message': message
-            }
-        )
 
     # FOR GOING OUT
     async def disconnect(self, close_code):
-        # delete in RoomUser
-        await self.delete_user()
+        try:
+            # delete in RoomUser
+            await self.delete_user()
+            message= f'{self.username}님이 나가셨습니다.'
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    'type': 'entry_message',
+                    'username': self.username,
+                    'id': self.id,
+                    'leave': 1,
+                    'message': message
+                }
+            )
 
-        message= f'{self.username}님이 나가셨습니다.'
-        await self.channel_layer.group_send(
-            self.room_group_name,
-            {
-                'type': 'entry_message',
-                'author': self.username,
-                'leave': 1,
-                'message': message
-            }
-        )
-
-        # Leave room group
-        await self.channel_layer.group_discard(
-            self.room_group_name,
-            self.channel_name
-        )
+            # Leave room group
+            await self.channel_layer.group_discard(
+                self.room_group_name,
+                self.channel_name
+            )
+        except:
+            print('error on WS')
 
     # Receive message from WebSocket
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)
-        message = text_data_json['message']
+        if text_data_json['stat'] == 'entry':
+            self.username = text_data_json['username']
 
-        # Send message to room group
-        await self.channel_layer.group_send(
-            self.room_group_name,
-            {
-                'type': 'chat_message',
-                'author' : self.username,
-                'message': message
-            }
-        )
+            # Join room group
+            await self.channel_layer.group_add(
+                self.room_group_name,
+                self.channel_name
+            )
+            self.id = await self.make_new_user()
+
+            message = f'{self.username}님이 입장하셨습니다.'
+            self.count = await self.get_count()
+
+            # Send message to room group
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    'type': 'entry_message',
+                    'username': self.username,
+                    'count': self.count,
+                    'id': self.id,
+                    'leave': 0,
+                    'message': message
+                }
+            )
+        else:
+            message = text_data_json['message']
+
+            # Send message to room group
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    'type': 'chat_message',
+                    'username' : self.username,
+                    'message': message
+                }
+            )
 
 
     async def entry_message(self, event):
@@ -86,7 +97,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         # 인원수 증감
         if event['leave'] == 1:
             self.count -= 1
-        elif self.username != event['author']:
+        elif self.id != event['id']:
             self.count += 1
 
 
@@ -95,18 +106,18 @@ class ChatConsumer(AsyncWebsocketConsumer):
             'stat': 'entry',
             'message': message,
             'count': self.count,
-            'author': "Byeolshow",
+            'username': "Byeolshow",
         }))
 
     async def chat_message(self, event):
         # print(event)
         message = event['message']
-        author = event['author']
+        username = event['username']
         # Send message to WebSocket
         await self.send(text_data=json.dumps({
             'stat': 'chat',
             'message': message,
-            'author': author
+            'username': username
         }))
 
 
@@ -115,12 +126,18 @@ class ChatConsumer(AsyncWebsocketConsumer):
         return RoomUser.objects.filter(room_name=self.room_name).count()
 
     @database_sync_to_async
+    def check_room(self):
+        return MediaStream.objects.get(influencer_id = self.room_name, status='live')
+
+    @database_sync_to_async
     def make_new_user(self):
-        return  RoomUser.objects.create(
-            room_name=Room.objects.get(room_streamer=self.room_name),
+        now_user = RoomUser.objects.create(
+            room_name=self.room_name,
             username=self.username
         )
+        return now_user.id
+
 
     @database_sync_to_async
     def delete_user(self):
-        return RoomUser.objects.get(room_name=self.room_name, username=self.username).delete()
+        return RoomUser.objects.get(pk=self.id).delete()
