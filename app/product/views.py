@@ -78,8 +78,8 @@ class ProductCollectionAPI(APIView):
                 'query': {
                     'available': True,
                     'collection': collection_id,
-                    'limit': 120,
-                    #'limit': 3,
+                    #'limit': 120,
+                    'limit': 3,
                     'page': request.GET.get('page', 1),
                 },
             }
@@ -212,8 +212,8 @@ def product_searchAPI(request):
         options = {
             'query': {
                 'q': request.data['search'],
-                'limit': 120,
-                #'limit':3,
+                #'limit': 120,
+                'limit':3,
                 'page': request.POST.get('page', 1),
                 'search': {
                     'name.ko' : '',
@@ -248,8 +248,8 @@ def list_product_catalog(request, discount_type):
         options = {
             'query': {
                 'available': True,
-                'limit': 120,
-                #'limit': 3,
+                #'limit': 120,
+                'limit': 3,
                 'page': request.GET.get('page', 1),
                 'discountType': discount_type,
                 'discountValueMin':request.GET.get('min',0),
