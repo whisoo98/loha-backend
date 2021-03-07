@@ -116,8 +116,8 @@ class Coupon(APIView):
                 },
             }
 
-            #options['query']['limit']=120
-            options['query']['limit']=3
+            options['query']['limit']=120
+            #options['query']['limit']=3
             options['query']['page']=request.GET.get('page',1)
 
             result = Customer.list_coupons_for_me(options)
