@@ -11,6 +11,7 @@ from media.models import *
 from django.db.models import Q
 from media.serializers import *
 from django.core.exceptions import ObjectDoesNotExist
+from product.views import set_raw
 import json
 import pprint
 import requests
@@ -270,6 +271,7 @@ def get_my_product(request):
         my_product = MediaStream.objects.filter(
             Q(influencer_id=request.GET['influencer_id']) & Q(status='completed')
         ).values_list('product_list', flat=True)
+
         ids = ','.join(my_product)
         if not ids:
             contents = {
@@ -288,10 +290,14 @@ def get_my_product(request):
         }
 
         res = Product.list(options)
+
+        data = res.data
+        for dict in data:
+            dict = set_raw(dict)
         contents = {
             'success': {
                 'message': '성공',
-                'product_list': res.data
+                'product_list': data
             }
         }
         return Response(contents, status=status.HTTP_200_OK)
