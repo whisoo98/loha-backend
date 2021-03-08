@@ -15,7 +15,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.room_name = self.scope['url_route']['kwargs']['room_name']
         self.room_group_name = 'chat_%s' % self.room_name
-        print("connect")
+
         # check room exist
         try:
             now_room = await self.check_room()
