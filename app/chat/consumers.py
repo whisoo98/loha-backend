@@ -15,12 +15,17 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.room_name = self.scope['url_route']['kwargs']['room_name']
         self.room_group_name = 'chat_%s' % self.room_name
-        await self.accept() 
-        # try:
-        #     await self.check_room()
-        #     await self.accept()
-        # except:
-        #     await self.close()
+        await self.accept()
+
+        # check room exist
+        try:
+            now_room = await self.check_room()
+            # add count of vod
+            now_room.vod_view_count+=1;
+            await database_sync_to_async(now_room.save())
+            await self.accept()
+        except:
+            await self.close()
 
 
     # FOR GOING OUT

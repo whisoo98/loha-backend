@@ -21,8 +21,8 @@ class MediaStream(models.Model):
 
     #About product
     product_name = models.CharField(max_length=200) # 대표 상품
-    product_price =models.CharField(max_length=200, default='0원') # 대표 상품 가격
-    product_sale = models.CharField(max_length=200, default='0')  # 대표 상품 가격
+    product_price =models.IntegerField(default=0) # 대표 상품 가격
+    product_sale = models.IntegerField(default=0)  # 대표 상품 세일 가격
     product_brand = models.CharField(max_length=200, null=True) # 대표 상품 brand
     product_thumbnail = models.URLField(null=True)  # 대표상품 섬네일
     product_list = models.CharField(max_length=500, null=True) # 상품 목록

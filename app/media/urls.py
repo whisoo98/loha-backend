@@ -6,11 +6,11 @@ urlpatterns = [
     path('start/', start_live),
     path('edit/', edit_my_vod),
     path('delete/', delete_my_vod),
-    path('addview/', add_view),
     path('callback/', mux_callback),
     path('alarm/', LiveAlarm.as_view()),
     path('schedule/today/', get_today_schedule),
     path('schedule/future/', get_future_schedule),
     path('schedule/ready/', get_ready_schedule),
+    path('get/', get_live)
 ]
 
