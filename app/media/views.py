@@ -332,28 +332,30 @@ class LiveAlarm(APIView):
 
     @require_login
     def post(self, request, result):
-        try:
-            Customer = Clayful.Customer
-            if request.data.get('_id') in result.data['meta']['Live_id']: #Live예약 취소
-                result.data['meta']['Live_id'].remove(request.data.get('_id'))
-                payload = {
-                    'meta': {
-                        'Live_id': result.data['meta']['Live_id']
-                    }
-                }
-                Customer.update(result.data['_id'], payload)
-                return Response("라이브 예약이 취소되었습니다.", status=status.HTTP_202_ACCEPTED)
-            # Live예약
-            payload = {
-                'meta': {
-                    'Live_id': result.data['meta']['Live_id'] + [request.data.get('_id')]
-                }
-            }
-            ##토큰을 저장해야함
-            #set_alarm_to_live(request.data.get('_id'),request.data['token'])
+        pprint.pprint(result.data)
 
-            Customer.update(result.data['_id'], payload)
-            return Response("라이브 예약이 설정되었습니다.", status=status.HTTP_202_ACCEPTED)
+        try:
+            Live_id = str(request.data['_id'])
+            Customer = Clayful.Customer
+            # Live예약 취소
+            if Live_id in result.data['meta']['Live_id']:
+                Customer.pull_from_metafield(result.data['_id'],'Live_id',{'value':Live_id},{})
+                content = {
+                    'status': 'success',
+                    'message': "라이브 예약이 취소되었습니다."
+                }
+                return Response(content, status=status.HTTP_202_ACCEPTED)
+            # Live예약
+
+            ##토큰을 저장해야함
+            #set_alarm_to_live(Live_id,request.data['token'])
+
+            Customer.push_to_metafield(result.data['_id'],'Live_id',{'value':Live_id,'unique':True},{})
+            content = {
+                'status':'success',
+                'message':"라이브 예약이 설정되었습니다."
+            }
+            return Response(content, status=status.HTTP_202_ACCEPTED)
 
         except ClayfulException as e:
             print(e)
