@@ -252,9 +252,14 @@ def delete_my_vod(request, result):
 @api_view(["GET"])
 def get_today_schedule(request):
     try:
+        # today_media = MediaSerializerforClient(
+        #     MediaStream.objects.filter(
+        #         Q(started_at__contains=datetime.date.today()) & Q(status!='completed')
+        #     ).order_by('started_at').order_by('status'), many=True)
         today_media = MediaSerializerforClient(
-            MediaStream.objects.filter(Q(started_at__contains=datetime.date.today())).order_by('started_at'), many=True)
-
+            MediaStream.objects.filter(
+                Q(started_at__contains=datetime.date.today())
+            ).order_by('status').order_by('started_at'), many=True)
         return Response(today_media.data)
     except ObjectDoesNotExist:
         contents = {
