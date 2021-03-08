@@ -444,19 +444,34 @@ class LiveAlarm(APIView):
         except Exception as e:
             print(e)
             return Response('알 수 없는 오류가 발생하였습니다.', status=status.HTTP_400_BAD_REQUEST)
+
     @require_login
     def get(self, request, result):
         try:
-            result.data['meta']['Live_id']
 
-            return Response(contents)
+            Live_list = result.data['meta']['Live_id'][1:]
+            media_list = []
+            for live in Live_list:
+                media = MediaStream.objects.get(pk=live)
+                media_list.append(MediaSerializerforClient(media).data)
+
+            media_list.sort(key=lambda x: x['started_at'])
+
+            return Response(media_list, status=status.HTTP_200_OK)
+
+        except ObjectDoesNotExist:
+            contents = {
+                'error': {
+                    'message': '존재하지 않는 방송입니다.'
+                }
+            }
+            return Response(contents, status=status.HTTP_400_BAD_REQUEST)
         except ClayfulException as e:
             print(e)
             return Response(e.code + ' ' + e.message, status=e.status)
         except Exception as e:
             print(e)
             return Response("알 수 없는 오류가 발생하였습니다.", status=status.HTTP_400_BAD_REQUEST)
-
 
 # 누적 시청자수 증가
 @api_view(['GET', 'POST'])
