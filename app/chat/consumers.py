@@ -15,14 +15,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.room_name = self.scope['url_route']['kwargs']['room_name']
         self.room_group_name = 'chat_%s' % self.room_name
-        await self.accept()
-
+        print("connect")
         # check room exist
         try:
             now_room = await self.check_room()
             # add count of vod
-            now_room.vod_view_count+=1;
-            await database_sync_to_async(now_room.save())
+            now_room.vod_view_count+=1
+            await self.add_count(now_room)
             await self.accept()
         except:
             await self.close()
@@ -125,6 +124,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
             'username': username
         }))
 
+    @database_sync_to_async
+    def add_count(self, now_room):
+        return now_room.save()
 
     @database_sync_to_async
     def get_count(self):
