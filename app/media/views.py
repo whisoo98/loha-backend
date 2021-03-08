@@ -59,7 +59,7 @@ def reserve_live(request, result):
             product_sale=request.data['product_sale'],
             product_brand=request.data['product_brand'],
             product_thumbnail=request.data['product_thumbnail'],
-            product_list=request.data['product_list'],
+            product_list=','.join(request.data['product_list']),
             started_at=request.data['started_at']
         )
 
@@ -173,7 +173,7 @@ def edit_my_vod(request, result):
         now_stream.product_sale = request.data['product_sale']
         now_stream.product_brand = request.data['product_brand']
         now_stream.product_thumbnail = request.data['product_thumbnail']
-        now_stream.product_list = request.data['product_list']
+        now_stream.product_list=','.join(request.data['product_list'])
         now_stream.started_at = request.data['started_at']
 
         now_stream.save()
@@ -251,27 +251,83 @@ def delete_my_vod(request, result):
 # Today byeolshow schedule
 @api_view(["GET"])
 def get_today_schedule(request):
-    today_media = MediaSerializerforClient(
-        MediaStream.objects.filter(Q(started_at__contains=datetime.date.today())).order_by('started_at'), many=True)
-
-    return Response(today_media.data)
+    try:
+        # today_media = MediaSerializerforClient(
+        #     MediaStream.objects.filter(
+        #         Q(started_at__contains=datetime.date.today()) & Q(status!='completed')
+        #     ).order_by('started_at').order_by('status'), many=True)
+        today_media = MediaSerializerforClient(
+            MediaStream.objects.filter(
+                Q(started_at__contains=datetime.date.today())
+            ).order_by('status').order_by('started_at'), many=True)
+        return Response(today_media.data)
+    except ObjectDoesNotExist:
+        contents = {
+            'error': {
+                'message': '방송이 없습니다.'
+            }
+        }
+        return Response(contents, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        print(e)
+        contents = {
+            'error': {
+                'message': '알 수 없는 오류',
+                'detail': e
+            }
+        }
+        return Response(contents, status=status.HTTP_400_BAD_REQUEST)
 
 
 # Tomorrow ~ byeolshow schedule
 @api_view(["GET"])
 def get_future_schedule(request):
-    today_media = MediaSerializerforClient(
-        MediaStream.objects.filter(Q(started_at__gt=datetime.date.today())).order_by('started_at'), many=True)
+    try:
+        today_media = MediaSerializerforClient(
+            MediaStream.objects.filter(Q(started_at__gt=datetime.date.today())).order_by('started_at'), many=True)
 
-    return Response(today_media.data)
+        return Response(today_media.data)
+    except ObjectDoesNotExist:
+        contents = {
+            'error': {
+                'message': '방송이 없습니다.'
+            }
+        }
+        return Response(contents, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        print(e)
+        contents = {
+            'error': {
+                'message': '알 수 없는 오류',
+                'detail': e
+            }
+        }
+        return Response(contents, status=status.HTTP_400_BAD_REQUEST)
 
 # All Byeolshow 'ready' schedule
 @api_view(["GET"])
 def get_ready_schedule(request):
-    today_media = MediaSerializerforClient(
-        MediaStream.objects.filter(status='ready').order_by('started_at'), many=True)
+    try:
+        today_media = MediaSerializerforClient(
+            MediaStream.objects.filter(status='ready').order_by('started_at'), many=True)
 
-    return Response(today_media.data)
+        return Response(today_media.data)
+    except ObjectDoesNotExist:
+        contents = {
+            'error': {
+                'message': '방송이 없습니다.'
+            }
+        }
+        return Response(contents, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        print(e)
+        contents = {
+            'error': {
+                'message': '알 수 없는 오류',
+                'detail': e
+            }
+        }
+        return Response(contents, status=status.HTTP_400_BAD_REQUEST)
 
 # TODO 지금 핫한 방송
 def get_hot_live(request):
@@ -279,10 +335,46 @@ def get_hot_live(request):
     # RoomUser.objects.filter(
     #     room_name=Room.objects.filter(room_name=self.room_name).all()[0]
     # ).count()
-    today_media = MediaSerializer(
+    today_media = MediaSerializerforClient(
         MediaStream.objects.filter(Q(status='live')).order_by('-started_at'), many=True)
 
     return Response(today_media.data)
+
+# 하나의 방송 불러오기
+@api_view(["GET"])
+def get_live(request):
+    try:
+        now_media = MediaStream.objects.get(pk=int(request.GET['media_id']))
+        Product = Clayful.Product
+
+        options = {
+            'query': {
+                'ids': now_media.product_list
+            }
+        }
+        res = MediaSerializerforClient(now_media).data
+
+        res['product_list'] = Product.list(options).data
+        contents = {
+            'success': res
+        }
+        return Response(contents, status=status.HTTP_200_OK)
+    except ObjectDoesNotExist:
+        contents = {
+            'error': {
+                'message': '존재하지 않는 방송입니다.'
+            }
+        }
+        return Response(contents, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        print(e)
+        contents = {
+            'error': {
+                'message': '알 수 없는 오류',
+                'detail': e
+            }
+        }
+        return Response(contents, status=status.HTTP_400_BAD_REQUEST)
 
 
 # TODO OPEN SPECIAL byeolshow
@@ -321,28 +413,30 @@ def mux_callback(request):
 class LiveAlarm(APIView):
     @require_login
     def post(self, request, result):
+        pprint.pprint(result.data)
+
         try:
+            Live_id = str(request.data['_id'])
             Customer = Clayful.Customer
-            if request.data.get('_id') in result.data['meta']['Live_id']: #Live예약 취소
-                result.data['meta']['Live_id'].remove(request.data.get('_id'))
-                payload = {
-                    'meta': {
-                        'Live_id': result.data['meta']['Live_id']
-                    }
+            # Live예약 취소
+            if Live_id in result.data['meta']['Live_id']:
+                Customer.pull_from_metafield(result.data['_id'],'Live_id',{'value':Live_id},{})
+                content = {
+                    'status': False,
+                    'message': "라이브 예약이 취소되었습니다."
                 }
-                Customer.update(result.data['_id'], payload)
-                return Response("라이브 예약이 취소되었습니다.", status=status.HTTP_202_ACCEPTED)
+                return Response(content, status=status.HTTP_202_ACCEPTED)
             # Live예약
-            payload = {
-                'meta': {
-                    'Live_id': result.data['meta']['Live_id'] + [request.data.get('_id')]
-                }
-            }
+
             ##토큰을 저장해야함
             #set_alarm_to_live(request.data.get('_id'),request.data['token'])
 
-            Customer.update(result.data['_id'], payload)
-            return Response("라이브 예약이 설정되었습니다.", status=status.HTTP_202_ACCEPTED)
+            Customer.push_to_metafield(result.data['_id'],'Live_id',{'value':Live_id,'unique':True},{})
+            content = {
+                'status':True,
+                'message':"라이브 예약이 설정되었습니다."
+            }
+            return Response(content, status=status.HTTP_202_ACCEPTED)
 
         except ClayfulException as e:
             print(e)

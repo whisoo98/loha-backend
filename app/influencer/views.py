@@ -11,6 +11,7 @@ from media.models import *
 from django.db.models import Q
 from media.serializers import *
 from django.core.exceptions import ObjectDoesNotExist
+from product.views import set_raw
 import json
 import pprint
 import requests
@@ -220,7 +221,6 @@ def list_influencer(request, sort_by):
          #       'raw': True,
                 'group': 'XU79MY58Q2C4',
                 'limit':120,
-                #'limit':3,
                 'page':request.GET.get('page',1),
         #        'fields': "_id,alias,avatar,country,name,meta.Follower"
             }
@@ -269,8 +269,9 @@ def list_influencer(request, sort_by):
 def get_my_product(request):
     try:
         my_product = MediaStream.objects.filter(
-            Q(influencer_id=request.data['influencer_id']) & Q(status='completed')
+            Q(influencer_id=request.GET['influencer_id']) & Q(status='completed')
         ).values_list('product_list', flat=True)
+
         ids = ','.join(my_product)
         if not ids:
             contents = {
@@ -289,10 +290,14 @@ def get_my_product(request):
         }
 
         res = Product.list(options)
+
+        data = res.data
+        for dict in data:
+            dict = set_raw(dict)
         contents = {
             'success': {
                 'message': '성공',
-                'product_list': res.data
+                'product_list': data
             }
         }
         return Response(contents, status=status.HTTP_200_OK)
@@ -313,7 +318,7 @@ def get_my_product(request):
 def get_my_vod(request):
     try:
         my_vod = MediaSerializerforClient(
-            MediaStream.objects.filter(influencer_id=request.data['influencer_id']).order_by('-started_at'),
+            MediaStream.objects.filter(influencer_id=request.GET['influencer_id']).order_by('-started_at'),
             many=True)
         contents = {
             'success': {
