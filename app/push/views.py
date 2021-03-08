@@ -22,15 +22,15 @@ def set_alarm_to_influencer(influencer_id, token):
     InfluencerAlarm.objects.filter(influencer_id=influencer_id, token=token).all().delete()
 
 #라이브 알람 설정할 때 알람 설정
-def set_alarm_to_live(Live_id, token):
-    LiveAlarm.objects.create(Live_id=Live_id, token=token)
+def set_alarm_to_live(vod_id, token):
+    LiveAlarm.objects.create(vod_id=vod_id, token=token)
 
 #라이브 알람 설정 취소
-def unset_alarm_to_live(Live_id, token=None):
+def unset_alarm_to_live(vod_id, token=None):
     if token is None: #방송이 종료되면 모두 삭제
-        LiveAlarm.objects.fileter(Live_id=Live_id).all().delete()
+        LiveAlarm.objects.fileter(vod_id=vod_id).all().delete()
     else: #한 사람이 삭제
-        LiveAlarm.objects.filter(Live_id=Live_id, token=token).all().delete()
+        LiveAlarm.objects.filter(vod_id=vod_id, token=token).all().delete()
 
 #인플루언서 팔로우에 대한 알람 보내기
 def alarm_by_influencer(influencer_id, info):

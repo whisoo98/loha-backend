@@ -222,7 +222,7 @@ def delete_my_vod(request, result):
         now_stream.delete()
 
         # 알람 삭제
-        # LiveAlarm.objects.filter(Live_id=request.data['media_id']).all().delete()
+        # unset_alarm_to_live(vod_id = request.data['media_id'])
         
         contents = {
             'success': {
@@ -307,7 +307,7 @@ def mux_callback(request):
             now_stream.save()
 
             # TODO 알람 삭제
-
+            #unset_alarm_to_live(vod_id=now_stream.void_id)
             return Response("completed")
 
         # TODO 오류 상황에 대한 예외 처리 필요할듯
@@ -319,20 +319,6 @@ def mux_callback(request):
 
 
 class LiveAlarm(APIView):
-    @require_login
-    def get(self, request, result):
-        try:
-            contents = {
-                "LiveAlarm_List": result.data['meta']['Live_id']
-            }
-            return Response(contents)
-        except ClayfulException as e:
-            print(e)
-            return Response(e.code + ' ' + e.message, status=e.status)
-        except Exception as e:
-            print(e)
-            return Response("알 수 없는 오류가 발생하였습니다.", status=status.HTTP_400_BAD_REQUEST)
-
     @require_login
     def post(self, request, result):
         try:
@@ -364,6 +350,18 @@ class LiveAlarm(APIView):
         except Exception as e:
             print(e)
             return Response('알 수 없는 오류가 발생하였습니다.', status=status.HTTP_400_BAD_REQUEST)
+    @require_login
+    def get(self, request, result):
+        try:
+            result.data['meta']['Live_id']
+
+            return Response(contents)
+        except ClayfulException as e:
+            print(e)
+            return Response(e.code + ' ' + e.message, status=e.status)
+        except Exception as e:
+            print(e)
+            return Response("알 수 없는 오류가 발생하였습니다.", status=status.HTTP_400_BAD_REQUEST)
 
 
 # 누적 시청자수 증가
