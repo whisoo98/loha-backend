@@ -34,42 +34,64 @@ IMP_PG_EXIMBAY = "eximbay"  # 엑심베이
 IMP_PG_NAVERPAY = "naverco"  # 네이버페이
 '''
 
-@api_view(['POST'])
+@api_view(['GET'])
 def verify_payment(request):
     
-    #토큰 발급
-    client = Iamport(imp_key=getattr(settings, 'IAMPORT_REST_KEY', None),
-                     imp_secret=getattr(settings, 'IAMPORT_SECRET_REST_KEY', None))
-
     try:
-        #프론트로 부터 결제 정보 받음
-        imp_uid=request.data.get('imp_uid')
-        merchant_uid=request.data.get('merchant_uid')
-        amount_to_be_paid = request.data['amount']
-        #결제정보 조회
-        response = client.find(imp_uid=imp_uid,merchant_uid=merchant_uid)
-        is_paid = client.is_paid(amount=amount_to_be_paid, imp_uid=imp_uid,merchant_uid=merchant_uid)
-        if is_paid is True: # 납부 완료
-            content = {
-                'status':'success',
-                'message':'결제가 완료되었습니다.'
+        #아임포트 redirection
+        imp_uid=request.GET.get('imp_uid')
+        merchant_uid=request.GET.get('merchant_uid')
+        imp_success=request.GET.get('imp_success')
+
+        if imp_success == True:
+            '''
+            아임포트에서 결제 내역 가져옴 & DB에서 결제 요청 내역 가져옴
+            -> 가격 일치 판정
+            '''
+
+            #토큰 받음
+            iamport = Iamport(imp_key=getattr(settings, 'IAMPORT_REST_KEY', None),
+                             imp_secret=getattr(settings, 'IAMPORT_SECRET_REST_KEY', None))
+
+            #아임포트 결제 내역
+            response = iamport.find(merchant_uid=merchant_uid)
+            amount_paid = response['amount']
+            status = response['status']
+
+            #DB
+            Order = Clayful.Order
+            options = {
+                'query':{}
             }
-            return Response(content)
-        # 가상계좌는 현재로서는 구현하지 않음
-        # elif response['status'] == 'ready': # 가상계좌
-        #     # TODO: 카톡으로 가상계좌정보 보내기
-        #     # webhook을 통해서 클레이풀에 가상계좌 정보 입력됨
-        #     content = {
-        #         'status': 'vbank',
-        #         'message': '가상계좌가 발급되었습니다.'
-        #     }
-        #     return Response(content)
-        else: # 결제 오류
+            result = Order.get(merchant_uid, options).data
+            amount_to_be_paid = result['total']['price']['original']['raw']
+
+            if amount_paid == amount_to_be_paid: #결제 금액 일치
+                if status=='ready': #가상계좌 발급
+
+                    # TODO 가상계좌 발급 안내 알람 발송 - 카톡
+                    content = {
+                        'status':'vbankIssued',
+                        'message':'가상계좌 발급 성공',
+                    }
+                else:
+                    content = {
+                        'status':'success',
+                        'message':'결제 성공',
+                    }
+            else:
+                content = {
+                    'status': 'fail',
+                    'message':'결제 금익 불일치'
+                }
+        else:
+            error_code=request.GET.get('error_code')
+            error_message=request.GET.get('error_message')
             content = {
-                'status':'fail',
-                'message':'결제금액과 주문금액이 일치하지 않습니다.'
+                'status':'error',
+                'message':error_message
             }
-            return Response(content)
+        return Response(content)
 
     except Exception as e:
         print(e)
