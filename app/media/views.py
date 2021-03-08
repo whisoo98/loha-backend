@@ -428,7 +428,7 @@ class LiveAlarm(APIView):
             if Live_id in result.data['meta']['Live_id']:
                 Customer.pull_from_metafield(result.data['_id'],'Live_id',{'value':Live_id},{})
                 content = {
-                    'status': 'cancelled',
+                    'status': False,
                     'message': "라이브 예약이 취소되었습니다."
                 }
                 return Response(content, status=status.HTTP_202_ACCEPTED)
@@ -439,7 +439,7 @@ class LiveAlarm(APIView):
 
             Customer.push_to_metafield(result.data['_id'],'Live_id',{'value':Live_id,'unique':True},{})
             content = {
-                'status':'reservation',
+                'status':True,
                 'message':"라이브 예약이 설정되었습니다."
             }
             return Response(content, status=status.HTTP_202_ACCEPTED)
