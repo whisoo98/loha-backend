@@ -305,6 +305,9 @@ def mux_callback(request):
             now_stream.finished_at = datetime.datetime.now()
             now_stream.status = 'completed'
             now_stream.save()
+
+            # TODO 알람 삭제
+
             return Response("completed")
 
         # TODO 오류 상황에 대한 예외 처리 필요할듯
@@ -350,7 +353,7 @@ class LiveAlarm(APIView):
                 }
             }
             ##토큰을 저장해야함
-            set_alarm_to_live(request.data.get('_id'),request.data['token'])
+            #set_alarm_to_live(request.data.get('_id'),request.data['token'])
 
             Customer.update(result.data['_id'], payload)
             return Response("라이브 예약이 설정되었습니다.", status=status.HTTP_202_ACCEPTED)
