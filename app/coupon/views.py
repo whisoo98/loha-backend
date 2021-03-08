@@ -9,6 +9,7 @@ from rest_framework.views import APIView
 from rest_framework.decorators import api_view,parser_classes
 from rest_framework.parsers import JSONParser
 
+from coupon import models
 from user.views import require_login
 
 from clayful import Clayful, ClayfulException
@@ -28,13 +29,18 @@ def manager_coupon_list(request):
             'debug_language': 'ko',
         })
 
-        Coupon = Clayful.Coupon
+        CCoupon = Clayful.Coupon
 
         options = {
-            'query': {},
+            'query': {
+                'limit' : 120,
+                'page':request.GET.get('page',1)
+            },
         }
-        result = Coupon.list(options)
-        count = Coupon.count(options).data
+        result = CCoupon.list(options)
+        options = {
+            'query':{}
+        }
         headers = result.headers
         data = result.data
         for coupon in data:
@@ -51,12 +57,23 @@ def manager_coupon_list(request):
                 coupon['expiresAt']=coupon['expiresAt']['raw']
             coupon['createdAt']=coupon['createdAt']['raw']
             coupon['updatedAt']=coupon['updatedAt']['raw']
+            coupon['Issued'] = False
+
+        Customer = Clayful.Customer
+        if request.headers.get('Custom-Token') is not None:
+            result = Customer.get_me({'customer': request.headers['Custom-Token'], 'query': {}})
+            coupon_list = list(models.Coupon.objects.filter(user_id=result.data['_id']).all())
+            for coupon in data:
+                target = coupon['_id']
+                for coupon_ele in coupon_list:
+                    if target == coupon_ele.coupon_id:
+                        coupon['Issued']=True
 
         return Response(data, status=status.HTTP_200_OK)
 
     except ClayfulException as e:
 
-        return Response(e.code, status=status.HTTP_400_BAD_REQUEST)
+        return Response(e.code+' ' +e.message, status=e.status)
 
     except Exception as e:
         print(e)
@@ -80,21 +97,16 @@ class Coupon(APIView):
     def post(self, request, result):
         try:
             Customer = Clayful.Customer
-            Coupon = Clayful.Coupon
             customer_id = result.data['_id']
             payload = (request.data['payload'])
             coupon_id = payload['coupon']
             options = {
             }
             result = Customer.add_coupon(customer_id, payload, options) #고객에게 쿠폰 발급
-            payload = {
-                'value':customer_id,
-                'unique':False
-            }
-            result2 = Coupon.push_to_metafield(coupon_id, 'user_ids', payload, options).data
-            data = result.data
 
-            return Response(data, status=status.HTTP_200_OK)
+            models.Coupon.objects.create(user_id= customer_id,coupon_id=coupon_id)
+
+            return Response(result.data, status=status.HTTP_200_OK)
 
 
         except ClayfulException as e:
