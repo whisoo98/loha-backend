@@ -6,5 +6,5 @@ class InfluencerAlarm(models.Model):
     token = models.TextField()
 
 class LiveAlarm(models.Model):
-    Live_id = models.CharField(max_length=200)
+    vod_id = models.CharField(max_length=200)
     token = models.TextField()
