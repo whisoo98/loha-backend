@@ -8,7 +8,8 @@ urlpatterns = [
     path('delete/', delete_my_vod),
     path('callback/', mux_callback),
     path('alarm/', LiveAlarm.as_view()),
-    path('schedule/today/', get_today_schedule),
+    path('schedule/today/ready', get_today_ready_schedule),
+    path('schedule/today/live', get_today_live_schedule),
     path('schedule/future/', get_future_schedule),
     path('schedule/ready/', get_ready_schedule),
     path('get/', get_live)

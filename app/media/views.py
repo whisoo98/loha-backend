@@ -248,9 +248,9 @@ def delete_my_vod(request, result):
         }
         return Response(contents, status=status.HTTP_400_BAD_REQUEST)
 
-# Today byeolshow schedule
+# Today byeolshow live schedule
 @api_view(["GET"])
-def get_today_schedule(request):
+def get_today_live_schedule(request):
     try:
         # today_media = MediaSerializerforClient(
         #     MediaStream.objects.filter(
@@ -258,13 +258,53 @@ def get_today_schedule(request):
         #     ).order_by('started_at').order_by('status'), many=True)
         today_media = MediaSerializerforClient(
             MediaStream.objects.filter(
-                Q(started_at__contains=datetime.date.today())
-            ).order_by('status').order_by('started_at'), many=True)
+                Q(started_at__contains=datetime.date.today()) & Q(status='live')
+            ).order_by('started_at'), many=True)
+        contents = {
+            'success': {
+                'live_list': today_media.data
+            }
+        }
         return Response(today_media.data)
     except ObjectDoesNotExist:
         contents = {
+            'success': {
+                'live_list': []
+            }
+        }
+        return Response(contents, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        print(e)
+        contents = {
             'error': {
-                'message': '방송이 없습니다.'
+                'message': '알 수 없는 오류',
+                'detail': e
+            }
+        }
+        return Response(contents, status=status.HTTP_400_BAD_REQUEST)
+
+# Today byeolshow ready schedule
+@api_view(["GET"])
+def get_today_ready_schedule(request):
+    try:
+        # today_media = MediaSerializerforClient(
+        #     MediaStream.objects.filter(
+        #         Q(started_at__contains=datetime.date.today()) & Q(status!='completed')
+        #     ).order_by('started_at').order_by('status'), many=True)
+        today_media = MediaSerializerforClient(
+            MediaStream.objects.filter(
+                Q(started_at__contains=datetime.date.today()) & Q(status='ready')
+            ).order_by('started_at'), many=True)
+        contents = {
+            'success': {
+                'live_list': today_media.data
+            }
+        }
+        return Response(today_media.data)
+    except ObjectDoesNotExist:
+        contents = {
+            'success': {
+                'live_list': []
             }
         }
         return Response(contents, status=status.HTTP_400_BAD_REQUEST)
