@@ -336,3 +336,28 @@ def get_my_vod(request):
             }
         }
         return Response(contents, status=status.HTTP_400_BAD_REQUEST)
+
+# 내가 예약한  방송 불러오기
+@api_view(['GET'])
+@is_influencer
+def get_my_readyvod(request, result):
+    try:
+        my_vod = MediaSerializerforClient(
+            MediaStream.objects.filter(Q(influencer_id=result['_id']) & Q(status='ready')).order_by('started_at'),
+            many=True)
+        contents = {
+            'success': {
+                'message': '성공',
+                'data': my_vod.data
+            }
+        }
+        return Response(contents, status=status.HTTP_200_OK)
+    except Exception as e:
+        print(e)
+        contents = {
+            'error': {
+                'message': '알 수 없는 오류',
+                'code': e
+            }
+        }
+        return Response(contents, status=status.HTTP_400_BAD_REQUEST)
