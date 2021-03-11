@@ -30,6 +30,11 @@ class NotEnoughDataError(Exception):
     def __str__(self):
         return "잘못된 입력입니다."
 
+def product_list_to_array(products):
+    for product in products:
+        product['product_list'] = product['product_list'].split(',')
+    return products
+
 # 방송 예약
 @api_view(['POST'])
 @is_influencer
@@ -248,31 +253,18 @@ def delete_my_vod(request, result):
         }
         return Response(contents, status=status.HTTP_400_BAD_REQUEST)
 
-# Today byeolshow live schedule
+# 오늘 방송 일정 불러오기 live
 @api_view(["GET"])
 def get_today_live_schedule(request):
     try:
-        # today_media = MediaSerializerforClient(
-        #     MediaStream.objects.filter(
-        #         Q(started_at__contains=datetime.date.today()) & Q(status!='completed')
-        #     ).order_by('started_at').order_by('status'), many=True)
         today_media = MediaSerializerforClient(
             MediaStream.objects.filter(
-                Q(started_at__contains=datetime.date.today()) & Q(status='live')
+                Q(status='live')
             ).order_by('started_at'), many=True)
-        contents = {
-            'success': {
-                'live_list': today_media.data
-            }
-        }
-        return Response(today_media.data)
+        res = product_list_to_array(today_media.data)
+        return Response(res)
     except ObjectDoesNotExist:
-        contents = {
-            'success': {
-                'live_list': []
-            }
-        }
-        return Response(contents, status=status.HTTP_400_BAD_REQUEST)
+        return Response([], status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
         print(e)
         contents = {
@@ -283,31 +275,18 @@ def get_today_live_schedule(request):
         }
         return Response(contents, status=status.HTTP_400_BAD_REQUEST)
 
-# Today byeolshow ready schedule
+# 오늘 방송 일정 불러오기 ready
 @api_view(["GET"])
 def get_today_ready_schedule(request):
     try:
-        # today_media = MediaSerializerforClient(
-        #     MediaStream.objects.filter(
-        #         Q(started_at__contains=datetime.date.today()) & Q(status!='completed')
-        #     ).order_by('started_at').order_by('status'), many=True)
         today_media = MediaSerializerforClient(
             MediaStream.objects.filter(
-                Q(started_at__contains=datetime.date.today()) & Q(status='ready')
-            ).order_by('started_at'), many=True)
-        contents = {
-            'success': {
-                'live_list': today_media.data
-            }
-        }
-        return Response(today_media.data)
+                Q(started_at__gte=datetime.date.today()) & Q(status='ready')
+            ).order_by('started_at')[:10], many=True)
+        res = product_list_to_array(today_media.data)
+        return Response(res)
     except ObjectDoesNotExist:
-        contents = {
-            'success': {
-                'live_list': []
-            }
-        }
-        return Response(contents, status=status.HTTP_400_BAD_REQUEST)
+        return Response([], status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
         print(e)
         contents = {
@@ -319,21 +298,26 @@ def get_today_ready_schedule(request):
         return Response(contents, status=status.HTTP_400_BAD_REQUEST)
 
 
-# Tomorrow ~ byeolshow schedule
+# 미래 방송 일정 불러오기
 @api_view(["GET"])
 def get_future_schedule(request):
     try:
         today_media = MediaSerializerforClient(
             MediaStream.objects.filter(Q(started_at__gt=datetime.date.today())).order_by('started_at'), many=True)
-
-        return Response(today_media.data)
-    except ObjectDoesNotExist:
+        res = product_list_to_array(today_media.data)
         contents = {
-            'error': {
-                'message': '방송이 없습니다.'
+            'success': {
+                'live_list': res
             }
         }
-        return Response(contents, status=status.HTTP_400_BAD_REQUEST)
+        return Response(contents)
+    except ObjectDoesNotExist:
+        contents = {
+            'success': {
+                'ready_list': []
+            }
+        }
+        return Response(contents)
     except Exception as e:
         print(e)
         contents = {
@@ -344,21 +328,16 @@ def get_future_schedule(request):
         }
         return Response(contents, status=status.HTTP_400_BAD_REQUEST)
 
-# All Byeolshow 'ready' schedule
+# 아직 시작하지 않은 모든 방송 불러오기
 @api_view(["GET"])
 def get_ready_schedule(request):
     try:
         today_media = MediaSerializerforClient(
             MediaStream.objects.filter(status='ready').order_by('started_at'), many=True)
-
-        return Response(today_media.data)
+        res = product_list_to_array(today_media.data)
+        return Response(res)
     except ObjectDoesNotExist:
-        contents = {
-            'error': {
-                'message': '방송이 없습니다.'
-            }
-        }
-        return Response(contents, status=status.HTTP_400_BAD_REQUEST)
+        return Response([], status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
         print(e)
         contents = {
