@@ -17,7 +17,7 @@ from django.urls import path, include
 from .views import *
 
 urlpatterns = [
-    path('restock/', restock_all_refund_items),
     path('markdone/', order_mark_done),
+    path('refund/',Refund),
 ]
 

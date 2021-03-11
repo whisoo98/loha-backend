@@ -19,7 +19,7 @@ from django.conf.urls import url
 from .views import *
 
 urlpatterns = [
-    path('refund/<str:order_id>/', request_refund_for_me_api),
-    path('refund/cancel/<str:order_id>/<str:refund_id>/', cancel_refund_for_me_api),
-    path('refund/accept/<str:order_id>/<str:refund_id>/', RefundAcceptAPI.as_view()),
+    path('<str:order_id>/', request_refund_for_me_api),
+    path('cancel/<str:order_id>/<str:refund_id>/', cancel_refund_for_me_api),
+    # path('refund/accept/<str:order_id>/<str:refund_id>/', RefundAcceptAPI.as_view()),
 ]
