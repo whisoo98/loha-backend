@@ -18,6 +18,7 @@ from .views import *
 
 urlpatterns = [
     path('', User.as_view()),
+    path('checkalias/', check_name),
     path('influencer/like/', influencer_like.as_view()),
     path('myvod/', vod_like.as_view()),
     path('auth/', Auth.as_view()),

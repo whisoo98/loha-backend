@@ -46,6 +46,51 @@ def require_login(func):
 
     return wrapper
 
+# 닉네임 중복 확인
+@api_view(['POST'])
+def check_name(request):
+    try:
+        Clayful.config({
+            'client': getattr(settings, 'CLAYFUL_SECRET_KEY', None),
+            'language': 'ko',
+            'currency': 'KRW',
+            'time_zone': 'Asia/Seoul',
+            'debug_language': 'ko',
+        })
+        Customer = Clayful.Customer
+
+        options = {
+            'query':{
+                'raw': True,
+                'fields': 'name,country',
+                'fullName': request.data['alias']
+            }
+        }
+
+        result = Customer.list(options).data
+        print(result)
+        if not result:
+            content = {
+                'success': {
+                    'message': '사용 가능한 닉네임입니다.'
+                }
+            }
+            return Response(content, status=status.HTTP_200_OK)
+        else:
+            content = {
+                'error': {
+                    'message': '사용 불가능한 닉네임입니다.'
+                }
+            }
+            return Response(content, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        print(e)
+        content = {
+            'error': {
+                'message': '오류 발생'
+            }
+        }
+        return Response(content, status=status.HTTP_400_BAD_REQUEST)
 
 # Clayful 초기화 decorator
 def Init_Clayful(func):
@@ -90,8 +135,11 @@ class User(APIView):
     # 현재 회원정보 출력
     @require_login
     def get(self, request, result):
-        if result.data['address']['primary'] is None:
-            result.data['address'] = {
+        res = result.data
+        res['alias'] = res['name']['full']
+        del (res['name'],res['connect'], res['verified'], res['groups'], res['gender'], res['birthdate'], res['phone'], res['lastLoggedInAt'], res['createdAt'], res['updatedAt'], res['meta'])
+        if res['address']['primary'] is None:
+            res['address'] = {
                 "primary": {
                     "name": {
                         "first": "",
@@ -109,7 +157,7 @@ class User(APIView):
                     "company": ""
                 }
             }
-        return Response(result.data)
+        return Response(res)
 
     # 회원가입
     def put(self, request):
@@ -124,44 +172,13 @@ class User(APIView):
                 'email': request.data['email'],
                 'password': request.data['password'],
                 'name': {
-                    'full': request.data['name']
+                    'full': request.data['alias']
                 },
-                'alias': None if request.data['alias'] == "" else request.data['alias'],
                 'mobile': None if request.data['mobile'] == "" else request.data['mobile'],
-                'phone': None if request.data['phone'] == "" else request.data['phone'],
-                'gender': None if request.data['gender'] == "" else request.data['gender'],
-                'birthdate': None if request.data['birthdate'] == "" else request.data['birthdate']
             }
             if request.data['address']['primary']['name']['full'] != "":
                 payload['address'] = {
-                    "primary": {
-                        "name": {
-                            "first": None if request.data['address']['primary']['name']['first'] == "" else
-                            request.data['address']['primary']['name']['first'],
-                            "last": None if request.data['address']['primary']['name']['last'] == "" else
-                            request.data['address']['primary']['name']['last'],
-                            "full": None if request.data['address']['primary']['name']['full'] == "" else
-                            request.data['address']['primary']['name']['full']
-                        },
-                        "mobile": None if request.data['address']['primary']['mobile'] == "" else
-                        request.data['address']['primary']['mobile'],
-                        "phone": None if request.data['address']['primary']['phone'] == "" else
-                        request.data['address']['primary']['phone'],
-                        "country": None if request.data['address']['primary']['country'] == "" else
-                        request.data['address']['primary']['country'],
-                        "state": None if request.data['address']['primary']['country'] == "" else
-                        request.data['address']['primary']['country'],
-                        "city": None if request.data['address']['primary']['city'] == "" else
-                        request.data['address']['primary']['city'],
-                        "address1": None if request.data['address']['primary']['address1'] == "" else
-                        request.data['address']['primary']['address1'],
-                        "address2": None if request.data['address']['primary']['address2'] == "" else
-                        request.data['address']['primary']['address2'],
-                        "postcode": None if request.data['address']['primary']['postcode'] == "" else
-                        request.data['address']['primary']['postcode'],
-                        "company": None if request.data['address']['primary']['company'] == "" else
-                        request.data['address']['primary']['company'],
-                    }
+                    "primary": request.data['address']['primary']
                 }
             result = Customer.create(payload)
             # wishlist 생성
@@ -239,47 +256,16 @@ class User(APIView):
             # 개인 정보 수정 (이름, 번호, 별명)
 
             payload = {
-                'alias': None if request.data['alias'] == "" else request.data['alias'],
                 'name': {
-                    'full': None if request.data['name'] == "" else request.data['name'],
+                    'full': None if request.data['alias'] == "" else request.data['alias'],
                 },
                 'mobile': None if request.data['mobile'] == "" else request.data['mobile'],
-                'phone': None if request.data['phone'] == "" else request.data['phone'],
-                'gender': None if request.data['gender'] == "" else request.data['gender'],
-                'birthdate': None if request.data['birthdate'] == "" else request.data['birthdate']
             }
 
-            if request.data['address']['primary']['postcode']!= "":
-                payload['address'] = {
-                    "primary": {
-                        "name": {
-                            "first": None if request.data['address']['primary']['name']['first'] == "" else
-                            request.data['address']['primary']['name']['first'],
-                            "last": None if request.data['address']['primary']['name']['last'] == "" else
-                            request.data['address']['primary']['name']['last'],
-                            "full": None if request.data['address']['primary']['name']['full'] == "" else
-                            request.data['address']['primary']['name']['full']
-                        },
-                        "mobile": None if request.data['address']['primary']['mobile'] == "" else
-                        request.data['address']['primary']['mobile'],
-                        "phone": None if request.data['address']['primary']['phone'] == "" else
-                        request.data['address']['primary']['phone'],
-                        "country": "KR" if request.data['address']['primary']['country'] == "" else
-                        request.data['address']['primary']['country'],
-                        "state": None if request.data['address']['primary']['country'] == "" else
-                        request.data['address']['primary']['country'],
-                        "city": None if request.data['address']['primary']['city'] == "" else
-                        request.data['address']['primary']['city'],
-                        "address1": None if request.data['address']['primary']['address1'] == "" else
-                        request.data['address']['primary']['address1'],
-                        "address2": None if request.data['address']['primary']['address2'] == "" else
-                        request.data['address']['primary']['address2'],
-                        "postcode": request.data['address']['primary']['postcode'],
-                        "company": None if request.data['address']['primary']['company'] == "" else
-                        request.data['address']['primary']['company'],
-                    }
-                }
-            payload['address']['secondaries'] = request.data['address']['secondaries']
+            payload['address'] = {
+                "primary" : request.data['address']['primary'],
+                "secondaries": request.data['address']['secondaries']
+            }
 
             Customer.update_me(payload, options)
         except Exception as e:
