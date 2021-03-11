@@ -5,6 +5,7 @@ from rest_framework.views import APIView
 from rest_framework.decorators import api_view
 from influencer.views import is_influencer
 from .models import *
+from push import models
 from push.models import *
 from push.views import *
 from push import models
@@ -32,8 +33,8 @@ class NotEnoughDataError(Exception):
         return "잘못된 입력입니다."
 
 def add_push_info(vods):
-    # for vod in vods:
-    #     vod['push_count'] = LiveAlarm.objects.filter(vod_id=str(vod['vod_id'])).count()
+    for vod in vods:
+         vod['push_count'] = LiveAlarm.objects.filter(vod_id=str(vod['vod_id'])).count()
     return vods
 
 # 방송 예약
@@ -432,7 +433,7 @@ def mux_callback(request):
         return Response('오류 발생')
 
 
-class LiveAlarm(APIView):
+class Alarm(APIView):
     @require_login
     def post(self, request, result):
         pprint.pprint(result.data)
