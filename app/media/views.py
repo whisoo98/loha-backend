@@ -7,6 +7,7 @@ from influencer.views import is_influencer
 from .models import *
 from push.models import *
 from push.views import *
+from push import models
 from chat.models import *
 from django.db.models import Q
 from .serializers import *
@@ -30,10 +31,10 @@ class NotEnoughDataError(Exception):
     def __str__(self):
         return "잘못된 입력입니다."
 
-def product_list_to_array(products):
-    for product in products:
-        product['product_list'] = product['product_list'].split(',')
-    return products
+def add_push_info(vods):
+    # for vod in vods:
+    #     vod['push_count'] = LiveAlarm.objects.filter(vod_id=str(vod['vod_id'])).count()
+    return vods
 
 # 방송 예약
 @api_view(['POST'])
@@ -59,6 +60,7 @@ def reserve_live(request, result):
             influencer_name=result['name']['full'],
             influencer_id=result['_id'],
             influencer_thunmbnail = avatar,
+            product_id=request.data['product_id'],
             product_name=request.data['product_name'],
             product_price=request.data['product_price'],
             product_sale=request.data['product_sale'],
@@ -173,6 +175,7 @@ def edit_my_vod(request, result):
         now_stream.influencer_name = result['name']['full']
         now_stream.influencer_id = result['_id']
         now_stream.influencer_thunmbnail = avatar
+        now_stream.product_id = request.data['product_id'],
         now_stream.product_name = request.data['product_name']
         now_stream.product_price = request.data['product_price']
         now_stream.product_sale = request.data['product_sale']
@@ -261,7 +264,7 @@ def get_today_live_schedule(request):
             MediaStream.objects.filter(
                 Q(status='live')
             ).order_by('started_at'), many=True)
-        res = product_list_to_array(today_media.data)
+        res = add_push_info(today_media.data)
         return Response(res)
     except ObjectDoesNotExist:
         return Response([], status=status.HTTP_400_BAD_REQUEST)
@@ -283,7 +286,7 @@ def get_today_ready_schedule(request):
             MediaStream.objects.filter(
                 Q(started_at__gte=datetime.date.today()) & Q(status='ready')
             ).order_by('started_at')[:10], many=True)
-        res = product_list_to_array(today_media.data)
+        res = add_push_info(today_media.data)
         return Response(res)
     except ObjectDoesNotExist:
         return Response([], status=status.HTTP_400_BAD_REQUEST)
@@ -304,7 +307,7 @@ def get_future_schedule(request):
     try:
         today_media = MediaSerializerforClient(
             MediaStream.objects.filter(Q(started_at__gt=datetime.date.today())).order_by('started_at'), many=True)
-        res = product_list_to_array(today_media.data)
+        res = add_push_info(today_media.data)
         contents = {
             'success': {
                 'live_list': res
@@ -334,7 +337,7 @@ def get_ready_schedule(request):
     try:
         today_media = MediaSerializerforClient(
             MediaStream.objects.filter(status='ready').order_by('started_at'), many=True)
-        res = product_list_to_array(today_media.data)
+        res = add_push_info(today_media.data)
         return Response(res)
     except ObjectDoesNotExist:
         return Response([], status=status.HTTP_400_BAD_REQUEST)

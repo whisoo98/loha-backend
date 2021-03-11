@@ -20,6 +20,7 @@ class MediaStream(models.Model):
     influencer_thunmbnail = models.URLField(null=True)
 
     #About product
+    product_id = models.CharField(max_length=30, null=True) # 대표 id
     product_name = models.CharField(max_length=200) # 대표 상품
     product_price =models.IntegerField(default=0) # 대표 상품 가격
     product_sale = models.IntegerField(default=0)  # 대표 상품 세일 가격
