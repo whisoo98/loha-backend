@@ -23,5 +23,6 @@ urlpatterns = [
     path('list/<str:sort_by>/', list_influencer),
     path('myvod/', get_my_vod),
     path('myreadyvod/', get_my_readyvod),
-    path('myproduct/', get_my_product)
+    path('myproduct/', get_my_product),
+    path('info/', get_info)
 ]

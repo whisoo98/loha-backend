@@ -209,6 +209,51 @@ def live_influencer(request):
         }
         return Response(contents, status=status.HTTP_400_BAD_REQUEST)
 
+# 인플루엔서 한명 정보 가져오기
+@api_view(['GET'])
+def get_info(request):
+    try:
+        Customer = Clayful.Customer
+
+        options = {
+            'query': {
+                'group': 'XU79MY58Q2C4',
+                'ids' :request.GET['influencer_id']
+            }
+        }
+        res = Customer.list(options).data[0]
+        print(res)
+        res['Follower'] = res['meta']['Follower']['raw']
+        if not res['avatar']:
+            pass
+        else:
+            res['avatar'] = res['avatar']['url']
+        del (
+        res['name'], res['address'], res['connect'], res['verified'], res['groups'], res['userId'], res['email'],
+        res['gender'], res['birthdate'], res['mobile'], res['phone'], res['lastLoggedInAt'], res['createdAt'],
+        res['updatedAt'], res['meta'])
+
+        contents = {
+            "success": {
+                "data":res
+            }
+        }
+        return Response(contents)
+
+    except Exception as e:
+        print(e)
+        try:
+            print(e.code)
+            print(e.message)
+        except Exception as er:
+            pass
+        content = {
+            "error": {
+                "message": "잘못된 요청입니다."
+            }
+        }
+        return Response(content, status=status.HTTP_400_BAD_REQUEST)
+
 
 # Influencer list (popular, new)
 @api_view(['GET'])
