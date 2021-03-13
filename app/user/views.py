@@ -63,12 +63,12 @@ def check_name(request):
             'query':{
                 'raw': True,
                 'fields': 'name,country',
-                'fullName': request.data['alias']
+                'firstName': request.data['alias']
             }
         }
 
         result = Customer.list(options).data
-        print(result)
+
         if not result:
             content = {
                 'success': {
@@ -136,8 +136,9 @@ class User(APIView):
     @require_login
     def get(self, request, result):
         res = result.data
-        res['alias'] = res['name']['full']
-        del (res['name'],res['connect'], res['verified'], res['groups'], res['gender'], res['birthdate'], res['phone'], res['lastLoggedInAt'], res['createdAt'], res['updatedAt'], res['meta'])
+        res['alias'] = res['name']['first']
+        res['name']= res['name']['full']
+        del (res['connect'], res['verified'], res['groups'], res['gender'], res['birthdate'], res['phone'], res['lastLoggedInAt'], res['createdAt'], res['updatedAt'], res['meta'])
         if res['address']['primary'] is None:
             res['address'] = {
                 "primary": {
@@ -172,7 +173,8 @@ class User(APIView):
                 'email': request.data['email'],
                 'password': request.data['password'],
                 'name': {
-                    'full': request.data['alias']
+                    'first': request.data['alias'],
+                    'full': request.data['name']
                 },
                 'mobile': None if request.data['mobile'] == "" else request.data['mobile'],
             }
@@ -257,7 +259,8 @@ class User(APIView):
 
             payload = {
                 'name': {
-                    'full': None if request.data['alias'] == "" else request.data['alias'],
+                    'first': None if request.data['alias'] == "" else request.data['alias'],
+                    'full': None if request.data['name'] == "" else request.data['name']
                 },
                 'mobile': None if request.data['mobile'] == "" else request.data['mobile'],
             }
