@@ -637,6 +637,9 @@ class influencer_like(APIView):
                 # 개인 정보 삭제
                 for info in res:
                     info['Follower'] = info['meta']['Follower']['raw']
+                    info['description'] = info['meta']['description']
+                    info['tag'] = info['meta']['tag']
+                    info['thumbnail_url'] = info['meta']['thumbnail_url']
                     if not info['avatar']:
                         pass
                     else:

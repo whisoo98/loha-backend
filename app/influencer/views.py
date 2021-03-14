@@ -264,6 +264,9 @@ def get_info(request):
         res = Customer.list(options).data[0]
         print(res)
         res['Follower'] = res['meta']['Follower']['raw']
+        res['description'] = res['meta']['description']
+        res['tag'] = res['meta']['tag']
+        res['thumbnail_url'] = res['meta']['thumbnail_url']
         if not res['avatar']:
             pass
         else:
@@ -316,6 +319,9 @@ def list_influencer(request, sort_by):
         # 개인 정보 삭제
         for info in res:
             info['Follower'] = info['meta']['Follower']['raw']
+            info['description'] = info['meta']['description']
+            info['tag'] = info['meta']['tag']
+            info['thumbnail_url'] = info['meta']['thumbnail_url']
             if not info['avatar']:
                 pass
             else:
