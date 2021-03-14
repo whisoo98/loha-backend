@@ -40,10 +40,10 @@ def is_influencer(func):
             }
             options = {
                 'customer': token,
-                'query':query
+                'query': query
             }
             kwargs['result'] = Customer.get_me(options).data
-
+            print(kwargs['result'])
             if 'XU79MY58Q2C4' not in kwargs['result']['groups']:
                 raise AuthorizationError()
 
@@ -126,6 +126,7 @@ def get_stream_key(request, result):
         }
         return Response(contents, status=status.HTTP_400_BAD_REQUEST)
 
+
 # 스트림 키 재발급
 @api_view(['GET'])
 @is_influencer
@@ -139,7 +140,8 @@ def reset_stream_key(request, result):
             }
             return Response(contents, status=status.HTTP_400_BAD_REQUEST)
 
-        mux_response = requests.post(f"https://api.mux.com/video/v1/live-streams/{result['meta']['Stream_id']}/reset-stream-key", auth=(
+        mux_response = requests.post(
+            f"https://api.mux.com/video/v1/live-streams/{result['meta']['Stream_id']}/reset-stream-key", auth=(
                 getattr(settings, 'MUX_CLIENT_ID', None),
                 getattr(settings, 'MUX_SECRET_KEY', None)))
 
@@ -155,7 +157,7 @@ def reset_stream_key(request, result):
         Customer.update(result['_id'], payload)
         contents = {
             "success": {
-                'message' : '재발급 되었습니다.',
+                'message': '재발급 되었습니다.',
                 'Stream_key': mux_data['data']['stream_key'],
                 'Stream_url': mux_data['data']['playback_ids'][0]['id'],
                 'Stream_id': mux_data['data']['id']
@@ -176,6 +178,7 @@ def reset_stream_key(request, result):
         }
         return Response(contents, status=status.HTTP_400_BAD_REQUEST)
 
+
 # now live Influencer
 @api_view(['GET'])
 def live_influencer(request):
@@ -183,7 +186,7 @@ def live_influencer(request):
         live_list = MediaStream.objects.filter(status='live').distinct('influencer_id')
         contents = {
             "success": {
-                "Influencer_List":MediaSerializerforClient(live_list, many=True).data
+                "Influencer_List": MediaSerializerforClient(live_list, many=True).data
             }
         }
         return Response(contents)
@@ -209,6 +212,43 @@ def live_influencer(request):
         }
         return Response(contents, status=status.HTTP_400_BAD_REQUEST)
 
+
+# 인플루엔서 정보 수정
+@api_view(['POST'])
+@is_influencer
+def update_info(request, result):
+    try:
+        Customer = Clayful.Customer
+        options = {'customer': request.headers.get('Custom-Token')}
+        payload = {
+            'meta': {
+                'description': request.data['description'],
+                'tag': request.data['tag']
+            }
+        }
+        Customer.update_me(payload, options)
+        content = {
+            "success": {
+                "message": "변경 되었습니다."
+            }
+        }
+        return Response(content, status=status.HTTP_202_ACCEPTED)
+
+    except Exception as e:
+        print(e)
+        try:
+            print(e.code)
+            print(e.message)
+        except Exception as er:
+            pass
+        content = {
+            "error": {
+                "message": "잘못된 요청입니다."
+            }
+        }
+        return Response(content, status=status.HTTP_400_BAD_REQUEST)
+
+
 # 인플루엔서 한명 정보 가져오기
 @api_view(['GET'])
 def get_info(request):
@@ -218,7 +258,7 @@ def get_info(request):
         options = {
             'query': {
                 'group': 'XU79MY58Q2C4',
-                'ids' :request.GET['influencer_id']
+                'ids': request.GET['influencer_id']
             }
         }
         res = Customer.list(options).data[0]
@@ -229,13 +269,13 @@ def get_info(request):
         else:
             res['avatar'] = res['avatar']['url']
         del (
-        res['name'], res['address'], res['connect'], res['verified'], res['groups'], res['userId'], res['email'],
-        res['gender'], res['birthdate'], res['mobile'], res['phone'], res['lastLoggedInAt'], res['createdAt'],
-        res['updatedAt'], res['meta'])
+            res['name'], res['address'], res['connect'], res['verified'], res['groups'], res['userId'], res['email'],
+            res['gender'], res['birthdate'], res['mobile'], res['phone'], res['lastLoggedInAt'], res['createdAt'],
+            res['updatedAt'], res['meta'])
 
         contents = {
             "success": {
-                "data":res
+                "data": res
             }
         }
         return Response(contents)
@@ -263,11 +303,11 @@ def list_influencer(request, sort_by):
 
         options = {
             'query': {
-         #       'raw': True,
+                #       'raw': True,
                 'group': 'XU79MY58Q2C4',
-                'limit':120,
-                'page':request.GET.get('page',1),
-        #        'fields': "_id,alias,avatar,country,name,meta.Follower"
+                'limit': 120,
+                'page': request.GET.get('page', 1),
+                #        'fields': "_id,alias,avatar,country,name,meta.Follower"
             }
         }
 
@@ -281,7 +321,9 @@ def list_influencer(request, sort_by):
             else:
                 info['avatar'] = info['avatar']['url']
 
-            del(info['name'],info['address'],info['connect'],info['verified'],info['groups'], info['userId'], info['email'],info['gender'],info['birthdate'],info['mobile'],info['phone'],info['lastLoggedInAt'],info['createdAt'],info['updatedAt'], info['meta'])
+            del (info['name'], info['address'], info['connect'], info['verified'], info['groups'], info['userId'],
+                 info['email'], info['gender'], info['birthdate'], info['mobile'], info['phone'],
+                 info['lastLoggedInAt'], info['createdAt'], info['updatedAt'], info['meta'])
 
         # 인기순 정렬
         if sort_by == 'popular':
@@ -381,6 +423,7 @@ def get_my_vod(request):
             }
         }
         return Response(contents, status=status.HTTP_400_BAD_REQUEST)
+
 
 # 내가 예약한  방송 불러오기
 @api_view(['GET'])
