@@ -63,8 +63,8 @@ class Images(APIView):
                 }
             }
             res = Image.list_for_me(options)
-
-            if not res.data:
+            # 아바타가 없을 때
+            if result.data['avatar'] is None:
                 payload = {
                     'model': (None, 'Customer'),
                     'application': (None, 'avatar'),
@@ -80,15 +80,16 @@ class Images(APIView):
                     }
                 }
                 return Response(contents, status=status.HTTP_202_ACCEPTED)
-            payload = {'file': ('image.jpg', request.data['file'], 'image/jpeg')}
-            Image.update_for_me(res.data[0]['_id'], payload, options)
-            contents = {
-                'success': {
-                    'message': '사진이 변경되었습니다.'
+            else:
+                # 아바타가 존재
+                payload = {'file': ('image.jpg', request.data['file'], 'image/jpeg')}
+                Image.update_for_me(res.data[0]['_id'], payload, options)
+                contents = {
+                    'success': {
+                        'message': '사진이 변경되었습니다.'
+                    }
                 }
-            }
-            return Response(contents, status=status.HTTP_202_ACCEPTED)
-
+                return Response(contents, status=status.HTTP_202_ACCEPTED)
         except Exception as e:
             self.print_error(e)
             try:
@@ -118,8 +119,7 @@ class Images(APIView):
                 }
             }
             Image = Clayful.Image
-            res = Image.list_for_me(options)
-            Image.delete_for_me(res.data[0]['_id'], options)
+            Image.delete_for_me(result.data['avatar']['_id'], options)
             contents = {
                 'success': {
                     'message': '사진이 삭제되었습니다.'
@@ -310,12 +310,26 @@ class ThumbnailImages(APIView):
                 'customer': request.headers.get('Custom-Token'),
                 'query': {
                     'model': 'Customer',
-                    'application': 'thumbnail'
+                    'application': 'avatar'
                 }
             }
             Image = Clayful.Image
             res = Image.list_for_me(options)
-            Image.delete_for_me(res.data[0]['_id'], options)
+            if result.data['avatar'] is None and not res.data:
+                Image.delete_for_me(res.data[0]['_id'], options)
+                contents = {
+                    'success': {
+                        'message': '사진이 삭제되었습니다.'
+                    }
+                }
+                return Response(contents, status=status.HTTP_202_ACCEPTED)
+
+            thumb = ''
+            for image in res.data:
+                if image['_id'] != result.data['avatar']['_id']:
+                    thumb = image['_id']
+            if thumb != '':
+                Image.delete_for_me(res.data[0]['_id'], options)
             contents = {
                 'success': {
                     'message': '사진이 삭제되었습니다.'
