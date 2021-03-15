@@ -650,7 +650,7 @@ class influencer_like(APIView):
                         info['email'], info['gender'], info['birthdate'], info['mobile'], info['phone'],
                         info['lastLoggedInAt'], info['createdAt'], info['updatedAt'], info['meta'])
             else:
-                res = [""]
+                res = []
             contents = {
                 "success": {
                     "Influencer_List": res
