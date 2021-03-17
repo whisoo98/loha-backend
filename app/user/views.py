@@ -138,7 +138,13 @@ class User(APIView):
         res = result.data
         res['alias'] = res['name']['first']
         res['name']= res['name']['full']
-        del (res['connect'], res['verified'], res['groups'], res['gender'], res['birthdate'], res['phone'], res['lastLoggedInAt'], res['createdAt'], res['updatedAt'], res['meta'])
+        for group in res['groups']:
+            if group['_id'] =='XU79MY58Q2C4':
+                res['influencer'] = True
+                break
+            else:
+                res['influencer'] = False
+        del (res['connect'], res['verified'], res['gender'],res['groups'], res['birthdate'], res['phone'], res['lastLoggedInAt'], res['createdAt'], res['updatedAt'], res['meta'])
         if res['address']['primary'] is None:
             res['address'] = {
                 "primary": {
