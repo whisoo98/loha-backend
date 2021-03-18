@@ -138,6 +138,7 @@ class User(APIView):
         res = result.data
         res['alias'] = res['name']['first']
         res['name']= res['name']['full']
+        res['unipass_number'] = res['meta']['unipass_number']
         for group in res['groups']:
             if group['_id'] =='XU79MY58Q2C4':
                 res['influencer'] = True
@@ -269,6 +270,9 @@ class User(APIView):
                     'full': None if request.data['name'] == "" else request.data['name']
                 },
                 'mobile': None if request.data['mobile'] == "" else request.data['mobile'],
+                'meta':{
+                    'unipass_number' : request.data['unipass_number']
+                }
             }
 
             payload['address'] = {
