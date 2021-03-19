@@ -12,6 +12,8 @@ urlpatterns = [
     path('schedule/today/live', get_today_live_schedule),
     path('schedule/future/', get_future_schedule),
     path('schedule/ready/', get_ready_schedule),
-    path('get/', get_live)
+    path('get/', get_live),
+    path('hot/', get_hot_live),
+    path('related/', get_related),
 ]
 

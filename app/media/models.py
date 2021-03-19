@@ -36,7 +36,7 @@ class MediaStream(models.Model):
     finished_at = models.DateTimeField(null=True) # 방송 종료
 
     # for VOD
-    vod_view_count = models.IntegerField(default=0) # vod 시청 수
+    vod_view_count = models.IntegerField(default=0) # vod 누적 시청 수
     like_count = models.IntegerField(default=0) # vod 좋아요 수
 
     class Meta:

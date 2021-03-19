@@ -352,17 +352,24 @@ def get_ready_schedule(request):
         }
         return Response(contents, status=status.HTTP_400_BAD_REQUEST)
 
-# TODO 지금 핫한 방송
+# 지금 핫한 방송(누적 시청자순)
+@api_view(["GET"])
 def get_hot_live(request):
-    # TODO 인원수 불러오기 join 해서 order_by 할 예정
-    # RoomUser.objects.filter(
-    #     room_name=Room.objects.filter(room_name=self.room_name).all()[0]
-    # ).count()
-    today_media = MediaSerializerforClient(
-        MediaStream.objects.filter(Q(status='live')).order_by('-started_at'), many=True)
-
-    return Response(today_media.data)
-
+    try:
+        hot_media = MediaSerializerforClient(
+            MediaStream.objects.filter(Q(status='live')).order_by('-vod_view_count'), many=True)
+        return Response(hot_media.data)
+    except ObjectDoesNotExist:
+        return Response([], status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        print(e)
+        contents = {
+            'error': {
+                'message': '알 수 없는 오류',
+                'detail': e
+            }
+        }
+        return Response(contents, status=status.HTTP_400_BAD_REQUEST)
 # 하나의 방송 불러오기
 @api_view(["GET"])
 def get_live(request):
@@ -402,13 +409,54 @@ def get_live(request):
 
 # TODO OPEN SPECIAL byeolshow
 
-# TODO related byeolshow
+# related byeolshow (같은 콜렉션 상품들의 영상)
+@api_view(["GET"])
+def get_related(request):
+    try:
+        Product = Clayful.Product
+        print("hihi")
+        options = {
+            'query': {
+                'raw': True,
+                'fields': 'meta',
+                'collection': request.GET['collection_id'],
+                'limit': 120,
+            }
+        }
+
+        result = Product.list(options).data
+        related_vod_list = []
+        cnt = 0
+        for product in result:
+            try:
+                related_vod_list.append(product['meta']['my_vod'][1])
+                cnt+=1
+            except:
+                pass
+            if cnt > 5 :
+                break
+
+        my_vod = MediaSerializerforClient(
+            MediaStream.objects.filter(vod_id__in=related_vod_list).order_by('-vod_view_count')
+            , many=True)
+        return Response(my_vod.data)
+    except ObjectDoesNotExist:
+        return Response([], status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        print(e)
+        contents = {
+            'error': {
+                'message': '알 수 없는 오류',
+                'detail': e
+            }
+        }
+        return Response(contents, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 # mux callback 처리 (방송 시작, 방송 종료)
 @api_view(['GET', 'POST'])
 def mux_callback(request):
-    # TODO mux 암호화 확인
     try:
         print(request.data)
         if request.data['type'] == "video.asset.live_stream_completed":
