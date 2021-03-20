@@ -2,6 +2,7 @@ from django.shortcuts import render,redirect
 from django.http.response import  HttpResponse, JsonResponse
 from django.utils.decorators import method_decorator
 from django.conf import settings
+from rest_framework import request
 
 from rest_framework.decorators import api_view, parser_classes
 from rest_framework.views import Response, APIView
@@ -98,7 +99,22 @@ def verify_payment(request):
         print(e.message)
         return Response("에러 발생 백에 문의하세요", status=e.status)
 
-
+@api_view(['GET','POST'])
+def redirect_page(request):
+    imp_uid = request.GET.get('imp_uid',1)
+    merchant_uid = request.GET.get('merchant_uid',2)
+    imp_success = request.GET.get('imp_success',3)
+    error_code = request.GET.get('error_code',4)
+    error_message = request.GET.get('error_code',5)
+    content = {
+        'imp_uid':imp_uid,
+        'merchant_uid':merchant_uid,
+        'imp_success':imp_success,
+        'error_code':error_code,
+        'error_message':error_message
+    }
+    pprint.pprint(content)
+    return render(request,'redirect_page.html',content)
 
 @api_view(['GET'])
 def demo(request):

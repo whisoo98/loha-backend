@@ -15,8 +15,6 @@ import json
 import requests
 from iamport.client import *
 from clayful import Clayful, ClayfulException
-
-from payment.views import cancel_payment
 # Create your views here.
 
 @api_view(['POST'])
