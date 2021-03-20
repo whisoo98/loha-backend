@@ -258,10 +258,11 @@ class CartAPI(APIView):
                 prod_data= Clayful.Product.get(prod_id,{
                     'query':{
                         'raw':True,
-                        'fields':'shipping.calculation,variants._id,variants.quantity'
+                        'fields':'shipping.calculation,variants._id,variants.quantity,meta'
                     }
                 }).data
                 variants = prod_data['variants']
+                L['IsDomestic']=prod_data['meta']['IsDomestic']
                 shipCalculation = prod_data['shipping']['calculation']
                 for quantity in variants:
                     if quantity['_id'] == var_id:
