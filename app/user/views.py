@@ -275,10 +275,11 @@ class User(APIView):
                 }
             }
 
-            payload['address'] = {
-                "primary" : request.data['address']['primary'],
-                "secondaries": request.data['address']['secondaries']
-            }
+            if request.data['address']['primary']['city'] !='':
+                payload['address'] = {
+                    "primary": request.data['address']['primary'],
+                    "secondaries": request.data['address']['secondaries']
+                }
 
             Customer.update_me(payload, options)
         except Exception as e:
