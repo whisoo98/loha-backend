@@ -262,7 +262,11 @@ def get_info(request):
             }
         }
         res = Customer.list(options).data[0]
-        print(res)
+        is_live = MediaStream.objects.filter(Q(influencer_id=res['_id']) & Q(status='live'))
+        if not is_live:
+            res['live_vod'] = 0
+        else:
+            res['live_vod'] = is_live[0].vod_id
         res['Follower'] = res['meta']['Follower']['raw']
         res['description'] = res['meta']['description']
         res['tag'] = res['meta']['tag']
