@@ -602,13 +602,10 @@ class Alarm(APIView):
         try:
 
             Live_list = result.data['meta']['Live_id'][1:]
-            media_list = []
-            for live in Live_list:
-                media = MediaStream.objects.get(pk=live)
-                media_list.append(MediaSerializerforClient(media).data)
 
-            media_list.sort(key=lambda x: x['started_at'])
-
+            media_list = MediaSerializerforClient(
+                MediaStream.objects.filter(vod_id__in=Live_list).order_by('started_at'), many=True
+            ).data
             return Response(media_list, status=status.HTTP_200_OK)
 
         except ObjectDoesNotExist:
