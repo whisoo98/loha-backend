@@ -233,7 +233,7 @@ def delete_my_vod(request, result):
 
         now_stream.delete()
 
-        # 알람 삭제
+        # TODO 알람 삭제
         # unset_alarm_to_live(vod_id = request.data['media_id'])
         
         contents = {
@@ -604,7 +604,7 @@ class Alarm(APIView):
             Live_list = result.data['meta']['Live_id'][1:]
 
             media_list = MediaSerializerforClient(
-                MediaStream.objects.filter(vod_id__in=Live_list).order_by('started_at'), many=True
+                MediaStream.objects.filter(Q(vod_id__in=Live_list) & Q(status='ready')).order_by('started_at'), many=True
             ).data
             return Response(media_list, status=status.HTTP_200_OK)
 
