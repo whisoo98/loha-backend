@@ -262,7 +262,7 @@ def delete_my_vod(request, result):
 
 
 # 방송 종료
-@api_view(['Delete'])
+@api_view(['POST'])
 @is_influencer
 def end_vod(request, result):
     try:
