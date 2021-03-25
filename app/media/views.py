@@ -604,7 +604,7 @@ class Alarm(APIView):
             Live_list = result.data['meta']['Live_id'][1:]
 
             media_list = MediaSerializerforClient(
-                MediaStream.objects.filter(Q(vod_id__in=Live_list) & Q(status='ready')).order_by('started_at'), many=True
+                MediaStream.objects.filter(Q(vod_id__in=Live_list) & Q(status='ready') & Q(started_at__gt=datetime.datetime.now())).order_by('started_at'), many=True
             ).data
             return Response(media_list, status=status.HTTP_200_OK)
 
