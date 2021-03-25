@@ -346,7 +346,7 @@ def get_today_ready_schedule(request):
 def get_future_schedule(request):
     try:
         today_media = MediaSerializerforClient(
-            MediaStream.objects.filter(Q(started_at__gt=datetime.date.today())).order_by('started_at'), many=True)
+            MediaStream.objects.filter(Q(started_at__gt=datetime.date.today()) & Q(status='ready')).order_by('started_at'), many=True)
         res = add_push_info(today_media.data)
         contents = {
             'success': {
