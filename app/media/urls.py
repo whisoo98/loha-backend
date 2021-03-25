@@ -4,6 +4,7 @@ from .views import *
 urlpatterns = [
     path('reserve/', reserve_live),
     path('start/', start_live),
+    path('end/', end_vod),
     path('edit/', edit_my_vod),
     path('delete/', delete_my_vod),
     path('callback/', mux_callback),

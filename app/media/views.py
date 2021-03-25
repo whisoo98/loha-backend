@@ -10,12 +10,15 @@ from push.models import *
 from push.views import *
 from push import models
 from chat.models import *
+import hmac
+import hashlib
 from django.db.models import Q
 from .serializers import *
 from user.views import require_login
 from clayful import Clayful, ClayfulException
 from chat.models import *
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import MultipleObjectsReturned
 from django.conf import settings
 import json
 import pprint
@@ -257,6 +260,42 @@ def delete_my_vod(request, result):
         }
         return Response(contents, status=status.HTTP_400_BAD_REQUEST)
 
+
+# 방송 종료
+@api_view(['Delete'])
+@is_influencer
+def end_vod(request, result):
+    try:
+        now_stream = MediaStream.objects.get(
+            vod_id=request.data['media_id'], influencer_id=result['_id'])
+        now_stream.status = 'close'
+        now_stream.save()
+
+
+        contents = {
+            'success': {
+                'message': '방송 종료'
+            }
+        }
+        return Response(contents, status=status.HTTP_202_ACCEPTED)
+    except ObjectDoesNotExist:
+        contents = {
+            'error': {
+                'message': '존재하지 않는 방송입니다.',
+            }
+        }
+        return Response(contents, status=status.HTTP_400_BAD_REQUEST)
+
+    except Exception as e:
+        print(e)
+        contents = {
+            'error': {
+                'message': '알 수 없는 오류',
+                'detail': e
+            }
+        }
+        return Response(contents, status=status.HTTP_400_BAD_REQUEST)
+
 # 오늘 방송 일정 불러오기 live
 @api_view(["GET"])
 def get_today_live_schedule(request):
@@ -457,12 +496,34 @@ def get_related(request):
 # mux callback 처리 (방송 시작, 방송 종료)
 @api_view(['GET', 'POST'])
 def mux_callback(request):
+
+    # try:
+    #     # MUX 검증
+    #     muxSig = request.headers.get('Mux-Signature')
+    #     muxSigArray = muxSig.split(',')
+    #     muxTimestamp = muxSigArray[0].replace('t=', '')
+    #     muxHash = muxSigArray[1].replace('v1=', '')
+    #     payload = f'{muxTimestamp}.{request.body}'
+    #     print(payload)
+    #     ourSignature = hmac.new(
+    #         'sankq55952bg4018e8g40ukto65ou1on'.encode('utf-8'),
+    #         msg=payload.encode('utf-8'),
+    #         digestmod=hashlib.sha256
+    #     ).hexdigest()
+    #     print(ourSignature)
+    #     print(muxHash)
+    #     if muxHash!=ourSignature:
+    #         return Response("unauthorized", status=HTTP_401_UNAUTHORIZED)
+    #     return Response("done")
+    # except Exception as e:
+    #     print(e)
+    #     return Response("unauthorized", status=HTTP_401_UNAUTHORIZED)
     try:
         print(request.data)
         if request.data['type'] == "video.asset.live_stream_completed":
             # Stream status -> live, create 시간 추가
             stream_id = request.data['data']['live_stream_id']
-            now_stream = MediaStream.objects.get(mux_livestream_id=stream_id, status='live')
+            now_stream = MediaStream.objects.get(mux_livestream_id=stream_id, status='close')
             now_stream.mux_asset_id = request.data['data']['id']
             now_stream.mux_asset_playback_id = request.data['data']['playback_ids'][0]['id']
             now_stream.finished_at = datetime.datetime.now()
@@ -476,9 +537,29 @@ def mux_callback(request):
         # TODO 오류 상황에 대한 예외 처리 필요할듯
         
         return Response("OK")
+    except ObjectDoesNotExist:
+        contents = {
+            'error': {
+                'message': '존재하지 않는 방송입니다.'
+            }
+        }
+        return Response(contents, status=status.HTTP_400_BAD_REQUEST)
+    except MultipleObjectsReturned:
+        contents = {
+            'error': {
+                'message': '라이브 중인 방송이 2개 이상입니다.'
+            }
+        }
+        return Response(contents, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
         print(e)
-        return Response('오류 발생')
+        contents = {
+            'error': {
+                'message': '알 수 없는 오류',
+                'detail': e
+            }
+        }
+        return Response(contents, status=status.HTTP_400_BAD_REQUEST)
 
 
 class Alarm(APIView):
