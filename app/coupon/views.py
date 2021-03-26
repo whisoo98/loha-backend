@@ -47,7 +47,7 @@ def manager_coupon_list(request):
         for coupon in data:
             if coupon['expiresAt'] is not None:
                 coupon['expiresAt']=coupon['expiresAt']['raw']
-                if coupon['expiresAt']<datetime.datetime.utcnow():
+                if datetime.datetime.strptime(coupon['expiresAt'],'%Y-%m-%dT%H:%M:%S.%fZ')<datetime.datetime.utcnow():
                     data.remove(coupon)
                     continue
             for discount in coupon['discount'].keys():
@@ -78,7 +78,8 @@ def manager_coupon_list(request):
         return Response(data, status=status.HTTP_200_OK)
 
     except ClayfulException as e:
-
+        print(e.code)
+        print(e.message)
         return Response(e.code+' ' +e.message, status=e.status)
 
     except Exception as e:
@@ -146,7 +147,7 @@ class Coupon(APIView):
             for coupon in data:
                 if coupon['expiresAt'] is not None:
                     coupon['expiresAt'] = coupon['expiresAt']['raw']
-                    if coupon['expiresAt'] < datetime.datetime.utcnow():
+                    if datetime.datetime.strptime(coupon['expiresAt'],'%Y-%m-%dT%H:%M:%S.%fZ')<datetime.datetime.utcnow():
                         options = {
                             'customer': request.headers['Custom-Token'],
                         }
