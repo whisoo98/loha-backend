@@ -134,7 +134,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
     def check_room(self):
-        return MediaStream.objects.get(influencer_id = self.room_name, status='live')
+        return MediaStream.objects.get(vod_id = self.room_name, status='live')
 
     @database_sync_to_async
     def make_new_user(self):

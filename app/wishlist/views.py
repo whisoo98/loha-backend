@@ -35,8 +35,18 @@ class ProductWishList(APIView):
                 'page': request.GET.get('page',1)
             }
             options['query'] = query
-            result2 = WishList.list_products_for_me(result.data[0]['_id'], options)
-            return Response(result2.data)
+            res = WishList.list_products_for_me(result.data[0]['_id'], options).data
+
+            for product in res:
+                if product['price']['original'] is not None :
+                    product['price']['original'] = product['price']['original']['raw']
+                if product['price']['sale'] is not None:
+                    product['price']['sale']= product['price']['sale']['raw']
+                if product['discount']['value'] is not None:
+                    product['discount']['value'] = product['discount']['value']['raw']
+                if product['discount']['discounted'] is not None:
+                    product['discount']['discounted'] = product['discount']['discounted']['raw']
+            return Response(res)
 
         except Exception as e:
             self.print_error(e)

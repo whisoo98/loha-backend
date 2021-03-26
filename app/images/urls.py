@@ -18,5 +18,6 @@ from django.urls import path, include
 from .views import *
 
 urlpatterns = [
-    path('', Images.as_view())
+    path('', Images.as_view()),
+    path('influencer/', ThumbnailImages.as_view())
 ]

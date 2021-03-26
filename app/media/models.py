@@ -20,6 +20,7 @@ class MediaStream(models.Model):
     influencer_thunmbnail = models.URLField(null=True)
 
     #About product
+    product_id = models.CharField(max_length=30, null=True) # 대표 id
     product_name = models.CharField(max_length=200) # 대표 상품
     product_price =models.IntegerField(default=0) # 대표 상품 가격
     product_sale = models.IntegerField(default=0)  # 대표 상품 세일 가격
@@ -35,8 +36,9 @@ class MediaStream(models.Model):
     finished_at = models.DateTimeField(null=True) # 방송 종료
 
     # for VOD
-    vod_view_count = models.IntegerField(default=0) # vod 시청 수
+    vod_view_count = models.IntegerField(default=0) # vod 누적 시청 수
     like_count = models.IntegerField(default=0) # vod 좋아요 수
+    push_count = models.IntegerField(default=0)  # live 알람 수
 
     class Meta:
         unique_together = (('vod_id', 'influencer_id'),)
