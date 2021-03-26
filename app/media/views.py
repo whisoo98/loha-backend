@@ -601,6 +601,18 @@ class Alarm(APIView):
         except Exception as e:
             print(e)
             return Response('알 수 없는 오류가 발생하였습니다.', status=status.HTTP_400_BAD_REQUEST)
+    @require_login
+    def get(self, request, result):
+        try:
+            result.data['meta']['Live_id']
+
+            return Response(contents)
+        except ClayfulException as e:
+            print(e)
+            return Response(e.code + ' ' + e.message, status=e.status)
+        except Exception as e:
+            print(e)
+            return Response("알 수 없는 오류가 발생하였습니다.", status=status.HTTP_400_BAD_REQUEST)
 
     @require_login
     def get(self, request, result):
