@@ -38,6 +38,7 @@ class MediaStream(models.Model):
     # for VOD
     vod_view_count = models.IntegerField(default=0) # vod 누적 시청 수
     like_count = models.IntegerField(default=0) # vod 좋아요 수
+    push_count = models.IntegerField(default=0)  # live 알람 수
 
     class Meta:
         unique_together = (('vod_id', 'influencer_id'),)
