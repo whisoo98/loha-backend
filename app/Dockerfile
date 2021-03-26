@@ -21,6 +21,7 @@ RUN pip install -U channels
 RUN pip install channels_redis
 RUN pip install firebase-admin
 RUN pip install -U Daphne
+RUN pip install coolsms_python_sdk
 # redis
 # pip install pypiwin32
 

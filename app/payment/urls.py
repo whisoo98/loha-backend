@@ -19,7 +19,5 @@ from .views import *
 
 urlpatterns = [
     path('verify/',verify_payment),
-    path('demo/',demo),
     path('test/',test),
-    path('redirect_page/',redirect_page),
 ]

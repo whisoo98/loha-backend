@@ -71,6 +71,9 @@ MUX_SECRET_KEY = get_secret('MUX_SECRET_KEY')
 ALLOWED_HOSTS = get_secret("DJANGO_ALLOWED_HOSTS")
 # ALLOWED_HOSTS = ['*']
 
+# COOLSMS
+COOLSMS_API_KEY = get_secret("COOLSMS_API_KEY")
+COOLSMS_API_SECRET = get_secret("COOLSMS_API_SECRET")
 
 # Application definition
 
