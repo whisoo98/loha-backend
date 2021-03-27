@@ -17,6 +17,7 @@ from clayful import Clayful, ClayfulException
 import json
 import requests
 import pprint
+import datetime
 
 @api_view(['GET'])
 def manager_coupon_list(request):
@@ -44,6 +45,11 @@ def manager_coupon_list(request):
         headers = result.headers
         data = result.data
         for coupon in data:
+            if coupon['expiresAt'] is not None:
+                coupon['expiresAt']=coupon['expiresAt']['raw']
+                if datetime.datetime.strptime(coupon['expiresAt'],'%Y-%m-%dT%H:%M:%S.%fZ')<datetime.datetime.utcnow():
+                    data.remove(coupon)
+                    continue
             for discount in coupon['discount'].keys():
                 if coupon['discount'][discount] is not None and discount != 'type':
                     coupon['discount'][discount] = coupon['discount'][discount]['raw']
@@ -53,8 +59,8 @@ def manager_coupon_list(request):
             for price in coupon['price'].keys():
                 if coupon['price'][price] is not None:
                     coupon['price'][price] = coupon['price'][price]['raw']
-            if coupon['expiresAt'] is not None:
-                coupon['expiresAt']=coupon['expiresAt']['raw']
+
+
             coupon['createdAt']=coupon['createdAt']['raw']
             coupon['updatedAt']=coupon['updatedAt']['raw']
             coupon['Issued'] = False
@@ -72,7 +78,8 @@ def manager_coupon_list(request):
         return Response(data, status=status.HTTP_200_OK)
 
     except ClayfulException as e:
-
+        print(e.code)
+        print(e.message)
         return Response(e.code+' ' +e.message, status=e.status)
 
     except Exception as e:
@@ -134,9 +141,18 @@ class Coupon(APIView):
 
             result = Customer.list_coupons_for_me(options)
 
-
             headers = result.headers
             data = result.data
+
+            for coupon in data:
+                if coupon['expiresAt'] is not None:
+                    coupon['expiresAt'] = coupon['expiresAt']['raw']
+                    if datetime.datetime.strptime(coupon['expiresAt'],'%Y-%m-%dT%H:%M:%S.%fZ')<datetime.datetime.utcnow():
+                        options = {
+                            'customer': request.headers['Custom-Token'],
+                        }
+                        Customer.delete_coupon_for_me(coupon['_id'],options)
+                        continue
 
             return Response(data, status=status.HTTP_200_OK)
 

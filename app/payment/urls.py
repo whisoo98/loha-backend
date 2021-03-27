@@ -19,5 +19,5 @@ from .views import *
 
 urlpatterns = [
     path('verify/',verify_payment),
-
+    path('test/',test),
 ]

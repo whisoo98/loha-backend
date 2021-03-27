@@ -2,6 +2,7 @@ from django.shortcuts import render,redirect
 from django.http.response import  HttpResponse, JsonResponse
 from django.utils.decorators import method_decorator
 from django.conf import settings
+from rest_framework import request
 
 from rest_framework.decorators import api_view, parser_classes
 from rest_framework.views import Response, APIView
@@ -9,32 +10,14 @@ from rest_framework.parsers import JSONParser
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.request import Request
 from rest_framework.status import *
-
+from sdk.api.message import Message
+from sdk.exceptions import CoolsmsException
 from clayful import Clayful
 from iamport import *
 from iamport.client import *
-import json
+import json, pprint, datetime
 
-'''
-IMP_PG_INICIS_WEBSTD = "html5_inicis"  # INICIS 웹표준
-IMP_PG_INICIS_ACTIVEX = "inicis"  # INICIS Active-X
-IMP_PG_NHNKCP = "kcp"  # NHNKCP
-IMP_PG_NHNKCP_SUBSCRIBE = "kcp_billing"  # NHN KCP 정기결제
-IMP_PG_LGUPLUS = "uplus"  # LG U+
-IMP_PG_NICEPAY = "nice"  # 나이스페이
-IMP_PG_JTNET = "jtnet"  # JTNet
-IMP_PG_KAKAOPAY = "kakao"  # 카카오페이
-IMP_PG_DANAL_PHONE = "danal"  # 다날휴대폰소액결제
-IMP_PG_DANAL_GENERAL = "danal_tpay"  # 다날일반결제
-IMP_PG_MOBILIANS = "mobilians"  # 모빌리언휴대폰소액결제
-IMP_PG_SYRUPPAY = "syrup"  # 시럽페이
-IMP_PG_PAYCO = "payco"  # 페이코
-IMP_PG_PAYPAL = "paypal"  # 페이팔
-IMP_PG_EXIMBAY = "eximbay"  # 엑심베이
-IMP_PG_NAVERPAY = "naverco"  # 네이버페이
-'''
-
-@api_view(['GET'])
+@api_view(['GET','POST'])
 def verify_payment(request):
     
     try:
@@ -43,7 +26,7 @@ def verify_payment(request):
         merchant_uid=request.GET.get('merchant_uid')
         imp_success=request.GET.get('imp_success')
 
-        if imp_success == True:
+        if imp_success == True: #결제 성공
             '''
             아임포트에서 결제 내역 가져옴 & DB에서 결제 요청 내역 가져옴
             -> 가격 일치 판정
@@ -66,19 +49,45 @@ def verify_payment(request):
             result = Order.get(merchant_uid, options).data
             amount_to_be_paid = result['total']['price']['original']['raw']
 
+            sms_key = getattr(settings, 'COOLSMS_API_KEY', None)
+            sms_secret = getattr(settings, 'COOLSMS_API_SECRET', None)
+
             if amount_paid == amount_to_be_paid: #결제 금액 일치
                 if status=='ready': #가상계좌 발급
 
-                    # TODO 가상계좌 발급 안내 알람 발송 - 카톡
+                    # 가상계좌 발급 안내 알람 발송 - 문자
+                    vbank_num = response['vbank_num']#계좌번호
+                    vbank_date = response['vbank_date']#계좌만료일시
+                    vbank_name = response['vbank_name']#은행이름
+                    vbank_code = response['vbank_code']#은행 고유 코드
+                    vbank_holder = response['vbank_holder']#계좌소유주명
+                    vbank_issued_at = response['vbank_issued_at']#계좌 발급일시
+
+                    mobile = str()
+                    for a in result['address']['billing']['mobile'].split('-'):
+                        mobile += a
+
+                    params = dict()
+                    params['type'] = 'sms'  # Message type ( sms, lms, mms, ata )
+                    params['to'] = result['address']['billing']['mobile']  # Recipients Number '01000000000,01000000001'
+                    params['from'] = getattr(settings,'BYEOLSHOW_PHONE',None)  # Sender number
+                    params['text'] = 'Byeolshow 가상계좌 발급안내'+\
+                                     '\n'+\
+                                     '가상계좌 은행: '+vbank_name+\
+                                     '가상계좌 계좌번호: '+vbank_num+\
+                                     '입금하실 금액: '+str(amount_to_be_paid)  # Message
                     content = {
-                        'status':'vbankIssued',
-                        'message':'가상계좌 발급 성공',
+                            'status':'vbankIssued',
+                            'message':'가상계좌 발급 성공',
                     }
-                else:
-                    content = {
-                        'status':'success',
-                        'message':'결제 성공',
-                    }
+                    cool = Message(sms_key, sms_secret)
+                    response = cool.send(params)
+
+                elif status=='paid':
+                        content = {
+                            'status':'success',
+                            'message':'결제 성공',
+                        }
             else:
                 content = {
                     'status': 'fail',
@@ -93,43 +102,78 @@ def verify_payment(request):
             }
         return Response(content)
 
+    except CoolsmsException as e:
+        print("Error Code : %s" % e.code)
+        print("Error Message : %s" % e.msg)
+        content = {
+            "Error Code": e.code,
+            "Error Message": e.msg,
+        }
+        return Response(content)
+
     except Exception as e:
         print(e)
         print(e.code)
         print(e.message)
         return Response("에러 발생 백에 문의하세요", status=e.status)
 
-
-def cancel_payment(order_id, refund_id):
-    # 토큰 발급
-    client = Iamport(imp_key=getattr(settings, 'IAMPORT_REST_KEY', None),
-                     imp_secret=getattr(settings, 'IAMPORT_SECRET_REST_KEY', None))
-
+@api_view(['GET','POST'])
+@parser_classes([JSONParser])
+def test(request):
     try:
+        print("IN")
+        #아임포트 redirection
+        iamport = Iamport(imp_key=getattr(settings, 'IAMPORT_REST_KEY', None),
+                          imp_secret=getattr(settings, 'IAMPORT_SECRET_REST_KEY', None))
+        print("TOKEN")
+        imp_uid = (request.data)['imp_uid']
+        merchant_uid = (request.data)['merchant_uid']
+        # imp_uid=request.data.get('imp_uid')
+        # merchant_uid=request.data.get('merchant_uid')
+        '''
+        아임포트에서 결제 내역 가져옴 & DB에서 결제 요청 내역 가져옴
+        -> 가격 일치 판정
+        '''
+        print("CHK1")
+        #토큰 받음
 
-        Order = Clayful.Order
-        order = Order.get(order_id, {}).data
+        sms_key = getattr(settings, 'COOLSMS_API_KEY', None)
+        sms_secret = getattr(settings, 'COOLSMS_API_SECRET', None)
 
-        refunds = order['refunds']
-        for refund in refunds: # target what i want 'refund'
-            if refund['_id'] == refund_id:
-                break
+        params = dict()
+        params['type'] = 'sms'  # Message type ( sms, lms, mms, ata )
+        params['to'] = '01059364069'
+        params['from'] = '01021277076'
+        params['text'] = '문자메시지문자메시지'
+        content = {
+            'status': 'vbankIssued',
+            'message': '가상계좌 발급 성공',
+        }
+        cool = Message(sms_key, sms_secret)
+        response = cool.send(params)
 
-        merchant_uid = order_id
-        cancel_request_amount = refund['total']['price']['withTax']
-        reason = refund['reason']
+        #아임포트 결제 내역
+        response = iamport.find(merchant_uid=merchant_uid)
+        print("CHK2")
+        amount_paid = response['amount']
+        status = response['status']
+        print("SUC")
+        if status=='ready': #가상계좌 발급
 
-        try:
-            response = client.cancel(reason, merchant_uid=merchant_uid, amount=cancel_request_amount)
-            return Response(response)
-        except Iamport.ResponseError as e:
-            print(e.code)
-            print(e.message)  # 에러난 이유를 알 수 있음
-            return Response(e.code + ' ' + e.message, status=e.status)
-        except Iamport.HttpError as http_error:
-            print(http_error.code)
-            print(http_error.reason)# HTTP not 200 에러난 이유를 알 수 있음
-            return Response('알 수 없는 에러가 발생했습니다.')
+            # TODO 가상계좌 발급 안내 알람 발송 - 문자
+
+            content = {
+                'status':'vbankIssued',
+                'message':'가상계좌 발급 성공',
+            }
+        else:
+            content = {
+                'status':'success',
+                'message':'결제 성공',
+            }
+        print("OUT")
+        return Response(content)
 
     except Exception as e:
-        return Response(e.response)
+        print(e)
+        return Response("에러 발생 백에 문의하세요")
