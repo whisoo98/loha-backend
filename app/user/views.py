@@ -482,7 +482,13 @@ def kakao_callback(request):
         return HttpResponse(content)
     except Exception as e:
         print(e)
+        content = {
+            'error': {
+                'message': '로그인에 실패하였습니다.'
+            }
+        }
         try:
+            content['error']['detail'] = e.message
             print(e.is_clayful)
             print(e.model)
             print(e.method)
@@ -492,7 +498,6 @@ def kakao_callback(request):
             print(e.message)
         except Exception as er:
             pass
-        content = "로그인 실패"
         return Response(content, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -549,6 +554,11 @@ def naver_callback(request):
 
     except Exception as e:
         print(e)
+        content = {
+            'error' : {
+                'message': '로그인에 실패하였습니다.'
+            }
+        }
         try:
             print(e.is_clayful)
             print(e.model)
@@ -557,9 +567,10 @@ def naver_callback(request):
             print(e.headers)
             print(e.code)
             print(e.message)
+            content['error']['detail'] = e.message
         except Exception as er:
             pass
-        content = "로그인 실패"
+
         return Response(content, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -619,12 +630,17 @@ def facebook_callback(request):
 
     except Exception as e:
         print(e)
+        content = {
+            'error': {
+                'message': '로그인에 실패하였습니다.'
+            }
+        }
         try:
             print(e.code)
             print(e.message)
+            content['error']['detail'] = e.message
         except Exception as er:
             pass
-        content = "로그인 실패"
         return Response(content, status=status.HTTP_400_BAD_REQUEST)
 
 
