@@ -155,6 +155,15 @@ class ProductAPI(APIView):
                     rule['fee']=rule['fee']['raw']
                 ele['createdAt']=ele['createdAt']['raw']
                 ele['updatedAt']=ele['updatedAt']['raw']
+                for region in ele['regions']:
+                    for rule in region['rules']:
+                        for key in rule:
+                            if key == 'free':
+                                if rule[key]['priceOver'] is not None:
+                                    rule[key]['priceOver'] = rule[key]['priceOver']['raw']
+                            else:
+                                if rule[key] is not None:
+                                    rule[key] = rule[key]['raw']
             data['ShippingPolicy']=shipping[0]
             return Response(data)
 
