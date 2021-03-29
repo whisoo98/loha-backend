@@ -136,7 +136,6 @@ class User(APIView):
     @require_login
     def get(self, request, result):
         res = result.data
-        res['alias'] = res['name']['first']
         res['name']= res['name']['full']
         res['unipass_number'] = res['meta']['unipass_number']
         for group in res['groups']:
@@ -183,6 +182,7 @@ class User(APIView):
                     'first': request.data['alias'],
                     'full': request.data['name']
                 },
+                'alias': request.data['alias'],
                 'mobile': None if request.data['mobile'] == "" else request.data['mobile'],
             }
             if request.data['address']['primary']['name']['full'] != "":
@@ -269,6 +269,7 @@ class User(APIView):
                     'first': None if request.data['alias'] == "" else request.data['alias'],
                     'full': None if request.data['name'] == "" else request.data['name']
                 },
+                'alias': request.data['alias'],
                 'mobile': None if request.data['mobile'] == "" else request.data['mobile'],
                 'meta':{
                     'unipass_number' : request.data['unipass_number']
@@ -473,7 +474,7 @@ def kakao_callback(request):
             # 가입과 동시 로그인
             if result.data['action'] == 'register':
                 result = Customer.authenticate_by_3rd_party('kakao', payload)
-                Customer.update(result.data['customer'], {'groups': ['QS8YM3ECBUV4']})
+                Customer.update(result.data['customer'], {'groups': ['ZZ9HGQBGPLTA']})
             return result
         result = kakao_to_clayful()
         content = f"<h1 style='color:#ffffff'>{result.data['token']}</h1>"
@@ -481,7 +482,13 @@ def kakao_callback(request):
         return HttpResponse(content)
     except Exception as e:
         print(e)
+        content = {
+            'error': {
+                'message': '로그인에 실패하였습니다.'
+            }
+        }
         try:
+            content['error']['detail'] = e.message
             print(e.is_clayful)
             print(e.model)
             print(e.method)
@@ -491,7 +498,6 @@ def kakao_callback(request):
             print(e.message)
         except Exception as er:
             pass
-        content = "로그인 실패"
         return Response(content, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -538,7 +544,7 @@ def naver_callback(request):
             # 가입과 동시에 로그인
             if result.data['action'] == 'register':
                 result = Customer.authenticate_by_3rd_party('naver', payload)
-                Customer.update(result.data['customer'], {'groups': ['QS8YM3ECBUV4']})
+                Customer.update(result.data['customer'], {'groups': ['ZZ9HGQBGPLTA']})
             return result
 
         result = naver_to_clayful()
@@ -548,6 +554,11 @@ def naver_callback(request):
 
     except Exception as e:
         print(e)
+        content = {
+            'error' : {
+                'message': '로그인에 실패하였습니다.'
+            }
+        }
         try:
             print(e.is_clayful)
             print(e.model)
@@ -556,9 +567,10 @@ def naver_callback(request):
             print(e.headers)
             print(e.code)
             print(e.message)
+            content['error']['detail'] = e.message
         except Exception as er:
             pass
-        content = "로그인 실패"
+
         return Response(content, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -608,7 +620,7 @@ def facebook_callback(request):
             # 가입과 동시에 로그인
             if result.data['action'] == 'register':
                 result = Customer.authenticate_by_3rd_party('facebook', payload)
-                Customer.update(result.data['customer'], {'groups': ['QS8YM3ECBUV4']})
+                Customer.update(result.data['customer'], {'groups': ['ZZ9HGQBGPLTA']})
             return result
 
         result = facebook_to_clayful()
@@ -618,12 +630,17 @@ def facebook_callback(request):
 
     except Exception as e:
         print(e)
+        content = {
+            'error': {
+                'message': '로그인에 실패하였습니다.'
+            }
+        }
         try:
             print(e.code)
             print(e.message)
+            content['error']['detail'] = e.message
         except Exception as er:
             pass
-        content = "로그인 실패"
         return Response(content, status=status.HTTP_400_BAD_REQUEST)
 
 
