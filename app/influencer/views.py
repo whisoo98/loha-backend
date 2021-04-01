@@ -43,7 +43,7 @@ def is_influencer(func):
                 'query': query
             }
             kwargs['result'] = Customer.get_me(options).data
-            print(kwargs['result'])
+
             if 'XU79MY58Q2C4' not in kwargs['result']['groups']:
                 raise AuthorizationError()
 

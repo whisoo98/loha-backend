@@ -25,5 +25,6 @@ urlpatterns = [
     path('myreadyvod/', get_my_readyvod),
     path('myproduct/', get_my_product),
     path('info/', get_info),
-    path('update/', update_info)
+    path('update/', update_info),
+    path('reset/',get_stream_key),
 ]
