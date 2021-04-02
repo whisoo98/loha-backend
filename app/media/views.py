@@ -513,7 +513,7 @@ def mux_callback(request):
     #     print(e)
     #     return Response("unauthorized", status=HTTP_401_UNAUTHORIZED)
     try:
-        print(request.data)
+        pprint.pprint(request.data)
         if request.data['type'] == "video.asset.live_stream_completed":
             # Stream status -> live, create 시간 추가
             stream_id = request.data['data']['live_stream_id']
