@@ -436,7 +436,7 @@ def kakao_login(request):
 
 
 # 토큰 요청 및 정보 처리
-@api_view(['GET'])
+@api_view(['GET', 'POST'])
 def kakao_callback(request):
     try:
         app_rest_api_key = getattr(settings, 'KAKAO_REST_API', None)
@@ -472,12 +472,29 @@ def kakao_callback(request):
             Customer = Clayful.Customer
             payload = {'token': kakao_access_token}
             result = Customer.authenticate_by_3rd_party('kakao', payload)
+            headers = {'Authorization': f'Bearer {kakao_access_token}'}
+            response = requests.get('https://kapi.kakao.com/v2/user/me', headers=headers)
+            user_data = response.json()
+
+            update_payload = {
+                'alias': user_data['kakao_account']['profile']['nickname'],
+                'name': {
+                    'first': user_data['kakao_account']['profile']['nickname'],
+                    'full': user_data['kakao_account']['profile']['nickname']
+                },
+                'groups': ['ZZ9HGQBGPLTA']
+            }
+            if user_data['kakao_account']['has_email']:
+                update_payload['email'] = user_data['kakao_account']['email']
+            if user_data['kakao_account']['phone_number']:
+                update_payload['mobile'] = user_data['kakao_account']['phone_number']
             # 가입과 동시 로그인
             if result.data['action'] == 'register':
                 result = Customer.authenticate_by_3rd_party('kakao', payload)
-                Customer.update(result.data['customer'], {'groups': ['ZZ9HGQBGPLTA']})
+            Customer.update(result.data['customer'], update_payload)
             return result
         result = kakao_to_clayful()
+
         content = f"<h1 style='color:#ffffff'>{result.data['token']}</h1>"
         header = {'Custom-Token': result.data['token']}
         return HttpResponse(content)
@@ -542,10 +559,25 @@ def naver_callback(request):
             Customer = Clayful.Customer
             payload = {'token': naver_access_token}
             result = Customer.authenticate_by_3rd_party('naver', payload)
+
+            headers = {'Authorization': f'Bearer {naver_access_token}'}
+            response = requests.get('https://openapi.naver.com/v1/nid/me', headers=headers)
+            user_data = response.json()
+            update_payload = {
+                'alias': user_data['response']['nickname'],
+                'name': {
+                    'first': user_data['response']['nickname'],
+                    'full': user_data['response']['name']
+                },
+                'email': user_data['response']['email'],
+                'mobile' : user_data['response']['mobile'],
+                'groups': ['ZZ9HGQBGPLTA']
+            }
             # 가입과 동시에 로그인
             if result.data['action'] == 'register':
                 result = Customer.authenticate_by_3rd_party('naver', payload)
-                Customer.update(result.data['customer'], {'groups': ['ZZ9HGQBGPLTA']})
+
+            Customer.update(result.data['customer'], update_payload)
             return result
 
         result = naver_to_clayful()
