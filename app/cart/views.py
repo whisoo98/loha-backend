@@ -59,9 +59,7 @@ def sort(data, shipping): #배송 조건등 필요
                     dict_temp = L
                     break
             if chk:
-                print("?")
                 dict_temp['items'].append(key)
-                print("!")
             else:
                 convert.append({
                     'vendor':key['vendor'],
