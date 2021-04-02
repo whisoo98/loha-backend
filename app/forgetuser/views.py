@@ -145,13 +145,13 @@ def reset_password(request):
             'debug_language': 'ko',
         })
         Customer = Clayful.Customer
+        
+        #임의의 문자열로 비밀번호 변경
         tmp_password = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(10))
         payload = {
             'secret': request.GET.get('secret', None),
             'password': tmp_password
         }
-        print(payload)
-
         result = Customer.reset_password(request.GET.get('customer', None), payload)
 
         if result.data['reset']:

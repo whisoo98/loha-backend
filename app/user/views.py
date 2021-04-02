@@ -136,6 +136,7 @@ class User(APIView):
     @require_login
     def get(self, request, result):
         res = result.data
+        # 프론트가 요구한 format으로 전환
         res['name']= res['name']['full']
         res['unipass_number'] = res['meta']['unipass_number']
         for group in res['groups']:
@@ -379,7 +380,7 @@ class Auth(APIView):
             # body에서 'userId', 'password' 필요
             payload = json.dumps(request.data)
             response = Customer.authenticate(payload)
-            # header에 정보 저장
+            # header에 정보 전송
             header = {'Custom-Token': response.data['token']}
 
             content = {
@@ -651,6 +652,7 @@ class influencer_like(APIView):
     @require_login
     def get(self, request, result):
         try:
+            # 첫번째는 공백, 나머지 원소들 ','로 합친다.
             ids_list = result.data['meta']['Following'][1:]
             ids = ','.join(ids_list)
             if ids != "":
@@ -658,11 +660,11 @@ class influencer_like(APIView):
                 options = {
                     'query': {
                         'ids': ids,
-                        'group': 'XU79MY58Q2C4',
+                        'group': 'XU79MY58Q2C4', # 일반고객은 불러오지 못하게 한다.
                     }
                 }
                 res = Customer.list(options).data
-                # 개인 정보 삭제
+                # 개인 정보 삭제 및 프론트가 요구한 format으로 전환
                 for info in res:
                     info['Follower'] = info['meta']['Follower']['raw']
                     info['description'] = info['meta']['description']

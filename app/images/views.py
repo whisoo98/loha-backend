@@ -151,45 +151,7 @@ class Images(APIView):
 # 인플루엔서 썸네일
 
 class ThumbnailImages(APIView):
-
-    # 내 이미지 가져오기
-    def get(self, request):
-        try:
-            Image = Clayful.Image
-            options = {
-                'customer': request.headers.get('Custom-Token'),
-                'query': {
-                    'model': 'WishList',
-                    'application': None
-                }
-            }
-            res = Image.list_for_me(options)
-
-            if not res.data:
-                contents = {
-                    "error": {
-                        "message": "등록된 사진이 없습니다."
-                    }
-                }
-                return Response(contents, status=status.HTTP_200_OK)
-
-            contents = {
-                "success": {
-                    "data": res.data
-                }
-            }
-            return Response(contents, status=status.HTTP_200_OK)
-
-
-        except Exception as e:
-            self.print_error(e)
-            content = {
-                'error': {
-                    'message': '잘못된 요청입니다.'
-                }
-            }
-            return Response(content, status=status.HTTP_400_BAD_REQUEST)
-
+    
     # 이미지 추가 및 변경
     @require_login
     def post(self, request, result):
