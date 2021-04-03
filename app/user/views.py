@@ -136,6 +136,7 @@ class User(APIView):
     @require_login
     def get(self, request, result):
         res = result.data
+        # 프론트가 요구한 format으로 전환
         res['name']= res['name']['full']
         res['unipass_number'] = res['meta']['unipass_number']
         for group in res['groups']:
@@ -379,7 +380,7 @@ class Auth(APIView):
             # body에서 'userId', 'password' 필요
             payload = json.dumps(request.data)
             response = Customer.authenticate(payload)
-            # header에 정보 저장
+            # header에 정보 전송
             header = {'Custom-Token': response.data['token']}
 
             content = {
@@ -435,7 +436,7 @@ def kakao_login(request):
 
 
 # 토큰 요청 및 정보 처리
-@api_view(['GET'])
+@api_view(['GET', 'POST'])
 def kakao_callback(request):
     try:
         app_rest_api_key = getattr(settings, 'KAKAO_REST_API', None)
@@ -471,12 +472,29 @@ def kakao_callback(request):
             Customer = Clayful.Customer
             payload = {'token': kakao_access_token}
             result = Customer.authenticate_by_3rd_party('kakao', payload)
+            headers = {'Authorization': f'Bearer {kakao_access_token}'}
+            response = requests.get('https://kapi.kakao.com/v2/user/me', headers=headers)
+            user_data = response.json()
+
+            update_payload = {
+                'alias': user_data['kakao_account']['profile']['nickname'],
+                'name': {
+                    'first': user_data['kakao_account']['profile']['nickname'],
+                    'full': user_data['kakao_account']['profile']['nickname']
+                },
+                'groups': ['ZZ9HGQBGPLTA']
+            }
+            if user_data['kakao_account']['has_email']:
+                update_payload['email'] = user_data['kakao_account']['email']
+            if user_data['kakao_account']['phone_number']:
+                update_payload['mobile'] = user_data['kakao_account']['phone_number']
             # 가입과 동시 로그인
             if result.data['action'] == 'register':
                 result = Customer.authenticate_by_3rd_party('kakao', payload)
-                Customer.update(result.data['customer'], {'groups': ['ZZ9HGQBGPLTA']})
+            Customer.update(result.data['customer'], update_payload)
             return result
         result = kakao_to_clayful()
+
         content = f"<h1 style='color:#ffffff'>{result.data['token']}</h1>"
         header = {'Custom-Token': result.data['token']}
         return HttpResponse(content)
@@ -541,10 +559,25 @@ def naver_callback(request):
             Customer = Clayful.Customer
             payload = {'token': naver_access_token}
             result = Customer.authenticate_by_3rd_party('naver', payload)
+
+            headers = {'Authorization': f'Bearer {naver_access_token}'}
+            response = requests.get('https://openapi.naver.com/v1/nid/me', headers=headers)
+            user_data = response.json()
+            update_payload = {
+                'alias': user_data['response']['nickname'],
+                'name': {
+                    'first': user_data['response']['nickname'],
+                    'full': user_data['response']['name']
+                },
+                'email': user_data['response']['email'],
+                'mobile' : user_data['response']['mobile'],
+                'groups': ['ZZ9HGQBGPLTA']
+            }
             # 가입과 동시에 로그인
             if result.data['action'] == 'register':
                 result = Customer.authenticate_by_3rd_party('naver', payload)
-                Customer.update(result.data['customer'], {'groups': ['ZZ9HGQBGPLTA']})
+
+            Customer.update(result.data['customer'], update_payload)
             return result
 
         result = naver_to_clayful()
@@ -651,6 +684,7 @@ class influencer_like(APIView):
     @require_login
     def get(self, request, result):
         try:
+            # 첫번째는 공백, 나머지 원소들 ','로 합친다.
             ids_list = result.data['meta']['Following'][1:]
             ids = ','.join(ids_list)
             if ids != "":
@@ -658,11 +692,11 @@ class influencer_like(APIView):
                 options = {
                     'query': {
                         'ids': ids,
-                        'group': 'XU79MY58Q2C4',
+                        'group': 'XU79MY58Q2C4', # 일반고객은 불러오지 못하게 한다.
                     }
                 }
                 res = Customer.list(options).data
-                # 개인 정보 삭제
+                # 개인 정보 삭제 및 프론트가 요구한 format으로 전환
                 for info in res:
                     info['Follower'] = info['meta']['Follower']['raw']
                     info['description'] = info['meta']['description']

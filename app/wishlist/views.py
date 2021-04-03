@@ -37,6 +37,7 @@ class ProductWishList(APIView):
             options['query'] = query
             res = WishList.list_products_for_me(result.data[0]['_id'], options).data
 
+            #프론트가 요구한 format
             for product in res:
                 if product['price']['original'] is not None :
                     product['price']['original'] = product['price']['original']['raw']
