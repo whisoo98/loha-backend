@@ -447,7 +447,6 @@ def get_live(request):
 def get_related(request):
     try:
         Product = Clayful.Product
-        print("hihi")
         options = {
             'query': {
                 'raw': True,
@@ -490,30 +489,8 @@ def get_related(request):
 # mux callback 처리 (방송 시작, 방송 종료)
 @api_view(['GET', 'POST'])
 def mux_callback(request):
-
-    # try:
-    #     # MUX 검증
-    #     muxSig = request.headers.get('Mux-Signature')
-    #     muxSigArray = muxSig.split(',')
-    #     muxTimestamp = muxSigArray[0].replace('t=', '')
-    #     muxHash = muxSigArray[1].replace('v1=', '')
-    #     payload = f'{muxTimestamp}.{request.body}'
-    #     print(payload)
-    #     ourSignature = hmac.new(
-    #         'sankq55952bg4018e8g40ukto65ou1on'.encode('utf-8'),
-    #         msg=payload.encode('utf-8'),
-    #         digestmod=hashlib.sha256
-    #     ).hexdigest()
-    #     print(ourSignature)
-    #     print(muxHash)
-    #     if muxHash!=ourSignature:
-    #         return Response("unauthorized", status=HTTP_401_UNAUTHORIZED)
-    #     return Response("done")
-    # except Exception as e:
-    #     print(e)
-    #     return Response("unauthorized", status=HTTP_401_UNAUTHORIZED)
+    # mux 검증
     try:
-        pprint.pprint(request.data)
         if request.data['type'] == "video.asset.live_stream_completed":
             # Stream status -> live, create 시간 추가
             stream_id = request.data['data']['live_stream_id']
