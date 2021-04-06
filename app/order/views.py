@@ -15,6 +15,7 @@ import json
 import requests
 from clayful import Clayful, ClayfulException
 import datetime
+import pprint
 
 def set_raw(order):
     order['currency']['rate'] = order['currency']['rate']['raw']
@@ -49,6 +50,7 @@ def set_raw(order):
         order['cancellation']['cancelledAt']=order['cancellation']['cancelledAt']['raw']
 
     for item in order['items']:
+
         item['total']['price']['original'] = item['total']['price']['original']['raw']
         item['total']['price']['sale'] = item['total']['price']['sale']['raw']
         item['total']['price']['withTax'] = item['total']['price']['withTax']['raw']
@@ -76,12 +78,14 @@ def set_raw(order):
                 if discount['coupon']['discount']['max'] is not None:
                     discount['coupon']['discount']['max'] = discount['coupon']['discount']['max']['raw']
                 if discount['coupon']['discount']['value'] is not None:
-                    discount['coupon']['discount']['value']=discount['coupon']['discount']['max']['value']
+                    discount['coupon']['discount']['value']=discount['coupon']['discount']['value']['raw']
+
             if discount['value'] is not None:
                 discount['value']=discount['value']['raw']
             discount['discounted']=discount['discounted']['raw']
             discount['before']=discount['before']['raw']
             discount['after']=discount['after']['raw']
+
         item['discounted']=item['discounted']['raw']
         for tax in item['taxes']:
             tax['rate']=tax['rate']['raw']
@@ -89,6 +93,7 @@ def set_raw(order):
         item['taxed']=item['taxed']['raw']
         if 'unfulfilled' in item:
             item['unfulfilled']=item['unfulfilled']['raw']
+
     for shipment in order['shipments']:
         if shipment['rule']['free']['priceOver'] is not None:
             shipment['rule']['free']['priceOver']=shipment['rule']['free']['priceOver']['raw']
@@ -144,11 +149,16 @@ def set_raw(order):
         fulfillment['updatedAt'] = fulfillment['updatedAt']['raw']
 
     for transaction in order['transactions']:
-        transaction['paid']=transaction['paid']['raw']
-        transaction['cancelled']=transaction['cancelled']['raw']
-        transaction['refunded']=transaction['refunded']['raw']
-        transaction['createdAt']=transaction['createdAt']['raw']
-        transaction['updatedAt']=transaction['updatedAt']['raw']
+        if transaction['paid'] is not None:
+            transaction['paid']=transaction['paid']['raw']
+        if transaction['cancelled'] is not None:
+            transaction['cancelled']=transaction['cancelled']['raw']
+        if transaction['refunded'] is not None:
+            transaction['refunded']=transaction['refunded']['raw']
+        if transaction['createdAt'] is not None:
+            transaction['createdAt']=transaction['createdAt']['raw']
+        if transaction['updatedAt'] is not None:
+            transaction['updatedAt']=transaction['updatedAt']['raw']
 
     order['createdAt']=order['createdAt']['raw']
     order['updatedAt']=order['updatedAt']['raw']
@@ -157,7 +167,6 @@ def set_raw(order):
 
     if order['receivedAt'] is not None:
         order['receivedAt'] = order['receivedAt']['raw']
-
 
 
     if 'refunds' in order:
@@ -343,6 +352,7 @@ class OrderAPI(APIView):#주문 가져오기 수정
             headers = result.headers
             data = result.data
             data = set_raw(data)
+
             return Response(data)
 
         except ClayfulException as e:
