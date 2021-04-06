@@ -22,10 +22,10 @@ def verify_payment(request):
     
     try:
         #아임포트 redirection
-        imp_uid=request.data('imp_uid')
-        merchant_uid=request.data('merchant_uid')
-        amount=request.data('amount')
 
+        imp_uid=request.data['imp_uid']
+        merchant_uid=request.data['merchant_uid']
+        amount=request.data['amount']
 
         '''
         아임포트에서 결제 내역 가져옴 & DB에서 결제 요청 내역 가져옴
