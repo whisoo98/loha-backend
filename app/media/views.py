@@ -95,45 +95,58 @@ def start_live(request, result):
     try:
         if result['meta']['Stream_key'] is None:
             raise NoStreamKeyError()
+        
+        # 나의 끝나지 않은 라이브가 존재하는지 확인
+        live_stream = MediaStream.objects.filter(Q(influencer_id=result['_id']) & (Q(status='close') | Q(status='live')))
 
-        # 라이브 상태 변경
-        now_stream = MediaStream.objects.get(
-            vod_id=request.data['media_id'],influencer_id=result['_id'])
 
-        now_stream.status = 'live'
-        now_stream.save()
+        if not live_stream:
+            # 라이브 중인 방송이 없으면
 
-        # 상품에 VOD 추가
-        stream_product = (now_stream.product_list).split(',')
-        Product = Clayful.Product
+            # 라이브 상태 변경
+            now_stream = MediaStream.objects.get(
+                vod_id=request.data['media_id'],influencer_id=result['_id'])
+            now_stream.status = 'live'
+            now_stream.save()
 
-        for product in stream_product:
-            try:
-                payload = {
-                    "value": [
-                        str(now_stream.vod_id)
-                    ],
-                    "unique": True
+            # 상품에 VOD 추가
+            stream_product = (now_stream.product_list).split(',')
+            Product = Clayful.Product
+
+            for product in stream_product:
+                try:
+                    payload = {
+                        "value": [
+                            str(now_stream.vod_id)
+                        ],
+                        "unique": True
+                    }
+                    Product.push_to_metafield(product, "my_vod", payload)
+                except Exception:
+                    print('error')
+                    continue
+
+            # 알람 날리기
+            # info = {
+            #     'influencer': result['alias'],
+            #     'time': str(now_stream.started_at.hour) + ':' + str(now_stream.started_at.minute)
+            # }
+            # alarm_by_live(request.data['media_id'], info)
+            # alarm_by_influencer(result['_id'], info)
+            contents = {
+                "success": {
+                    "message": "방송이 시작되었습니다.",
+                    "data": MediaSerializer(now_stream).data
                 }
-                Product.push_to_metafield(product, "my_vod", payload)
-            except Exception:
-                print('error')
-                continue
-
-        # 알람 날리기
-        # info = {
-        #     'influencer': result['alias'],
-        #     'time': str(now_stream.started_at.hour) + ':' + str(now_stream.started_at.minute)
-        # }
-        # alarm_by_live(request.data['media_id'], info)
-        # alarm_by_influencer(result['_id'], info)
-        contents = {
-            "success": {
-                "message": "방송이 시작되었습니다.",
-                "data": MediaSerializer(now_stream).data
             }
-        }
-        return Response(contents, status=status.HTTP_202_ACCEPTED)
+            return Response(contents, status=status.HTTP_202_ACCEPTED)
+        else:
+            contents = {
+                'error': {
+                    'message': '방송종료가 완료되지 않은 라이브가 존재합니다. 잠시 후 다시 시도해 주세요.'
+                }
+            }
+            return Response(contents, status=status.HTTP_400_BAD_REQUEST)
     except ObjectDoesNotExist:
         contents = {
             'error': {
@@ -216,7 +229,7 @@ def delete_my_vod(request, result):
     try:
         now_stream = MediaStream.objects.get(
             vod_id=request.data['media_id'],influencer_id=result['_id'])
-       
+
         # MUX에서 영상 삭제
         if now_stream.mux_asset_id is not None:
             requests.delete(f'https://api.mux.com/video/v1/assets/{now_stream.mux_asset_id}', auth=(
@@ -264,6 +277,7 @@ def end_vod(request, result):
         now_stream = MediaStream.objects.get(
             vod_id=request.data['media_id'], influencer_id=result['_id'])
         now_stream.status = 'close'
+        now_stream.finished_at = datetime.datetime.now()
         now_stream.save()
 
 
@@ -447,7 +461,6 @@ def get_live(request):
 def get_related(request):
     try:
         Product = Clayful.Product
-        print("hihi")
         options = {
             'query': {
                 'raw': True,
@@ -490,34 +503,13 @@ def get_related(request):
 # mux callback 처리 (방송 시작, 방송 종료)
 @api_view(['GET', 'POST'])
 def mux_callback(request):
-
-    # try:
-    #     # MUX 검증
-    #     muxSig = request.headers.get('Mux-Signature')
-    #     muxSigArray = muxSig.split(',')
-    #     muxTimestamp = muxSigArray[0].replace('t=', '')
-    #     muxHash = muxSigArray[1].replace('v1=', '')
-    #     payload = f'{muxTimestamp}.{request.body}'
-    #     print(payload)
-    #     ourSignature = hmac.new(
-    #         'sankq55952bg4018e8g40ukto65ou1on'.encode('utf-8'),
-    #         msg=payload.encode('utf-8'),
-    #         digestmod=hashlib.sha256
-    #     ).hexdigest()
-    #     print(ourSignature)
-    #     print(muxHash)
-    #     if muxHash!=ourSignature:
-    #         return Response("unauthorized", status=HTTP_401_UNAUTHORIZED)
-    #     return Response("done")
-    # except Exception as e:
-    #     print(e)
-    #     return Response("unauthorized", status=HTTP_401_UNAUTHORIZED)
+    # mux 검증
     try:
-        pprint.pprint(request.data)
         if request.data['type'] == "video.asset.live_stream_completed":
-            # Stream status -> live, create 시간 추가
+            #방송이 종료됨.
             stream_id = request.data['data']['live_stream_id']
-            now_stream = MediaStream.objects.get(mux_livestream_id=stream_id, status='close')
+            now_stream = MediaStream.objects.get(Q(mux_livestream_id=stream_id)& (Q(status='close')|Q(status='live')))
+
             now_stream.mux_asset_id = request.data['data']['id']
             now_stream.mux_asset_playback_id = request.data['data']['playback_ids'][0]['id']
             now_stream.finished_at = datetime.datetime.now()
@@ -527,14 +519,11 @@ def mux_callback(request):
             # TODO 알람 삭제
             #unset_alarm_to_live(vod_id=now_stream.void_id)
             return Response("completed")
-
-        # TODO 오류 상황에 대한 예외 처리 필요할듯
-        
         return Response("OK")
     except ObjectDoesNotExist:
         contents = {
             'error': {
-                'message': '존재하지 않는 방송입니다.'
+                'message': '라이브 중인 방송이 없습니다.'
             }
         }
         return Response(contents, status=status.HTTP_400_BAD_REQUEST)
