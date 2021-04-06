@@ -12,7 +12,7 @@ from rest_framework.request import Request
 from rest_framework.status import *
 from sdk.api.message import Message
 from sdk.exceptions import CoolsmsException
-from clayful import Clayful
+from clayful import Clayful, ClayfulException
 from iamport import *
 from iamport.client import *
 import json, pprint, datetime
@@ -105,11 +105,14 @@ def verify_payment(request):
         }
         return Response(content)
 
-    except Exception as e:
+    except ClayfulException as e:
         print(e)
         print(e.code)
         print(e.message)
-        return Response("에러 발생 백에 문의하세요", status=e.status)
+        return Response(e.code +' '+ e.message, status=e.status)
+    except Exception as e:
+        print(e)
+        return Response("에러발생")
 
 @api_view(['GET','POST'])
 @parser_classes([JSONParser])
