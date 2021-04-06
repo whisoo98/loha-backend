@@ -22,83 +22,77 @@ def verify_payment(request):
     
     try:
         #아임포트 redirection
-        imp_uid=request.GET.get('imp_uid')
-        merchant_uid=request.GET.get('merchant_uid')
-        imp_success=request.GET.get('imp_success')
+        imp_uid=request.data('imp_uid')
+        merchant_uid=request.data('merchant_uid')
+        amount=request.data('amount')
 
-        if imp_success == True: #결제 성공
-            '''
-            아임포트에서 결제 내역 가져옴 & DB에서 결제 요청 내역 가져옴
-            -> 가격 일치 판정
-            '''
 
-            #토큰 받음
-            iamport = Iamport(imp_key=getattr(settings, 'IAMPORT_REST_KEY', None),
-                             imp_secret=getattr(settings, 'IAMPORT_SECRET_REST_KEY', None))
+        '''
+        아임포트에서 결제 내역 가져옴 & DB에서 결제 요청 내역 가져옴
+        -> 가격 일치 판정
+        '''
 
-            #아임포트 결제 내역
-            response = iamport.find(merchant_uid=merchant_uid)
-            amount_paid = response['amount']
-            status = response['status']
+        #토큰 받음
+        iamport = Iamport(imp_key=getattr(settings, 'IAMPORT_REST_KEY', None),
+                         imp_secret=getattr(settings, 'IAMPORT_SECRET_REST_KEY', None))
 
-            #DB
-            Order = Clayful.Order
-            options = {
-                'query':{}
-            }
-            result = Order.get(merchant_uid, options).data
-            amount_to_be_paid = result['total']['price']['original']['raw']
+        #아임포트 결제 내역
+        response = iamport.find(merchant_uid=merchant_uid)
+        amount_paid = response['amount']
+        status = response['status']
 
-            sms_key = getattr(settings, 'COOLSMS_API_KEY', None)
-            sms_secret = getattr(settings, 'COOLSMS_API_SECRET', None)
+        #DB
+        Order = Clayful.Order
+        options = {
+            'query':{}
+        }
+        result = Order.get(merchant_uid, options).data
+        amount_to_be_paid = result['total']['price']['original']['raw']
 
-            if amount_paid == amount_to_be_paid: #결제 금액 일치
-                if status=='ready': #가상계좌 발급
+        sms_key = getattr(settings, 'COOLSMS_API_KEY', None)
+        sms_secret = getattr(settings, 'COOLSMS_API_SECRET', None)
 
-                    # 가상계좌 발급 안내 알람 발송 - 문자
-                    vbank_num = response['vbank_num']#계좌번호
-                    vbank_date = response['vbank_date']#계좌만료일시
-                    vbank_name = response['vbank_name']#은행이름
-                    vbank_code = response['vbank_code']#은행 고유 코드
-                    vbank_holder = response['vbank_holder']#계좌소유주명
-                    vbank_issued_at = response['vbank_issued_at']#계좌 발급일시
+        if amount_paid == amount_to_be_paid: #결제 금액 일치
+            if status=='ready': #가상계좌 발급
 
-                    mobile = str()
-                    for a in result['address']['billing']['mobile'].split('-'):
-                        mobile += a
+                # 가상계좌 발급 안내 알람 발송 - 문자
+                vbank_num = response['vbank_num']#계좌번호
+                vbank_date = response['vbank_date']#계좌만료일시
+                vbank_name = response['vbank_name']#은행이름
+                vbank_code = response['vbank_code']#은행 고유 코드
+                vbank_holder = response['vbank_holder']#계좌소유주명
+                vbank_issued_at = response['vbank_issued_at']#계좌 발급일시
 
-                    params = dict()
-                    params['type'] = 'sms'  # Message type ( sms, lms, mms, ata )
-                    params['to'] = result['address']['billing']['mobile']  # Recipients Number '01000000000,01000000001'
-                    params['from'] = getattr(settings,'BYEOLSHOW_PHONE',None)  # Sender number
-                    params['text'] = 'Byeolshow 가상계좌 발급안내'+\
-                                     '\n'+\
-                                     '가상계좌 은행: '+vbank_name+\
-                                     '가상계좌 계좌번호: '+vbank_num+\
-                                     '입금하실 금액: '+str(amount_to_be_paid)  # Message
-                    content = {
-                            'status':'vbankIssued',
-                            'message':'가상계좌 발급 성공',
-                    }
-                    cool = Message(sms_key, sms_secret)
-                    response = cool.send(params)
-
-                elif status=='paid':
-                        content = {
-                            'status':'success',
-                            'message':'결제 성공',
-                        }
-            else:
+                # mobile = str()
+                # for a in result['address']['billing']['mobile'].split('-'):
+                #     mobile += a
+                #
+                # params = dict()
+                # params['type'] = 'sms'  # Message type ( sms, lms, mms, ata )
+                # params['to'] = result['address']['billing']['mobile']  # Recipients Number '01000000000,01000000001'
+                # params['from'] = getattr(settings,'BYEOLSHOW_PHONE',None)  # Sender number
+                # params['text'] = 'Byeolshow 가상계좌 발급안내'+\
+                #                  '\n'+\
+                #                  '가상계좌 은행: '+vbank_name+\
+                #                  '가상계좌 계좌번호: '+vbank_num+\
+                #                  '입금하실 금액: '+str(amount_to_be_paid)  # Message
+                # cool = Message(sms_key, sms_secret)
+                # response = cool.send(params)
                 content = {
-                    'status': 'fail',
-                    'message':'결제 금익 불일치'
+                        'status':'vbankIssued',
+                        'message':'가상계좌 발급 성공',
                 }
+
+
+            elif status=='paid':
+                    content = {
+                        'status':'success',
+                        'message':'결제 성공',
+                    }
         else:
-            error_code=request.GET.get('error_code')
-            error_message=request.GET.get('error_message')
             content = {
-                'status':'error',
-                'message':error_message
+                'status': 'fail',
+                'message':'결제 금익 불일치'
             }
         return Response(content)
 
