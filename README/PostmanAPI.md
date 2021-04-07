@@ -114,7 +114,55 @@
   - [5. 아직 시작하지 않은 모든 방송 불러오기](#5-아직-시작하지-않은-모든-방송-불러오기)
   - [6. 핫한 방송 불러오기(누적시청자수순)](#6-핫한-방송-불러오기누적시청자수순)
   - [7. 상품 관련 영상 불러오기(콜렉션 id 필요)](#7-상품-관련-영상-불러오기콜렉션-id-필요)
-
+  - [8. LiveAlarm 관련](#livealarm-관련)
+- [Cart](#cart)
+  - [1. 고객이 본인의 카트 품목을 수정합니다.](#1-고객이-본인의-카트-품목을-수정합니다.)
+  - [2. 고객이 본인의 카트 품목을 삭제합니다.](#2-고객이-본인의-카트-품목을-삭제합니다.)
+  - [3. 고객이 본인의 카트를 비웁니다.](#3-고객이-본인의-카트를-비웁니다.)
+  - [4. 고객이 본인의 카트를 가져옵니다.](#4-고객이-본인의-카트를-가져옵니다.)
+  - [5. 고객이 물품을 본인의 카트에 더합니다.](#5-고객이-물품을-본인의-카트에-더합니다.)
+  - [6. 고객이 보인의 카트를 주문합니다.](#6-고객이-본인의-카트를-주문합니다.)
+- [Catalog](#catalog)
+  - [1. 카탈로그 리스트를 가져옵니다.](#1-카탈로그-리스트를-가져옵니다.)
+- [Categoty](#category)
+  - [1. 카테고리 리스트 가져오기](#1-카테고리-리스트-가져오기)
+- [Coupon](#coupon)
+  - [쿠폰 정책](#쿠폰-정책)
+  - [고객](#고객)
+    - [1. 고객에게 쿠폰을 발급합니다.](#1-고객에게-쿠폰을-발급합니다.)
+    - [2. 고객이 본인의 쿠폰 list를 가져옵니다.](#2-고객이-본인의-쿠폰-list를-가져옵니다.)
+    - [3. 고객이 본인의 쿠폰을 삭제합니다.](#3-고객이-본인의-쿠폰을-삭제합니다.)
+  - [매니저](#매니저)
+    - [1. 만들어져 있는 쿠폰 list를 가져옵니다.](#1-만들어져-있는-쿠폰-list를-가져옵니다.)
+- [Order](#order)
+  - [주문 정책](#주문-정책)
+  - [주문](#주문-1)
+    - [1. 고객이 본인의 주문 리스트를 불러옵니다.](#1-고객이-본인의-주문-리스트를-불러옵니다.)
+    - [2. 고객의 특정 주문을 가져옵니다.](#2-고객이-특정-주문을-가져옵니다.)
+    - [3. 고객이 특정 주문의 내용을 수정합니다.](#3-고객이-특정-주문의-내용을-수정합니다.)
+    - [4. 고객이 본인의 주문을 취소합니다.](#4-고객이-본인의-주문을-취소합니다.)
+- [Payment](#payment)
+  - [1. 결제를 검증합니다.](#1-결제를-검증합니다.)
+- [Product](#product)
+  - [1. 카테고리 상품 목록 가져오기 - default:any](#1-카테고리-상품-목록-가져오기-1)
+  - [2. 카테고리 상품 목록 가져오기 - 특정 예시](#2-카테고리-상품-목록-가져오기-2)
+  - [3. 관련 상품 목록 가져오기](#3-관련-상품-목록-가져오기)
+  - [4. 상품 하나를 가져옵니다.](#4-상품-하나를-가져옵니다.)
+  - [5. 상품을 검색합니다.](#5-상품을-검색합니다.)
+  - [6. 핫딜 카탈로그를 통해서 상품 list를 가져옵니다.](#6-핫딜-카탈로그를-통해서-상품-list를-가져옵니다.)
+- [Review](#review)
+  - [1. 고객이 리뷰를 생성합니다.](#1-고객이-리뷰를-생성합니다.)
+  - [2. 리뷰 하나를 가져옵니다.](#2-리뷰-하나를-가져옵니다.)
+  - [3. 상품 리뷰 리스트를 가져옵니다.](#3-상품-리뷰-리스트를-가져옵니다.)
+  - [4. 고객의 리뷰 리스트를 가져옵니다.](#4-고객의-리뷰-리스트를-가져옵니다.)
+  - [5. 리뷰 하나를 삭제합니다.](#5-리뷰-하나를-삭제합니다.)
+  - [6. 리뷰 하나를 수정합니다.](#6-리뷰-하나를-수정합니다.)
+- [Refund](#refund)
+  - [1. 고객이 환불을 신청합니다.](#1-고객이-환불을-신청합니다.)
+  - [2. 고객이 환불 신청을 취소합니다.](#2-고객이-환불-신청을-취소합니다.)
+  
+  
+  
 코드 관련 자세한 설명들을 모두 주석으로 달아놓았습니다.
 
 전체적인 흐름에 대해서만 설명합니다.
@@ -584,3 +632,267 @@ require_login 데코레이터는 로그인 여부를 확인하고
 
     상품과 같은 콜렉션에 있는 상품들의 영상들을 불러온다.
 
+## 8. LiveAlarm관련
+    
+    구현이 완료되지 않음
+
+# Cart
+
+## 1. 고객이 본인의 카트 품목을 수정합니다.
+
+#### URL
+    PUT https://www.byeolshowco.com/cart/items/
+#### 필요조건
+    고객 토큰 + payloads(payload + item_id로 구성된 list)
+#### 추가설명
+    고객이 카트에 수정사항이 있을 때 사용한다.
+
+## 2. 고객이 본인의 카트 품목을 삭제합니다.
+
+#### URL
+    DEL https://www.byeolshowco.com/cart/items/
+#### 필요조건
+    고객 토큰 + item_ids(item_id로 구성된 list)
+#### 추가설명
+    고객이 카트에서 삭제하고 싶은 품목을 받아서 삭제
+    
+## 3. 고객이 본인의 카트를 비웁니다.
+
+#### URL
+    DEL https://www.byeolshowco.com/cart/
+#### 필요조건
+    고객 토큰
+#### 추가설명
+    고객이 카트를 모두 삭제
+
+## 4. 고객이 본인의 카트를 가져옵니다.
+
+#### URL
+    POST https://www.byeolshowco.com/cart/
+#### 필요조건
+    고객 토큰
+#### 추가설명
+    고객의 장바구니 불러오기의 역할
+    Response는 입점사를 기준으로 구별되어 있다.
+
+## 5. 고객이 물품을 본인의 카트에 더합니다.
+
+#### URL
+    POST https://www.byeolshowco.com/cart/items/
+#### 필요조건
+    고객 토큰 + 물품ID, 세부ID, 가격, 수량 등
+#### 추가설명
+    같은 물품을 다시 추가하는 경우에 업데이트 되도록 변경함
+    
+## 6. 고객이 본인의 카트를 주문합니다.
+
+#### URL
+    PUT https://www.byeolshowco.com/cart/checkout/
+#### 필요조건
+    고객 토큰 + 각종 payload
+#### 추가설명
+    전체를 'payload'로 감싸서 보내야합니다.
+    'items'를 생략해도 로그인된 계정에 담겨져있는 상품을 기반으로 카트가 주문됩니다.(즉시 구매의 경우에는 필요할 것으로 예상됨)
+    'address'는 [배송정책]에 설정된 배송비가 계산되어 전달됩니다.
+    'discount'는 쿠폰/커스텀 할인 등을 적용할 때 필요합니다.
+    'curreny'는 'KRW'고정입니다. - 원화
+    'paymentMethod'는 결제방식의 고유 ID 혹은 슬러그입니다.
+    아임포트 이용시에는 'clayful-iamport'입니다.
+    'address.shipping'은 수취인주소입니다. 반드시 필요합니다.
+    'address.billing'은 빌링주소입니다. 반드시 필요합니다.
+    'request'는 주문요청사항입니다. 선택적입니다.
+    
+# Catalog
+
+## 1. 카탈로그 리스트를 가져옵니다.
+
+#### URL
+    GET https://www.byeolshowco.com/catalog/
+#### 추가설명
+    카탈로그의 생성 및 수정은 clayful 안에서 해야한다.
+    카탈로그의 종류는 핫딜, 라이브알람, 할인쿠폰, 추천상품으로 구분된다.
+
+# Category
+
+## 1. 카테고리 리스트 가져오기
+
+#### URL
+    GET https://www.byeolshowco.com/collections/
+#### 추가설명
+    카테고리의 생성 및 수정은 clayful 안에서 해야한다.
+    
+# Coupon
+
+## 쿠폰정책
+    1쿠폰-1고객 정책(고객이 동일한 ID를 가진 쿠폰을 여러 번 발급받을 수 없다. -> DB에 저장)
+    주문 취소 및 환불 시 쿠폰이 다시 돌아오지 않는다.
+    쿠폰의 생성은 clayful에서 진행한다.
+    
+## 고객
+
+### 1. 고객에게 쿠폰을 발급합니다.
+
+#### URL
+    POST https://www.byeolshowco.com/coupon/add/
+#### 필수조건
+    고객 토큰 + 쿠폰 ID
+
+### 2. 고객이 본인의 쿠폰 list를 가져옵니다.
+
+#### URL
+    GET https://www.byeolshowco.com/coupon/
+#### 필수조건
+    고객 토큰
+    
+### 3. 고객이 본인의 쿠폰을 삭제합니다.
+
+#### URL
+    DEL https://www.byeolshowco.com/coupon/
+#### 필수조건
+    고객 토큰 + coupon_ids
+#### 추가설명
+    삭제할 id를 모아서 한 번에 삭제합니다.
+    
+## 매니저
+
+### 1. 만들어져있는 쿠폰 list를 가져옵니다.
+
+#### URL
+    GET https://www.byeolshowco.com/coupon/manager/
+#### 추가설명
+    전체 쿠폰 list를 가져오는 것 입니다.
+    
+# Order
+
+## 주문 정책
+    주문 -> 결제의 과정을 거치며 결제 이전에는 주문 취소, 결제 이후에는 환불로 처리된다.
+    
+## 주문
+
+### 1. 고객이 본인의 주문 리스트를 불러옵니다.
+
+#### URL 
+    GET https://www.byeolshowco.com/order/
+    
+### 2. 고객의 특정 주문을 가져옵니다.
+
+#### URL 
+    GET https://www.byeolshowco.com/order/<str:order_id>
+#### 필수조건
+    고객 토큰 + url에 order_id입력
+    
+### 3. 고객이 특정 주문의 내용을 수정합니다.
+
+#### URL 
+    PUT https://www.byeolshowco.com/order/<str:order_id>
+#### 필수조건
+    고객 토큰 + url에 order_id입력
+
+### 4. 고객이 본인의 주문을 취소합니다.
+
+#### URL 
+    POST https://www.byeolshowco.com/order/cancel/<str:order_id>/
+#### 필수조건
+    고객 토큰 + url에 order_id입력
+    
+# Payment
+
+### 1. 결제를 검증합니다.
+
+#### URL
+    GET https://www.byeolshowco.com/payment/verify/
+#### 필수조건
+    imp_uid, merchant_uid(order_id), amount(금액)이 필요합니다.
+#### 추가설명
+    결제 검증은 Iamport 결제 서비스를 위해서 사용하는 것입니다.
+    서버단에서 결제 금액과 결제 해야하는 금액이 일치하는 지를 판단합니다.
+    
+# Product
+
+### 1. 카테고리 상품 목록 가져오기
+
+#### URL
+    GET https://www.byeolshowco.com/product/collection/
+     
+### 2. 카테고리 상품 목록 가져오기
+
+#### URL
+    GET https://www.byeolshowco.com/product/collection/<str:collection_id>
+    
+### 3. 관련 상품 목록 가져오기
+
+#### URL
+    GET https://www.byeolshowco.com/product/about/<str:collection_id>/
+#### 추가설명
+    특정 상품에서 관련 상품을 보기 위한 API입니다.
+    
+### 4. 상품 하나를 가져옵니다.
+
+#### URL
+    GET https://www.byeolshowco.com/product/<str:product_id>/
+
+### 5. 상품을 검색합니다.
+
+#### URL
+    POST https://www.byeolshowco.com/product/search/
+#### 필수조건
+    search 검색어
+#### 추가설명
+    검색하고 싶은 단어를 search를 통해서 보낸다.
+    
+### 6. 핫딜 카탈로그를 통해서 상품 list를 가져옵니다.
+
+#### URL
+    GET https://byeolshowco.com/product/catalog/<str:discount_type>/
+#### 추가설명
+    discount_type은 fixed(고정값할인)와 percentage(비율할인)만 존재합니다.
+    각 타입별로 url params를 전달해야하는데
+    'min'의 기본값은 0입니다.
+    'max'의 기본값은 할인 타입이 'percentage'인 경우 100이며, 'fixed'인 경우에는 None으로 되어있습니다.
+    정확한 값은 핫딜 카탈로그의 정보에 있습니다.
+    
+# Review
+
+### 1. 고객이 리뷰를 생성합니다.
+
+#### URL 
+    POST https://byeolshowco.com/review/
+#### 필수조건
+    고객 토큰 + order(주문번호) + product(상품번호) + title(제목) + body(내용) + images(사진첨부)
+    
+### 2. 리뷰하나를 가져옵니다.
+
+#### URL
+    GET https://www.byeolshowco.com/review/<str:review_id>/
+
+### 3. 상품 리뷰 리스트를 가져옵니다.
+
+#### URL
+    GET https://www.byeolshowco.com/review/list/product/<str:product_id>/
+    
+### 4. 고객의 리뷰 리스트를 가져옵니다.
+
+#### URL
+    GET https://www.byeolshowco.com/review/list/product/<str:product_id>/
+    
+### 5. 리뷰 하나를 삭제합니다.
+
+#### URL
+    DEL https://www.byeolshowco.com/review/<str:review_id>/
+    
+### 6. 리뷰 하나를 수정합니다.
+
+#### URL
+    PUT https://www.byeolshowco.com/review/<str:review_id>/
+    
+# Refund
+
+### 1. 고객이 환불을 신청합니다.
+
+#### URL
+    POST https://www.byeolshowco.com/refund/<str:order_id>/
+    
+### 2. 고객이 환불 신청을 취소합니다.
+
+#### URL 
+    POST https://www.byeolshowco.com/refund/cancel/<str:order_id>/<str:refund_id>/
