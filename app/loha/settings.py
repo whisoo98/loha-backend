@@ -106,6 +106,7 @@ INSTALLED_APPS = [
     'push',
     'forgetuser',
     'refund',
+    'policy',
 ]
 
 MIDDLEWARE = [

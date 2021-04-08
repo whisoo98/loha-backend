@@ -41,5 +41,6 @@ urlpatterns = [
     path('chat/', include('chat.urls')),
     path('forgetuser/', include('forgetuser.urls')),
     path('refund/', include('refund.urls')),
+    path('policy/', include('policy.urls')),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
