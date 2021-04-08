@@ -362,7 +362,7 @@ class OrderAPI(APIView):#주문 가져오기 수정
             print(e)
             return Response("알 수 없는 오류가 발생하였습니다.", status=HTTP_400_BAD_REQUEST)
 
-    def put(self, request, order_id):# 주문 수정하기
+    def put(self, request, order_id):  # 주문 수정하기
         try:
             Order = Clayful.Order
             payload = (request.data['payload'])
@@ -377,9 +377,38 @@ class OrderAPI(APIView):#주문 가져오기 수정
             return Response(data)
 
         except ClayfulException as e:
+            print(e)
+            print(e.code)
+            print(e.message)
             return Response(e.code + ' ' + e.message, status=e.status)
 
         except Exception as e:
+            print(e)
+            return Response("알 수 없는 오류가 발생하였습니다.", status=HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, order_id):# 주문 수정하기
+        try:
+
+            Order = Clayful.Order
+
+            options = {
+            }
+
+            result = Order.delete(order_id, options)
+
+            headers = result.headers
+            data = result.data
+
+            return Response(data)
+
+        except ClayfulException as e:
+            print(e)
+            print(e.code)
+            print(e.message)
+            return Response(e.code + ' ' + e.message, status=e.status)
+
+        except Exception as e:
+            print(e)
             return Response("알 수 없는 오류가 발생하였습니다.", status=HTTP_400_BAD_REQUEST)
 
 
