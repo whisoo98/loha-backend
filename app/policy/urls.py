@@ -21,6 +21,9 @@ from .views import *
 urlpatterns = [
     path('PrivacyPolicy/', PrivacyPolicy),
     path('RefundPolicy/', RefundPolicy),
+    path('YouthProtectionPolicy/', YouthProtectionPolicy),
     path('ShippingPolicy/', ShippingPolicy),
-    path('TermsOfService/', TermsOfService),
+    path('GeneralToS/', GenralToS),
+    path('SellingToS/', SellingToS),
+    path('AbroadToS/', AbroadToS),
 ]
