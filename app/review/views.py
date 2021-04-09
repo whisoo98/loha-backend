@@ -32,7 +32,6 @@ class ReviewAPI(APIView):
                 'customer': request.headers['Custom-Token'],
             }
             payload = (request.data)
-            pprint.pprint(payload)
             img_list = []
             if len(request.FILES.getlist('images'))>0:
                 img_list = request.FILES.getlist('images') #이미지 리스트
@@ -133,12 +132,14 @@ class ReviewAPI(APIView):
             }
 
             before = Review.get_published(review_id, {}).data
-            img_list = request.FILES.getlist('images')
 
-            if img_list is None:
+
+            if len(request.FILES.getlist('images'))==0:
+
                 res = Review.update_for_me(review_id,payload,options)
                 return Response(res.data)
             else:
+                img_list = request.FILES.getlist('images')
                 before_img = before['images']
                 for img in before_img:
                     Image.delete_for_me(img['_id'],options)
@@ -157,7 +158,7 @@ class ReviewAPI(APIView):
                     after.append(Image.create_for_me(img_payload, options).data['_id'])
 
                 payload['images'] = after
-                result = Review.update_for_me(review_id, json.dumps(payload), options)
+                result = Review.update_for_me(review_id, (payload), options)
 
                 headers = result.headers
                 data = result.data
