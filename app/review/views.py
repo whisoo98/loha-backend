@@ -135,7 +135,6 @@ class ReviewAPI(APIView):
 
 
             if len(request.FILES.getlist('images'))==0:
-
                 res = Review.update_for_me(review_id,payload,options)
                 return Response(res.data)
             else:
