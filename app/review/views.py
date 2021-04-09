@@ -31,31 +31,29 @@ class ReviewAPI(APIView):
             options = {
                 'customer': request.headers['Custom-Token'],
             }
-
             payload = (request.data)
+            pprint.pprint(payload)
             img_list = []
             if len(request.FILES.getlist('images'))>0:
                 img_list = request.FILES.getlist('images') #이미지 리스트
-
-            img_payload = {
-                'model': (None, 'Review'),
-                'application': (None, 'images'),
-                #'file': ('image.jpg', request.data['images'], 'image/jpeg')
-            }
-            img_id = []
-            for img in img_list:
-                img_payload['file'] = (
-                    'image.jpg',
-                    img,
-                    'image/jpeg'
-                )
-                img_id.append(Image.create_for_me(img_payload,options).data['_id'])
-
-            payload['images'] = img_id
-            result = Review.create_for_me(json.dumps(payload), options)
+                img_payload = {
+                    'model': (None, 'Review'),
+                    'application': (None, 'images'),
+                    #'file': ('image.jpg', request.data['images'], 'image/jpeg')
+                }
+                img_id = []
+                for img in img_list:
+                    img_payload['file'] = (
+                        'image.jpg',
+                        img,
+                        'image/jpeg'
+                    )
+                    img_id.append(Image.create_for_me(img_payload,options).data['_id'])
+                payload['images'] = img_id
+            result = Review.create_for_me(payload, options)
             headers = result.headers
             data = result.data
-
+            print(5)
             return Response(data)
 
         except ClayfulException as e:
