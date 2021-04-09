@@ -53,7 +53,6 @@ class ReviewAPI(APIView):
             result = Review.create_for_me(payload, options)
             headers = result.headers
             data = result.data
-            print(5)
             return Response(data)
 
         except ClayfulException as e:
