@@ -91,7 +91,10 @@ class ReviewAPI(APIView):
 
             return Response(data)
         except ClayfulException as e:
-            return Response(e.code, status=e.status)
+            print(e)
+            print(e.code)
+            print(e.message)
+            return Response(e.code+' ' +e.message, status=e.status)
 
         except Exception as e:
             print(e)
@@ -111,9 +114,13 @@ class ReviewAPI(APIView):
             return Response("삭제가 완료되었습니다.")
 
         except ClayfulException as e:
-            return Response(e.code, status=e.status)
+            print(e)
+            print(e.code)
+            print(e.message)
+            return Response(e.code + ' ' + e.message, status=e.status)
 
         except Exception as e:
+            print(e)
             return Response("알 수 없는 오류가 발생하였습니다.", status=HTTP_400_BAD_REQUEST)
 
     def put(self, request, review_id):
@@ -158,7 +165,10 @@ class ReviewAPI(APIView):
                 return Response(data)
 
         except ClayfulException as e:
-            return Response(e.code, status=e.status)
+            print(e)
+            print(e.code)
+            print(e.message)
+            return Response(e.code + ' ' + e.message, status=e.status)
 
         except Exception as e:
             print(e)
@@ -200,6 +210,9 @@ def review_list_published_api(request,product_id):
         return Response(data)
 
     except ClayfulException as e:
+        print(e)
+        print(e.code)
+        print(e.message)
         return Response(e.code + ' ' + e.message, status=e.status)
 
     except Exception as e:
@@ -242,6 +255,9 @@ def review_list_published_for_me_api(request,customer_id):
         return Response(data)
 
     except ClayfulException as e:
+        print(e)
+        print(e.code)
+        print(e.message)
         return Response(e.code + ' ' + e.message, status=e.status)
 
     except Exception as e:
