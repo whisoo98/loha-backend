@@ -126,7 +126,7 @@ class ReviewAPI(APIView):
         try:
             Review = Clayful.Review
             Image = Clayful.Image
-            payload = request.data
+            payload = request.data.copy()
             options = {
                 'customer': request.headers['Custom-Token'],
             }
@@ -135,6 +135,8 @@ class ReviewAPI(APIView):
 
 
             if len(request.FILES.getlist('images'))==0:
+                pprint.pprint(payload)
+                payload['images']=[]
                 res = Review.update_for_me(review_id,payload,options)
                 return Response(res.data)
             else:
