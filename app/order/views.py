@@ -290,6 +290,11 @@ def order_list_api(request): #본인의 주문 내역 list
                     if now >= Due + datetime.timedelta(days=7):
                         Order.mark_as_done(order['_id'],{})
 
+        Review = Clayful.Review
+        for ele in data:
+            reviews = ele['reviews']
+            for review in reviews:
+                ele['reviews'][reviews.index(review)]['product'] = Review.get_published(review['_id'], {}).data['product']['_id']
         return Response(data)
 
     except ClayfulException as e:
@@ -342,6 +347,7 @@ class OrderAPI(APIView):#주문 가져오기 수정
     def get(self, request, order_id):#주문 가져오기
         try:
             Order = Clayful.Order
+            Review = Clayful.Review
             options = {
                 'customer': request.headers['Custom-Token'],
                 'query': {
@@ -352,7 +358,9 @@ class OrderAPI(APIView):#주문 가져오기 수정
             headers = result.headers
             data = result.data
             data = set_raw(data)
-
+            reviews = data['reviews']
+            for review in reviews:
+                data['reviews'][reviews.index(review)]['product']=Review.get_published(review['_id'], {}).data['product']['_id']
             return Response(data)
 
         except ClayfulException as e:
