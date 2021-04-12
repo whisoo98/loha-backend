@@ -73,7 +73,7 @@ def get_stream_key(request, result):
     try:
         if not result['meta']['Stream_key']:
             # 스트림키가 존재하지 않는다면
-            
+
             # Mux에서 스트림키 생성
             headers = {'Content-Type': 'application/json'}
             data = '{ "playback_policy": "public", "new_asset_settings": { "playback_policy": "public" } }'
@@ -91,8 +91,8 @@ def get_stream_key(request, result):
                     'Stream_id': mux_data['data']['id']
                 }
             }
-            
-            #Clayful meta정보에 저장
+
+            # Clayful meta정보에 저장
             Customer.update(result['_id'], payload)
             contents = {
                 "success": {
@@ -140,14 +140,14 @@ def reset_stream_key(request, result):
                 }
             }
             return Response(contents, status=status.HTTP_400_BAD_REQUEST)
-        
+
         # 존재한다면 Mux로부터 재발급 요청
         mux_response = requests.post(
             f"https://api.mux.com/video/v1/live-streams/{result['meta']['Stream_id']}/reset-stream-key", auth=(
                 getattr(settings, 'MUX_CLIENT_ID', None),
                 getattr(settings, 'MUX_SECRET_KEY', None)))
         mux_data = mux_response.json()
-        
+
         # Clayful에 수정
         Customer = Clayful.Customer
         payload = {
@@ -267,7 +267,7 @@ def get_info(request):
         }
         res = Customer.list(options).data[0]
         is_live = MediaStream.objects.filter(Q(influencer_id=res['_id']) & Q(status='live'))
-        
+
         # 현재 라이브 여부 정보 추가
         if not is_live:
             res['live_vod'] = 0
@@ -283,7 +283,7 @@ def get_info(request):
             pass
         else:
             res['avatar'] = res['avatar']['url']
-            
+
         # 과다한 정보 노출을 방지하기 위해 제거
         del (
             res['name'], res['address'], res['connect'], res['verified'], res['groups'], res['userId'], res['email'],
@@ -403,7 +403,7 @@ def get_my_product(request):
         }
 
         res = Product.list(options)
-        
+
         # 프론트가 편한 format으로 변경
         data = res.data
         for dict in data:
@@ -431,9 +431,12 @@ def get_my_product(request):
 @api_view(['GET'])
 def get_my_vod(request):
     try:
-        # 해당 인플루엔서가 예약/라이브중/완료한 모든 방송 불러오기.
+        # 해당 인플루엔서가 완료한 모든 방송 불러오기.
         my_vod = MediaSerializerforClient(
-            MediaStream.objects.filter(influencer_id=request.GET['influencer_id']).order_by('-started_at'),
+            MediaStream.objects.filter(
+                Q(influencer_id=request.GET['influencer_id']) &
+                (Q(status='completed') | Q(status='close'))
+            ).order_by('-started_at'),
             many=True)
         contents = {
             'success': {
