@@ -39,12 +39,8 @@ def Refund(request):
         # 2. 환불 과정
         res_clayful = Order.get(order_id, {}).data
         refunds = res_clayful['refunds']
-        is_vbank = False
         for refund in refunds:
             if refund['_id'] == refund_id:
-                if len(res_clayful['transactions']['vbanks']>0):
-                    is_vbank=True
-                    vbanks = res_clayful['transactions']['vbanks']
                 break;
 
         # NOTICE: amount는 환불 규정에 따라서 다를 수 있음
@@ -53,8 +49,8 @@ def Refund(request):
 
         # 3. 1,2를 기반으로 아임포트에 환불요청
         info = {
+            'merchant_uid': order_id,
             'amount': amount,  # 0이면 전액 취소
-            'reason':reason
             # 'tax_free': payload.get('tax_free'),  # 0이면 0원 처리
             # 'checksum': payload.get('checksum'),
             ## NOTICE: 가상계좌 환불 미구현
@@ -62,11 +58,7 @@ def Refund(request):
             # 'refund_bank': payload.get('refund_bank'),
             # 'refund_account': payload.get('refund_account'),
         }
-        if is_vbank is True:
-            info['refund_holder']=vbanks['holder']
-            info['refund_bank']=vbanks['code']
-            info['refund_account']=vbanks['number']
-        res_imp = iamport.cancel(reason=reason, merchant_uid = order_id, kwargs=info)
+        res_imp = iamport.cancel(reason=reason, kwargs=info)
         # 환불처리문자
         return Response(res_imp)
     except ClayfulException as e:
