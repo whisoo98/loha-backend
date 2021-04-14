@@ -431,11 +431,11 @@ def get_my_product(request):
 @api_view(['GET'])
 def get_my_vod(request):
     try:
-        # 해당 인플루엔서가 완료한 모든 방송 불러오기.
+        # 해당 인플루엔서가 생방송중/완료한 모든 방송 불러오기.
         my_vod = MediaSerializerforClient(
             MediaStream.objects.filter(
                 Q(influencer_id=request.GET['influencer_id']) &
-                (Q(status='completed') | Q(status='close'))
+                (Q(status='live') | Q(status='completed') | Q(status='close'))
             ).order_by('-started_at'),
             many=True)
         contents = {
