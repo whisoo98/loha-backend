@@ -127,6 +127,55 @@ def get_stream_key(request, result):
         return Response(contents, status=status.HTTP_400_BAD_REQUEST)
 
 
+@api_view(['GET'])
+@is_influencer
+def get_stream_key_nevermind(request, result): # 테스트용. 기존키 여부에 상관없이 새로 발급. MUX 문제 발생 가능. 서비스시 수정 필수.
+    try:
+        # 스트림키가 존재하지 않는다면
+
+        # Mux에서 스트림키 생성
+        headers = {'Content-Type': 'application/json'}
+        data = '{ "playback_policy": "public", "new_asset_settings": { "playback_policy": "public" } }'
+        # "per_title_encode": True
+        # "reduced_latency" : True -> 방송 딜레이 줄이기
+        mux_response = requests.post('https://api.mux.com/video/v1/live-streams', headers=headers, data=data, auth=(
+            getattr(settings, 'MUX_CLIENT_ID', None),
+            getattr(settings, 'MUX_SECRET_KEY', None)))
+        mux_data = mux_response.json()
+        Customer = Clayful.Customer
+        payload = {
+            'meta': {
+                'Stream_key': mux_data['data']['stream_key'],
+                'Stream_url': mux_data['data']['playback_ids'][0]['id'],
+                'Stream_id': mux_data['data']['id']
+            }
+        }
+
+        # Clayful meta정보에 저장
+        Customer.update(result['_id'], payload)
+        contents = {
+            "success": {
+                'Stream_key': mux_data['data']['stream_key'],
+                'Stream_url': mux_data['data']['playback_ids'][0]['id'],
+                'Stream_id': mux_data['data']['id']
+            }
+        }
+        return Response(contents)
+    except Exception as e:
+        print(e)
+        try:
+            print(e.code)
+            print(e.message)
+        except Exception as er:
+            pass
+        contents = {
+            "error": {
+                "message": "잘못된 요청입니다.",
+            }
+        }
+        return Response(contents, status=status.HTTP_400_BAD_REQUEST)
+
+
 # 스트림 키 재발급
 @api_view(['GET'])
 @is_influencer
