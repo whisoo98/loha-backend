@@ -46,6 +46,7 @@ def require_login(func):
 
     return wrapper
 
+
 # 닉네임 중복 확인
 @api_view(['POST'])
 def check_name(request):
@@ -60,7 +61,7 @@ def check_name(request):
         Customer = Clayful.Customer
 
         options = {
-            'query':{
+            'query': {
                 'raw': True,
                 'fields': 'name,country',
                 'firstName': request.data['alias']
@@ -91,6 +92,7 @@ def check_name(request):
             }
         }
         return Response(content, status=status.HTTP_400_BAD_REQUEST)
+
 
 # Clayful 초기화 decorator
 def Init_Clayful(func):
@@ -137,15 +139,16 @@ class User(APIView):
     def get(self, request, result):
         res = result.data
         # 프론트가 요구한 format으로 전환
-        res['name']= res['name']['full']
+        res['name'] = res['name']['full']
         res['unipass_number'] = res['meta']['unipass_number']
         for group in res['groups']:
-            if group['_id'] =='XU79MY58Q2C4':
+            if group['_id'] == 'XU79MY58Q2C4':
                 res['influencer'] = True
                 break
             else:
                 res['influencer'] = False
-        del (res['connect'], res['verified'], res['gender'],res['groups'], res['birthdate'], res['phone'], res['lastLoggedInAt'], res['createdAt'], res['updatedAt'], res['meta'])
+        del (res['connect'], res['verified'], res['gender'], res['groups'], res['birthdate'], res['phone'],
+             res['lastLoggedInAt'], res['createdAt'], res['updatedAt'], res['meta'])
         if res['address']['primary'] is None:
             res['address'] = {
                 "primary": {
@@ -272,12 +275,12 @@ class User(APIView):
                 },
                 'alias': request.data['alias'],
                 'mobile': None if request.data['mobile'] == "" else request.data['mobile'],
-                'meta':{
-                    'unipass_number' : request.data['unipass_number']
+                'meta': {
+                    'unipass_number': request.data['unipass_number']
                 }
             }
 
-            if request.data['address']['primary']['city'] !='':
+            if request.data['address']['primary']['city'] != '':
                 payload['address'] = {
                     "primary": request.data['address']['primary'],
                     "secondaries": request.data['address']['secondaries']
@@ -493,6 +496,7 @@ def kakao_callback(request):
                 result = Customer.authenticate_by_3rd_party('kakao', payload)
             Customer.update(result.data['customer'], update_payload)
             return result
+
         result = kakao_to_clayful()
 
         content = f"<h1 style='color:#ffffff'>{result.data['token']}</h1>"
@@ -570,7 +574,7 @@ def naver_callback(request):
                     'full': user_data['response']['name']
                 },
                 'email': user_data['response']['email'],
-                'mobile' : user_data['response']['mobile'],
+                'mobile': user_data['response']['mobile'],
                 'groups': ['ZZ9HGQBGPLTA']
             }
             # 가입과 동시에 로그인
@@ -588,7 +592,7 @@ def naver_callback(request):
     except Exception as e:
         print(e)
         content = {
-            'error' : {
+            'error': {
                 'message': '로그인에 실패하였습니다.'
             }
         }
@@ -692,7 +696,7 @@ class influencer_like(APIView):
                 options = {
                     'query': {
                         'ids': ids,
-                        'group': 'XU79MY58Q2C4', # 일반고객은 불러오지 못하게 한다.
+                        'group': 'XU79MY58Q2C4',  # 일반고객은 불러오지 못하게 한다.
                     }
                 }
                 res = Customer.list(options).data
@@ -871,6 +875,112 @@ class vod_like(APIView):
                 }
             }
             return Response(contents, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            print(e)
+            contents = {
+                "error": {
+                    "message": "잘못된 요청입니다."
+                }
+            }
+            return Response(contents, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ServiceAgree(APIView):
+    @require_login
+    def get(self, request, result):
+        try:
+            is_service = result.data['meta']['service_agree']
+            contents = {
+                "success": {
+                    "service_agree": is_service
+                }
+            }
+            return Response(contents)
+        except Exception as e:
+            print(e)
+            contents = {
+                "error": {
+                    "message": "잘못된 요청입니다."
+                }
+            }
+            return Response(contents, status=status.HTTP_400_BAD_REQUEST)
+
+    @require_login
+    def post(self, request, result):
+        try:
+            is_service = not result.data['meta']['service_agree']
+
+            Customer = Clayful.Customer
+            payload = {
+                'meta': {
+                    "service_agree": is_service,
+                }
+            }
+            options = {'customer': request.headers.get('Custom-Token')}
+            result = Customer.update_me(payload, options)
+            headers = result.headers
+            data = result.data
+
+            contents = {
+                "success": {
+                    "service_agree": is_service
+                }
+            }
+            return Response(contents)
+
+        except Exception as e:
+            print(e)
+            contents = {
+                "error": {
+                    "message": "잘못된 요청입니다."
+                }
+            }
+            return Response(contents, status=status.HTTP_400_BAD_REQUEST)
+
+
+class PushAgree(APIView):
+    @require_login
+    def get(self, request, result):
+        try:
+            is_push = result.data['meta']['push_agree']
+            contents = {
+                "success": {
+                    "push_agree": is_push
+                }
+            }
+            return Response(contents)
+        except Exception as e:
+            print(e)
+            contents = {
+                "error": {
+                    "message": "잘못된 요청입니다."
+                }
+            }
+            return Response(contents, status=status.HTTP_400_BAD_REQUEST)
+
+    @require_login
+    def post(self, request, result):
+        try:
+            is_push = not result.data['meta']['push_agree']
+
+            Customer = Clayful.Customer
+            payload = {
+                'meta': {
+                    "push_agree": is_push,
+                }
+            }
+            options = {'customer': request.headers.get('Custom-Token')}
+            result = Customer.update_me(payload, options)
+            headers = result.headers
+            data = result.data
+
+            contents = {
+                "success": {
+                    "push_agree": is_push
+                }
+            }
+            return Response(contents)
+
         except Exception as e:
             print(e)
             contents = {

@@ -28,5 +28,7 @@ urlpatterns = [
     path('auth/naver/callback/', naver_callback),
     path('auth/facebook/login/', facebook_login),
     path('auth/facebook/callback/', facebook_callback),
+    path('service_agree/', ServiceAgree.as_view()),
+    path('push_agree/', PushAgree.as_view()),
 ]
 
