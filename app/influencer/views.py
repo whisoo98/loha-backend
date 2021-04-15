@@ -129,10 +129,8 @@ def get_stream_key(request, result):
 
 @api_view(['GET'])
 @is_influencer
-def get_stream_key_nevermind(request, result): # 테스트용. 기존키 여부에 상관없이 새로 발급. MUX 문제 발생 가능. 서비스시 수정 필수.
+def get_stream_key_nevermind(request, result):  # 테스트용. 기존키 여부에 상관없이 새로 발급. MUX 문제 발생 가능. 서비스시 수정 필수.
     try:
-        # 스트림키가 존재하지 않는다면
-
         # Mux에서 스트림키 생성
         headers = {'Content-Type': 'application/json'}
         data = '{ "playback_policy": "public", "new_asset_settings": { "playback_policy": "public" } }'
@@ -150,6 +148,11 @@ def get_stream_key_nevermind(request, result): # 테스트용. 기존키 여부�
                 'Stream_id': mux_data['data']['id']
             }
         }
+
+        print(result)
+        ready_medias = MediaStream.objects.filter(influencer_id=result['_id'])
+        ready_medias.update(mux_livestream_playback_id=mux_data['data']['playback_ids'][0]['id'],
+                            mux_livestream_id=mux_data['data']['id'])
 
         # Clayful meta정보에 저장
         Customer.update(result['_id'], payload)
