@@ -25,6 +25,10 @@ import pprint
 import requests
 import datetime
 
+#callback logger
+import logging
+logger = logging.getLogger('show')
+
 
 class NoStreamKeyError(Exception):
     def __str__(self):
@@ -505,6 +509,7 @@ def get_related(request):
 def mux_callback(request):
     # mux 검증
     try:
+        logger.info(request.data)
         if request.data['type'] == "video.asset.live_stream_completed":
             #방송이 종료됨.
             stream_id = request.data['data']['live_stream_id']
