@@ -30,6 +30,9 @@ import logging
 
 logger = logging.getLogger('show')
 
+##로그확인용
+from media.log_telegram import send_log
+
 
 class NoStreamKeyError(Exception):
     def __str__(self):
@@ -518,6 +521,16 @@ def mux_callback(request):
     try:
         logger.info(request.data)
         if request.data['type'] == "video.asset.live_stream_completed":
+            try:
+                with open("callback.txt", "a") as f:
+                    f.write(f"{str(datetime.datetime.now())}\n")
+                    l = pprint.pformat(request.data)
+                    f.write(l)
+                    f.write("\n")
+                    txt = str(datetime.datetime.now()) + "\n" + l + "\n"
+                    send_log(txt)
+            except:
+                pass
             # 방송이 종료됨.
             stream_id = request.data['data']['live_stream_id']
             now_stream = MediaStream.objects.get(
