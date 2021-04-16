@@ -521,6 +521,7 @@ def mux_callback(request):
             now_stream.mux_asset_playback_id = request.data['data']['playback_ids'][0]['id']
             now_stream.finished_at = datetime.datetime.now()
             if now_stream.status != 'completed':
+                send_log("complete로 처리 완료!")
                 now_stream.status = 'completed'
             now_stream.save()
 
