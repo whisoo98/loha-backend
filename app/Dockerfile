@@ -22,7 +22,6 @@ RUN pip install channels_redis
 RUN pip install firebase-admin
 RUN pip install -U Daphne
 RUN pip install coolsms_python_sdk
-RUN pip install python_telegram_bot
 # redis
 # pip install pypiwin32
 
