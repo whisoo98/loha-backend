@@ -520,7 +520,8 @@ def mux_callback(request):
             now_stream.mux_asset_id = request.data['data']['id']
             now_stream.mux_asset_playback_id = request.data['data']['playback_ids'][0]['id']
             now_stream.finished_at = datetime.datetime.now()
-            now_stream.status = 'completed'
+            if now_stream.status != 'completed':
+                now_stream.status = 'completed'
             now_stream.save()
 
             # TODO 알람 삭제
