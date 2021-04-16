@@ -512,7 +512,7 @@ def mux_callback(request):
                 txt = "Request: " + str(datetime.datetime.now().strftime("%m월%d일 %H시%M분%S초")) + "\n" + l + "\n"
                 send_log(txt)
             except Exception as e:
-                send_log("알 수 없는 오류가 발생했습니다." + e)
+                send_log("알 수 없는 오류가 발생했습니다.", e)
             #방송이 종료됨.
             stream_id = request.data['data']['live_stream_id']
             now_stream = MediaStream.objects.get(Q(mux_livestream_id=stream_id)& (Q(status='close')|Q(status='live')))
