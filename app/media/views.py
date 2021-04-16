@@ -500,12 +500,19 @@ def get_related(request):
 
 
 
+from .log_telegram import send_log
 # mux callback 처리 (방송 시작, 방송 종료)
 @api_view(['GET', 'POST'])
 def mux_callback(request):
     # mux 검증
     try:
         if request.data['type'] == "video.asset.live_stream_completed":
+            try:
+                l = pprint.pformat(request.data)
+                txt = "Request: " + str(datetime.datetime.now().strftime("%m월%d일 %H시%M분%S초")) + "\n" + l + "\n"
+                send_log(txt)
+            except:
+                pass
             #방송이 종료됨.
             stream_id = request.data['data']['live_stream_id']
             now_stream = MediaStream.objects.get(Q(mux_livestream_id=stream_id)& (Q(status='close')|Q(status='live')))
