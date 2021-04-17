@@ -35,6 +35,7 @@ class NotEnoughDataError(Exception):
     def __str__(self):
         return "잘못된 입력입니다."
 
+
 # 방송 예약
 @api_view(['POST'])
 @is_influencer
@@ -47,7 +48,7 @@ def reserve_live(request, result):
             pass
         else:
             Image = Clayful.Image
-            avatar = Image.get(result['avatar'], {'raw': True, 'fields' : 'url'}).data['url']
+            avatar = Image.get(result['avatar'], {'raw': True, 'fields': 'url'}).data['url']
 
         # live 정보 저장
         new_media = MediaStream.objects.create(
@@ -58,7 +59,7 @@ def reserve_live(request, result):
             description=request.data['description'],
             influencer_name=result['name']['full'],
             influencer_id=result['_id'],
-            influencer_thunmbnail = avatar,
+            influencer_thunmbnail=avatar,
             product_id=request.data['product_id'],
             product_name=request.data['product_name'],
             product_price=request.data['product_price'],
@@ -95,17 +96,17 @@ def start_live(request, result):
     try:
         if result['meta']['Stream_key'] is None:
             raise NoStreamKeyError()
-        
-        # 나의 끝나지 않은 라이브가 존재하는지 확인
-        live_stream = MediaStream.objects.filter(Q(influencer_id=result['_id']) & (Q(status='close') | Q(status='live')))
 
+        # 나의 끝나지 않은 라이브가 존재하는지 확인
+        live_stream = MediaStream.objects.filter(
+            Q(influencer_id=result['_id']) & (Q(status='close') | Q(status='live')))
 
         if not live_stream:
             # 라이브 중인 방송이 없으면
 
             # 라이브 상태 변경
             now_stream = MediaStream.objects.get(
-                vod_id=request.data['media_id'],influencer_id=result['_id'])
+                vod_id=request.data['media_id'], influencer_id=result['_id'])
             now_stream.status = 'live'
             now_stream.save()
 
@@ -158,7 +159,7 @@ def start_live(request, result):
         contents = {
             "error": {
                 "message": "잘못된 요청입니다.",
-                "detail" : e.message,
+                "detail": e.message,
             }
         }
         return Response(contents, status=status.HTTP_400_BAD_REQUEST)
@@ -170,8 +171,8 @@ def start_live(request, result):
 def edit_my_vod(request, result):
     try:
         now_stream = MediaStream.objects.get(
-            vod_id=request.data['media_id'],influencer_id=result['_id'])
-        
+            vod_id=request.data['media_id'], influencer_id=result['_id'])
+
         avatar = ""
         if not result['avatar']:
             pass
@@ -193,7 +194,7 @@ def edit_my_vod(request, result):
         now_stream.product_sale = request.data['product_sale']
         now_stream.product_brand = request.data['product_brand']
         now_stream.product_thumbnail = request.data['product_thumbnail']
-        now_stream.product_list=','.join(request.data['product_list'])
+        now_stream.product_list = ','.join(request.data['product_list'])
         now_stream.started_at = request.data['started_at']
 
         now_stream.save()
@@ -222,13 +223,14 @@ def edit_my_vod(request, result):
         }
         return Response(contents, status=status.HTTP_400_BAD_REQUEST)
 
+
 # 방송 삭제
 @api_view(['Delete'])
 @is_influencer
 def delete_my_vod(request, result):
     try:
         now_stream = MediaStream.objects.get(
-            vod_id=request.data['media_id'],influencer_id=result['_id'])
+            vod_id=request.data['media_id'], influencer_id=result['_id'])
 
         # MUX에서 영상 삭제
         if now_stream.mux_asset_id is not None:
@@ -236,14 +238,13 @@ def delete_my_vod(request, result):
                 getattr(settings, 'MUX_CLIENT_ID', None),
                 getattr(settings, 'MUX_SECRET_KEY', None)))
 
-
         # 상품에서 제거 -> table에 없으면 어차피 못 불러옴
 
         now_stream.delete()
 
         # TODO 알람 삭제
         # unset_alarm_to_live(vod_id = request.data['media_id'])
-        
+
         contents = {
             'success': {
                 'message': '삭제 완료'
@@ -281,7 +282,6 @@ def end_vod(request, result):
         now_stream.finished_at = datetime.datetime.now()
         now_stream.save()
 
-
         contents = {
             'success': {
                 'message': '방송 종료'
@@ -306,6 +306,7 @@ def end_vod(request, result):
         }
         return Response(contents, status=status.HTTP_400_BAD_REQUEST)
 
+
 # 오늘 방송 일정 불러오기 live
 @api_view(["GET"])
 def get_today_live_schedule(request):
@@ -327,6 +328,7 @@ def get_today_live_schedule(request):
             }
         }
         return Response(contents, status=status.HTTP_400_BAD_REQUEST)
+
 
 # 오늘 방송 일정 불러오기 ready
 @api_view(["GET"])
@@ -355,7 +357,8 @@ def get_today_ready_schedule(request):
 def get_future_schedule(request):
     try:
         today_media = MediaSerializerforClient(
-            MediaStream.objects.filter(Q(started_at__gt=datetime.date.today()) & Q(status='ready')).order_by('started_at'), many=True)
+            MediaStream.objects.filter(Q(started_at__gt=datetime.date.today()) & Q(status='ready')).order_by(
+                'started_at'), many=True)
 
         contents = {
             'success': {
@@ -380,6 +383,7 @@ def get_future_schedule(request):
         }
         return Response(contents, status=status.HTTP_400_BAD_REQUEST)
 
+
 # 아직 시작하지 않은 모든 방송 불러오기
 @api_view(["GET"])
 def get_ready_schedule(request):
@@ -400,6 +404,7 @@ def get_ready_schedule(request):
         }
         return Response(contents, status=status.HTTP_400_BAD_REQUEST)
 
+
 # 지금 핫한 방송(누적 시청자순)
 @api_view(["GET"])
 def get_hot_live(request):
@@ -418,6 +423,8 @@ def get_hot_live(request):
             }
         }
         return Response(contents, status=status.HTTP_400_BAD_REQUEST)
+
+
 # 하나의 방송 불러오기
 @api_view(["GET"])
 def get_live(request):
@@ -477,10 +484,10 @@ def get_related(request):
         for product in result:
             try:
                 related_vod_list.append(product['meta']['my_vod'][1])
-                cnt+=1
+                cnt += 1
             except:
                 pass
-            if cnt > 5 :
+            if cnt > 5:
                 break
 
         my_vod = MediaSerializerforClient(
@@ -500,8 +507,9 @@ def get_related(request):
         return Response(contents, status=status.HTTP_400_BAD_REQUEST)
 
 
-
 from .log_telegram import send_log
+
+
 # mux callback 처리 (방송 시작, 방송 종료)
 @api_view(['GET', 'POST'])
 def mux_callback(request):
@@ -514,9 +522,10 @@ def mux_callback(request):
                 send_log(txt)
             except Exception as e:
                 send_log("알 수 없는 오류가 발생했습니다.", e)
-            #방송이 종료됨.
+            # 방송이 종료됨.
             stream_id = request.data['data']['live_stream_id']
-            now_stream = MediaStream.objects.get(Q(mux_livestream_id=stream_id)& (Q(status='close')|Q(status='live')))
+            now_stream = MediaStream.objects.get(
+                Q(mux_livestream_id=stream_id) & (Q(status='close') | Q(status='live')))
 
             now_stream.mux_asset_id = request.data['data']['id']
             now_stream.mux_asset_playback_id = request.data['data']['playback_ids'][0]['id']
@@ -527,7 +536,7 @@ def mux_callback(request):
             now_stream.save()
 
             # TODO 알람 삭제
-            #unset_alarm_to_live(vod_id=now_stream.void_id)
+            # unset_alarm_to_live(vod_id=now_stream.void_id)
             return Response("completed")
         return Response("OK")
     except ObjectDoesNotExist:
@@ -567,7 +576,7 @@ class Alarm(APIView):
                 now_stream = MediaStream.objects.get(vod_id=Live_id)
                 now_stream.push_count -= 1
                 now_stream.save()
-                Customer.pull_from_metafield(result.data['_id'],'Live_id',{'value':Live_id},{})
+                Customer.pull_from_metafield(result.data['_id'], 'Live_id', {'value': Live_id}, {})
                 content = {
                     'status': False,
                     'message': "라이브 예약이 취소되었습니다."
@@ -576,14 +585,14 @@ class Alarm(APIView):
             # Live예약
 
             ##토큰을 저장해야함
-            #set_alarm_to_live(request.data.get('_id'),request.data['token'])
+            # set_alarm_to_live(request.data.get('_id'),request.data['token'])
             now_stream = MediaStream.objects.get(vod_id=Live_id)
             now_stream.push_count += 1
             now_stream.save()
-            Customer.push_to_metafield(result.data['_id'],'Live_id',{'value':Live_id,'unique':True},{})
+            Customer.push_to_metafield(result.data['_id'], 'Live_id', {'value': Live_id, 'unique': True}, {})
             content = {
-                'status':True,
-                'message':"라이브 예약이 설정되었습니다."
+                'status': True,
+                'message': "라이브 예약이 설정되었습니다."
             }
 
             return Response(content, status=status.HTTP_202_ACCEPTED)
@@ -609,7 +618,9 @@ class Alarm(APIView):
             Live_list = result.data['meta']['Live_id'][1:]
 
             media_list = MediaSerializerforClient(
-                MediaStream.objects.filter(Q(vod_id__in=Live_list) & Q(status='ready') & Q(started_at__gt=datetime.datetime.now())).order_by('started_at'), many=True
+                MediaStream.objects.filter(
+                    Q(vod_id__in=Live_list) & Q(status='ready') & Q(started_at__gte=datetime.date.today())).order_by(
+                    'started_at'), many=True
             ).data
             return Response(media_list, status=status.HTTP_200_OK)
 
@@ -627,6 +638,7 @@ class Alarm(APIView):
             print(e)
             return Response("알 수 없는 오류가 발생하였습니다.", status=status.HTTP_400_BAD_REQUEST)
 
+
 # 누적 시청자수 증가
 @api_view(['GET', 'POST'])
 def add_view(request):
@@ -634,13 +646,13 @@ def add_view(request):
         now_stream = MediaStream.objects.get(
             vod_id=request.data['media_id'])
 
-        now_stream.vod_view_count +=1
+        now_stream.vod_view_count += 1
         now_stream.save()
         contents = {
             'success': {
                 'message': '완료',
                 'media_id': now_stream.vod_id,
-                'now_view_count' : now_stream.vod_view_count
+                'now_view_count': now_stream.vod_view_count
             }
         }
         return Response(contents, status=status.HTTP_202_ACCEPTED)
