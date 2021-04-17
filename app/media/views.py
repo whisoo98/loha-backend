@@ -276,7 +276,8 @@ def end_vod(request, result):
     try:
         now_stream = MediaStream.objects.get(
             vod_id=request.data['media_id'], influencer_id=result['_id'])
-        now_stream.status = 'close'
+        if now_stream.status != 'completed':
+            now_stream.status = 'close'
         now_stream.finished_at = datetime.datetime.now()
         now_stream.save()
 
