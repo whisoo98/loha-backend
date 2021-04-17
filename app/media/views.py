@@ -524,6 +524,8 @@ def mux_callback(request):
             if now_stream.status != 'completed':
                 send_log("complete로 처리 완료!")
                 now_stream.status = 'completed'
+            else:
+                send_log("callback이 왔지만 complete 처리할 진행 중인 방송이 없습니다.")
             now_stream.save()
 
             # TODO 알람 삭제
