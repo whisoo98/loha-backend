@@ -187,7 +187,7 @@ def edit_my_vod(request, result):
         now_stream.influencer_name = result['name']['full']
         now_stream.influencer_id = result['_id']
         now_stream.influencer_thunmbnail = avatar
-        now_stream.product_id = request.data['product_id'],
+        now_stream.product_id = request.data['product_id']
         now_stream.product_name = request.data['product_name']
         now_stream.product_price = request.data['product_price']
         now_stream.product_sale = request.data['product_sale']
