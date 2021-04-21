@@ -15,6 +15,7 @@ from django.core.exceptions import ObjectDoesNotExist
 import json
 import requests
 import datetime
+from user.models import UserToken
 
 import urllib
 
@@ -381,8 +382,17 @@ class Auth(APIView):
             Customer = Clayful.Customer
 
             # body에서 'userId', 'password' 필요
-            payload = json.dumps(request.data)
+            payload = {
+                'userId': request.data['userId'],
+                'password': request.data['password'],
+            }
             response = Customer.authenticate(payload)
+
+            # DB에 유저의 firebase 토큰 없으면 저장
+            firebase_token = request.data["firebase_token"]
+            if not UserToken.objects.filter(firebase_token=firebase_token):
+                UserToken(user_id=response.data['customer'], firebase_token=firebase_token).save()
+
             # header에 정보 전송
             header = {'Custom-Token': response.data['token']}
 

@@ -3,8 +3,8 @@ from django.db import models
 
 class InfluencerAlarm(models.Model):
     influencer_id = models.CharField(max_length=200, )
-    token = models.TextField()
+    user_id = models.TextField()
 
 class LiveAlarm(models.Model):
     vod_id = models.CharField(max_length=200)
-    token = models.TextField()
+    user_id = models.TextField()
