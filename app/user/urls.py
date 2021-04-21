@@ -30,5 +30,6 @@ urlpatterns = [
     path('auth/facebook/callback/', facebook_callback),
     path('service_agree/', ServiceAgree.as_view()),
     path('push_agree/', PushAgree.as_view()),
+    path('upload_token/', UploadToken.as_view()),
 ]
 

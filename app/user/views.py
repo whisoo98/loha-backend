@@ -388,12 +388,6 @@ class Auth(APIView):
             }
             response = Customer.authenticate(payload)
 
-            # DB에 유저의 firebase 토큰 없으면 저장
-            firebase_token = request.data["firebase_token"]
-            user_id = response.data['customer']
-            if not UserToken.objects.filter(user_id=user_id, firebase_token=firebase_token):
-                UserToken(user_id=user_id, firebase_token=firebase_token).save()
-
             # header에 정보 전송
             header = {'Custom-Token': response.data['token']}
 
@@ -992,6 +986,32 @@ class PushAgree(APIView):
             contents = {
                 "success": {
                     "push_agree": is_push
+                }
+            }
+            return Response(contents)
+
+        except Exception as e:
+            print(e)
+            contents = {
+                "error": {
+                    "message": "잘못된 요청입니다."
+                }
+            }
+            return Response(contents, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UploadToken(APIView):
+    @require_login
+    def post(self, request, result):
+        try:
+            # DB에 유저의 firebase 토큰 없으면 저장
+            firebase_token = request.data["firebase_token"]
+            user_id = result.data['_id']
+            if not UserToken.objects.filter(user_id=user_id, firebase_token=firebase_token):
+                UserToken.objects.create(user_id=user_id, firebase_token=firebase_token)
+            contents = {
+                "success": {
+                    "message": "토큰을 등록했습니다."
                 }
             }
             return Response(contents)
