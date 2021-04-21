@@ -1,7 +1,7 @@
 from django.shortcuts import redirect
 from django.utils.decorators import method_decorator
 from django.http import HttpResponse
-from push.views import set_alarm_to_influencer
+from push.views import *
 from rest_framework.views import Response
 from rest_framework import status
 from rest_framework.views import APIView
@@ -758,6 +758,8 @@ class influencer_like(APIView):
                 # 존재하면
                 # 팔로워 수 감소
                 Customer.increase_metafield(request.data.get('InfluencerId'), 'Follower', {'value': -1})
+                # 알림 설정 삭제하기
+                unset_alarm_to_influencer(influencer_id=request.data.get('InfluencerId'), user_id=result.data['_id'])
                 # influencer 없으면 알아서 예외 처리됨
                 # 팔로잉 취소
                 payload = {
@@ -777,6 +779,8 @@ class influencer_like(APIView):
 
             # 팔로워 수 증가
             Customer.increase_metafield(request.data.get('InfluencerId'), 'Follower', {'value': 1})
+            # 알림 설정하기
+            set_alarm_to_influencer(influencer_id=request.data.get('InfluencerId'), user_id=result.data['_id'])
             # influencerId 없으면 예외처리 됨
             # 팔로잉
             payload = {
