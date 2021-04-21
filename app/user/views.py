@@ -390,8 +390,9 @@ class Auth(APIView):
 
             # DB에 유저의 firebase 토큰 없으면 저장
             firebase_token = request.data["firebase_token"]
-            if not UserToken.objects.filter(firebase_token=firebase_token):
-                UserToken(user_id=response.data['customer'], firebase_token=firebase_token).save()
+            user_id = response.data['customer']
+            if not UserToken.objects.filter(user_id=user_id, firebase_token=firebase_token):
+                UserToken(user_id=user_id, firebase_token=firebase_token).save()
 
             # header에 정보 전송
             header = {'Custom-Token': response.data['token']}
