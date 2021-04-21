@@ -14,23 +14,23 @@ import clayful
 #TODO:알람 푸시에 대한 구현
 
 #인플루언서 팔로우할 때 알람 설정
-def set_alarm_to_influencer(influencer_id, token):
-    InfluencerAlarm.objects.create(influencer_id=influencer_id, token=token)
+def set_alarm_to_influencer(influencer_id, user_id):
+    InfluencerAlarm.objects.create(influencer_id=influencer_id, user_id=user_id)
 
 #인플루언서 언팔할 때 알람 설정 취소
-def set_alarm_to_influencer(influencer_id, token):
-    InfluencerAlarm.objects.filter(influencer_id=influencer_id, token=token).all().delete()
+def unset_alarm_to_influencer(influencer_id, user_id):
+    InfluencerAlarm.objects.filter(influencer_id=influencer_id, user_id=user_id).all().delete()
 
 #라이브 알람 설정할 때 알람 설정
-def set_alarm_to_live(vod_id, token):
-    LiveAlarm.objects.create(vod_id=vod_id, token=token)
+def set_alarm_to_live(vod_id, user_id):
+    LiveAlarm.objects.create(vod_id=vod_id, user_id=user_id)
 
 #라이브 알람 설정 취소
-def unset_alarm_to_live(vod_id, token=None):
-    if token is None: #방송이 종료되면 모두 삭제
+def unset_alarm_to_live(vod_id, user_id=None):
+    if user_id is None: #방송이 종료되면 모두 삭제
         LiveAlarm.objects.fileter(vod_id=vod_id).all().delete()
     else: #한 사람이 삭제
-        LiveAlarm.objects.filter(vod_id=vod_id, token=token).all().delete()
+        LiveAlarm.objects.filter(vod_id=vod_id, user_id=user_id).all().delete()
 
 #인플루언서 팔로우에 대한 알람 보내기
 def alarm_by_influencer(influencer_id, info):

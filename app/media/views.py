@@ -128,12 +128,13 @@ def start_live(request, result):
                     continue
 
             # 알람 날리기
-            # info = {
-            #     'influencer': result['alias'],
-            #     'time': str(now_stream.started_at.hour) + ':' + str(now_stream.started_at.minute)
-            # }
-            # alarm_by_live(request.data['media_id'], info)
-            # alarm_by_influencer(result['_id'], info)
+            info = {
+                'influencer': result['alias'],
+                'time': str(now_stream.started_at.hour) + ':' + str(now_stream.started_at.minute)
+            }
+            alarm_by_live(request.data['media_id'], info)
+            alarm_by_influencer(result['_id'], info)
+
             contents = {
                 "success": {
                     "message": "방송이 시작되었습니다.",
@@ -585,7 +586,7 @@ class Alarm(APIView):
             # Live예약
 
             ##토큰을 저장해야함
-            # set_alarm_to_live(request.data.get('_id'),request.data['token'])
+            set_alarm_to_live(request.data.get('_id'), result.data['_id'])
             now_stream = MediaStream.objects.get(vod_id=Live_id)
             now_stream.push_count += 1
             now_stream.save()
