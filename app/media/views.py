@@ -57,7 +57,7 @@ def reserve_live(request, result):
             title=request.data['title'],
             notice=request.data['notice'],
             description=request.data['description'],
-            influencer_name=result['name']['full'],
+            influencer_name=result['alias'],
             influencer_id=result['_id'],
             influencer_thunmbnail=avatar,
             product_id=request.data['product_id'],
