@@ -128,6 +128,15 @@ def start_live(request, result):
                     continue
 
             # 알람 날리기
+            vod_id = request.data['media_id']
+            influencer_id = result['_id']
+
+            vod_user_id = LiveAlarm.objects.filter(vod_id=vod_id).values_list('user_id')
+            follow_user_id = InfluencerAlarm.objects.filter(influencer_id=influencer_id).values_list('user_id')
+
+            user_id_union = set(vod_user_id) | set(follow_user_id)
+
+
             info = {
                 'influencer': result['alias'],
                 'time': str(now_stream.started_at.hour) + ':' + str(now_stream.started_at.minute)
