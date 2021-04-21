@@ -92,6 +92,7 @@ def alarm_by_live(id, info):
 
 
 def alarm_by_user_id(user_ids, info):
+    topic = "live"
     try:
         registration_tokens = []
         for user_id in user_ids:
@@ -105,6 +106,7 @@ def alarm_by_user_id(user_ids, info):
                     image='https://cdn.clayful.io/stores/45TGXB8XLAKJ.9733A4KD92ZE/images/HR5TCPDCF93D/v1/%EC%97%84%EB%A7%88%EC%86%8C%EC%95%88%EC%8B%AC%EC%9C%A0%EC%95%84%EB%93%B1%EC%8B%AC.png'
                 ),
                 token=token,
+                topic=topic,
             )
             response.append(messaging.send(message))
         print('{0} messages were sent successfully'.format(len(response)))
