@@ -91,11 +91,12 @@ def alarm_by_live(id, info):
         print("알 수 없는 오류가 발생하였습니다.")
 
 
-def alarm_by_user_id(user_ids, info):
+def alarm_by_user_id(user_ids, info, vod_id):
     try:
         registration_tokens = []
         for user_id in user_ids:
-            registration_tokens += list(UserToken.objects.filter(user_id=user_id).values_list('firebase_token', flat=True))
+            registration_tokens += list(
+                UserToken.objects.filter(user_id=user_id).values_list('firebase_token', flat=True))
         response = []
         for token in set(registration_tokens):
             message = messaging.Message(
@@ -104,6 +105,7 @@ def alarm_by_user_id(user_ids, info):
                     body='Influencer {}님의 방송이 {}에 시작됩니다!'.format(info['influencer'], info['time']),
                     image='https://cdn.clayful.io/stores/45TGXB8XLAKJ.9733A4KD92ZE/images/HR5TCPDCF93D/v1/%EC%97%84%EB%A7%88%EC%86%8C%EC%95%88%EC%8B%AC%EC%9C%A0%EC%95%84%EB%93%B1%EC%8B%AC.png'
                 ),
+                data={"Live": vod_id},
                 token=token,
             )
             response.append(messaging.send(message))

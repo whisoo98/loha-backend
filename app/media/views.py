@@ -132,7 +132,8 @@ def start_live(request, result):
             influencer_id = result['_id']
 
             vod_user_id = list(LiveAlarm.objects.filter(vod_id=vod_id).values_list('user_id', flat=True))
-            follow_user_id = list(InfluencerAlarm.objects.filter(influencer_id=influencer_id).values_list('user_id', flat=True))
+            follow_user_id = list(
+                InfluencerAlarm.objects.filter(influencer_id=influencer_id).values_list('user_id', flat=True))
 
             user_id_union = set(vod_user_id) | set(follow_user_id)
 
@@ -140,7 +141,7 @@ def start_live(request, result):
                 'influencer': result['alias'],
                 'time': str(now_stream.started_at.hour) + ':' + str(now_stream.started_at.minute)
             }
-            alarm_by_user_id(user_id_union, info)
+            alarm_by_user_id(user_id_union, info, vod_id)
 
             contents = {
                 "success": {
