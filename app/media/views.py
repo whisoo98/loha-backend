@@ -139,9 +139,10 @@ def start_live(request, result):
 
             info = {
                 'influencer': result['alias'],
-                'time': str(now_stream.started_at.hour) + ':' + str(now_stream.started_at.minute)
+                'time': str(now_stream.started_at.hour) + ':' + str(now_stream.started_at.minute),
+                'vod_id' : vod_id,
             }
-            alarm_by_user_id(user_id_union, info, vod_id)
+            alarm_by_user_id(user_id_union, info)
 
             contents = {
                 "success": {
