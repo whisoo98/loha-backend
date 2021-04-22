@@ -95,7 +95,7 @@ def alarm_by_user_id(user_ids, info):
     try:
         registration_tokens = []
         for user_id in user_ids:
-            registration_tokens += list(UserToken.objects.filter(user_id=user_id).values_list('token', flat=True))
+            registration_tokens += list(UserToken.objects.filter(user_id=user_id).values_list('firebase_token', flat=True))
         response = []
         for token in set(registration_tokens):
             message = messaging.Message(
@@ -113,4 +113,4 @@ def alarm_by_user_id(user_ids, info):
         print(e.message)
 
     except Exception as e:
-        print("알 수 없는 오류가 발생하였습니다.")
+        print(e)
