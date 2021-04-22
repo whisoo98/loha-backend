@@ -103,7 +103,7 @@ def alarm_by_user_id(user_ids, info):
                 notification=messaging.Notification(
                     title='Live 알림!',
                     body='Influencer {}님의 방송이 {}에 시작됩니다!'.format(info['influencer'], info['time']),
-                    image='https://cdn.clayful.io/stores/45TGXB8XLAKJ.9733A4KD92ZE/images/HR5TCPDCF93D/v1/%EC%97%84%EB%A7%88%EC%86%8C%EC%95%88%EC%8B%AC%EC%9C%A0%EC%95%84%EB%93%B1%EC%8B%AC.png'
+                    image=str(info['image'])
                 ),
                 data={"Live": str(info['vod_id'])},
                 token=token,

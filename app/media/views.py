@@ -140,7 +140,8 @@ def start_live(request, result):
             info = {
                 'influencer': result['alias'],
                 'time': str(now_stream.started_at.hour) + ':' + str(now_stream.started_at.minute),
-                'vod_id' : vod_id,
+                'vod_id': vod_id,
+                'image': MediaStream.objects.get(vod_id=vod_id).product_thumbnail
             }
             alarm_by_user_id(user_id_union, info)
 
