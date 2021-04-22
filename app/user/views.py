@@ -1024,3 +1024,30 @@ class UploadToken(APIView):
                 }
             }
             return Response(contents, status=status.HTTP_400_BAD_REQUEST)
+
+
+class DeleteToken(APIView):
+    @require_login
+    def post(self, request, result):
+        try:
+            # DB에 유저의 firebase 토큰 있으면 삭제
+            firebase_token = request.data["firebase_token"]
+            user_id = result.data['_id']
+
+            UserToken.objects.filter(user_id=user_id, firebase_token=firebase_token).all().delete()
+
+            contents = {
+                "success": {
+                    "message": "토큰을 삭제했습니다."
+                }
+            }
+            return Response(contents)
+
+        except Exception as e:
+            print(e)
+            contents = {
+                "error": {
+                    "message": "잘못된 요청입니다."
+                }
+            }
+            return Response(contents, status=status.HTTP_400_BAD_REQUEST)
