@@ -21,6 +21,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import MultipleObjectsReturned
 from django.conf import settings
 import json
+import random
 import pprint
 import requests
 import datetime
@@ -483,26 +484,55 @@ def get_related(request):
         options = {
             'query': {
                 'raw': True,
+                'fields': 'collections.path',
+            }
+        }
+        result = Product.get(request.data['product_id'], options).data
+
+        collection_ids = []
+        for collection in result['collections']:
+            collection_ids += collection["path"]
+
+        options = {
+            'query': {
+                'raw': True,
                 'fields': 'meta',
-                'collection': request.GET['collection_id'],
+                'collection': ",".join(collection_ids),
                 'limit': 120,
             }
         }
-
         result = Product.list(options).data
-        related_vod_list = []
+        related_products = []
         cnt = 0
-        for product in result:
+        result_length = len(result)
+        random_idx = list(range(0, result_length))
+        # 해당 콜렉션 상품 중 랜덤하게 5개 추출
+        if result_length > 5:
+            random_idx = random.sample(range(0, result_length), 5)
+            print(random_idx)
+        for idx in random_idx:
             try:
-                related_vod_list.append(product['meta']['my_vod'][1])
-                cnt += 1
+                product = result[idx]
+                print(product)
+                if product['_id'] == request.data['product_id']:
+                    continue
+                else:
+                    related_products.append(product['_id'])
+                    cnt += 1
             except:
                 pass
             if cnt > 5:
                 break
+        related_vod = []
+        for product_id in related_products:
+            try:
+                related_vod.append(
+                    MediaStream.objects.filter(product_id=product_id).order_by('-vod_view_count')[0].vod_id)
+            except IndexError:
+                continue
 
         my_vod = MediaSerializerforClient(
-            MediaStream.objects.filter(vod_id__in=related_vod_list).order_by('-vod_view_count')
+            MediaStream.objects.filter(vod_id__in=related_vod).order_by('-vod_view_count')[:5]
             , many=True)
         return Response(my_vod.data)
     except ObjectDoesNotExist:
