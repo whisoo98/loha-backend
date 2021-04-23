@@ -502,37 +502,23 @@ def get_related(request):
             }
         }
         result = Product.list(options).data
-        related_products = []
-        cnt = 0
-        result_length = len(result)
-        random_idx = list(range(0, result_length))
-        # 해당 콜렉션 상품 중 랜덤하게 5개 추출
-        if result_length > 5:
-            random_idx = random.sample(range(0, result_length), 5)
-        for idx in random_idx:
+        related_vod = []
+        for result_info in result:
             try:
-                product = result[idx]
-                if product['_id'] == request.GET['product_id']:
+                if result_info['_id'] == request.GET['product_id']:
                     continue
                 else:
-                    related_products.append(product['_id'])
-                    cnt += 1
+                    related_vod += result_info['meta']['my_vod'][1:]
             except:
                 pass
-            if cnt > 5:
-                break
-        related_vod = []
-        for product_id in related_products:
-            try:
-                related_vod.append(
-                    MediaStream.objects.filter(product_id=product_id).order_by('-vod_view_count')[0].vod_id)
-            except IndexError:
-                continue
 
-        my_vod = MediaSerializerforClient(
-            MediaStream.objects.filter(vod_id__in=related_vod).order_by('-vod_view_count')[:5]
-            , many=True)
+        medias = MediaStream.objects.filter(vod_id__in=related_vod).order_by('?')
+        if len(medias) > 10:
+            medias = medias[:10]
+
+        my_vod = MediaSerializerforClient(medias, many=True)
         return Response(my_vod.data)
+
     except ObjectDoesNotExist:
         return Response([], status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
