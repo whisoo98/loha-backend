@@ -487,7 +487,7 @@ def get_related(request):
                 'fields': 'collections.path',
             }
         }
-        result = Product.get(request.data['product_id'], options).data
+        result = Product.get(request.GET['product_id'], options).data
 
         collection_ids = []
         for collection in result['collections']:
