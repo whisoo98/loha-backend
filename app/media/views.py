@@ -509,12 +509,10 @@ def get_related(request):
         # 해당 콜렉션 상품 중 랜덤하게 5개 추출
         if result_length > 5:
             random_idx = random.sample(range(0, result_length), 5)
-            print(random_idx)
         for idx in random_idx:
             try:
                 product = result[idx]
-                print(product)
-                if product['_id'] == request.data['product_id']:
+                if product['_id'] == request.GET['product_id']:
                     continue
                 else:
                     related_products.append(product['_id'])
