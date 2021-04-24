@@ -10,6 +10,7 @@ from clayful import Clayful
 from user.views import require_login
 import json
 
+
 # 좋아요 상품 목록 확인
 class ProductWishList(APIView):
     # Clayful 초기화
@@ -26,23 +27,30 @@ class ProductWishList(APIView):
     @require_login
     def get(self, request, result):
         try:
-            WishList = Clayful.WishList
-            options = {'customer': request.headers.get('Custom-Token')}
-            result = WishList.list_for_me(options)
-            query = {
-                'limit': 120,
-                #'limit':3,
-                'page': request.GET.get('page',1)
-            }
-            options['query'] = query
-            res = WishList.list_products_for_me(result.data[0]['_id'], options).data
+            i = 1
+            res = []
+            while True:
+                WishList = Clayful.WishList
+                options = {'customer': request.headers.get('Custom-Token')}
+                result = WishList.list_for_me(options)
+                query = {
+                    'limit': 120,
+                    'page': request.GET.get('page', i)
+                }
+                options['query'] = query
+                res_temp = WishList.list_products_for_me(result.data[0]['_id'], options).data
+                if len(res_temp) == 0:
+                    break
+                else:
+                    res += res_temp
+                    i += 1
 
-            #프론트가 요구한 format
+            # 프론트가 요구한 format
             for product in res:
-                if product['price']['original'] is not None :
+                if product['price']['original'] is not None:
                     product['price']['original'] = product['price']['original']['raw']
                 if product['price']['sale'] is not None:
-                    product['price']['sale']= product['price']['sale']['raw']
+                    product['price']['sale'] = product['price']['sale']['raw']
                 if product['discount']['value'] is not None:
                     product['discount']['value'] = product['discount']['value']['raw']
                 if product['discount']['discounted'] is not None:
@@ -114,4 +122,3 @@ class ProductWishList(APIView):
             print(e.message)
         except Exception as er:
             pass
-
