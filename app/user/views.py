@@ -1053,6 +1053,11 @@ class DeleteToken(APIView):
             return Response(contents, status=status.HTTP_400_BAD_REQUEST)
 
 
+class NoBankInfoException(Exception):
+    def __str__(self):
+        return "환불 계좌 정보가 존재하지 않습니다."
+
+
 class RefundBankInfo(APIView):
     @require_login
     def get(self, request, result):
@@ -1060,23 +1065,23 @@ class RefundBankInfo(APIView):
             res = result.data
             print(type(res['meta']))
             if "refund_holder" not in res['meta'].keys():
-                raise ObjectDoesNotExist
+                raise NoBankInfoException
             if "refund_bank" not in res['meta'].keys():
-                raise ObjectDoesNotExist
+                raise NoBankInfoException
             if "refund_account" not in res['meta'].keys():
-                raise ObjectDoesNotExist
+                raise NoBankInfoException
             contents = {
                 'refund_holder': res['meta']['refund_holder'],
                 'refund_bank': res['meta']['refund_bank'],
                 'refund_account': res['meta']['refund_account'],
             }
             return Response(contents)
-        except ObjectDoesNotExist:
+        except NoBankInfoException:
             contents = {
-                'error': {
+                'success': {
                     'message': '해당 유저의 환불계좌 정보가 존재하지 않습니다.'}
             }
-            return Response(contents, status=status.HTTP_400_BAD_REQUEST)
+            return Response(contents, status=status.HTTP_204_NO_CONTENT)
         except Exception as e:
             print(e)
             return Response("여기")
