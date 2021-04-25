@@ -498,8 +498,16 @@ def kakao_callback(request):
                 update_payload['mobile'] = user_data['kakao_account']['phone_number']
             # 가입과 동시 로그인
             if result.data['action'] == 'register':
+                WishList = Clayful.WishList
+                payload = {
+                    'customer': result.data['_id'],
+                    'name': 'product_wishlist',
+                    'description': None
+                }
+                WishList.create(payload)
                 result = Customer.authenticate_by_3rd_party('kakao', payload)
-            Customer.update(result.data['customer'], update_payload)
+                Customer.update(result.data['customer'], update_payload)
+
             return result
 
         result = kakao_to_clayful()
@@ -584,9 +592,15 @@ def naver_callback(request):
             }
             # 가입과 동시에 로그인
             if result.data['action'] == 'register':
+                WishList = Clayful.WishList
+                payload = {
+                    'customer': result.data['_id'],
+                    'name': 'product_wishlist',
+                    'description': None
+                }
+                WishList.create(payload)
                 result = Customer.authenticate_by_3rd_party('naver', payload)
-
-            Customer.update(result.data['customer'], update_payload)
+                Customer.update(result.data['customer'], update_payload)
             return result
 
         result = naver_to_clayful()
@@ -661,6 +675,13 @@ def facebook_callback(request):
             result = Customer.authenticate_by_3rd_party('facebook', payload)
             # 가입과 동시에 로그인
             if result.data['action'] == 'register':
+                WishList = Clayful.WishList
+                payload = {
+                    'customer': result.data['_id'],
+                    'name': 'product_wishlist',
+                    'description': None
+                }
+                WishList.create(payload)
                 result = Customer.authenticate_by_3rd_party('facebook', payload)
                 Customer.update(result.data['customer'], {'groups': ['ZZ9HGQBGPLTA']})
             return result
