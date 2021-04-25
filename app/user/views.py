@@ -505,6 +505,8 @@ def kakao_callback(request):
                     'description': None
                 }
                 WishList.create(payload)
+
+                payload = {'token': kakao_access_token}
                 result = Customer.authenticate_by_3rd_party('kakao', payload)
                 Customer.update(result.data['customer'], update_payload)
 
@@ -599,6 +601,8 @@ def naver_callback(request):
                     'description': None
                 }
                 WishList.create(payload)
+
+                payload = {'token': naver_access_token}
                 result = Customer.authenticate_by_3rd_party('naver', payload)
                 Customer.update(result.data['customer'], update_payload)
             return result
@@ -682,6 +686,8 @@ def facebook_callback(request):
                     'description': None
                 }
                 WishList.create(payload)
+
+                payload = {'token': facebook_access_token}
                 result = Customer.authenticate_by_3rd_party('facebook', payload)
                 Customer.update(result.data['customer'], {'groups': ['ZZ9HGQBGPLTA']})
             return result
