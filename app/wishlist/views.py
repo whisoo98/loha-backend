@@ -32,18 +32,26 @@ class ProductWishList(APIView):
             while True:
                 WishList = Clayful.WishList
                 options = {'customer': request.headers.get('Custom-Token')}
-                result = WishList.list_for_me(options)
-                query = {
-                    'limit': 120,
-                    'page': request.GET.get('page', i)
-                }
-                options['query'] = query
-                res_temp = WishList.list_products_for_me(result.data[0]['_id'], options).data
-                if len(res_temp) == 0:
-                    break
+                wish_info = WishList.list_for_me(options)
+                if wish_info.data:
+                    query = {
+                        'limit': 120,
+                        'page': request.GET.get('page', i)
+                    }
+                    options['query'] = query
+                    res_temp = WishList.list_products_for_me(wish_info.data[0]['_id'], options).data
+                    if len(res_temp) == 0:
+                        break
+                    else:
+                        res += res_temp
+                        i += 1
                 else:
-                    res += res_temp
-                    i += 1
+                    payload = {
+                        'customer': result.data['_id'],
+                        'name': 'product_wishlist',
+                        'description': None
+                    }
+                    WishList.create(payload)
 
             # 프론트가 요구한 format
             for product in res:
