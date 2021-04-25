@@ -1077,14 +1077,15 @@ class RefundBankInfo(APIView):
             }
             return Response(contents)
         except NoBankInfoException:
-            contents = {
-                'success': {
-                    'message': '해당 유저의 환불계좌 정보가 존재하지 않습니다.'}
-            }
-            return Response(contents, status=status.HTTP_204_NO_CONTENT)
+            return Response({})
         except Exception as e:
-            print(e)
-            return Response("여기")
+            contents = {
+                'error': {
+                    'message': '알 수 없는 오류가 발생했습니다.',
+                    'detail': e
+                }
+            }
+            return Response(contents, status=status.HTTP_400_BAD_REQUEST)
 
     @require_login
     def post(self, request, result):
