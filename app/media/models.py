@@ -13,7 +13,7 @@ class MediaStream(models.Model):
     # About Media
     vod_id = models.AutoField(primary_key=True)
     title = models.CharField(max_length=200)
-    notice = models.CharField(max_length=200,null=True)
+    notice = models.TextField(null=True)
     description = models.TextField(null=True)
     influencer_name = models.CharField(max_length=200)
     influencer_id = models.CharField(max_length=200)
