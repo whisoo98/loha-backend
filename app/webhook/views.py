@@ -39,14 +39,15 @@ def Refund(request):
         Order = Clayful.Order
 
         send_log(f"환불 Request :\n {str(pprint.pformat(request.data))}")
+        send_log(f"Order_id: {order_id}")
+        send_log(f"Refund_id: {refund_id}")
 
         # 1. 환불 재고 동기화
         Order.restock_all_refund_items(order_id, refund_id, {})
-
         # 2. 환불 과정
         res_clayful = Order.get(order_id, {}).data
+        send_log(f"환불 Result: \n{str(pprint.pformat(res_clayful))}")
         refunds = res_clayful['refunds']
-        send_log(f"환불 Result: \n{str(pprint.pformat(refunds))}")
         is_vbank = False
         for refund in refunds:
             if refund['_id'] == refund_id:
@@ -80,14 +81,17 @@ def Refund(request):
     except ClayfulException as e:
         print(e.code)
         print(e.message)
+        send_log(f"{e.code} {e.message}")
         return Response(e.code + ' ' + e.message, status=e.status)
     except Iamport.ResponseError as e:
         print(e.code)
         print(e.message)
+        send_log(f"{e.code} {e.message}")
         return Response(e.code + ' ' + e.message)
     except Iamport.HttpError as http_error:
         print(http_error.code)
         print(http_error.reason)
+        send_log(f"{http_error.code} {http_error.reason}")
         return Response("에러 발생")
 
 
