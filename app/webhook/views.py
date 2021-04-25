@@ -49,7 +49,7 @@ def Refund(request):
         for refund in refunds:
             if refund['_id'] == refund_id:
                 refund_target = refund
-                if len(res_clayful['transactions']['vbanks']) > 0:
+                if len(res_clayful['transactions'][0]['vbanks']) > 0:
                     is_vbank = True
                 break
 
