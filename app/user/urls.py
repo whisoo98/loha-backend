@@ -32,4 +32,5 @@ urlpatterns = [
     path('push_agree/', PushAgree.as_view()),
     path('upload_token/', UploadToken.as_view()),
     path('delete_token/', DeleteToken.as_view()),
+    path('refund_bank/', RefundBankInfo.as_view()),
 ]

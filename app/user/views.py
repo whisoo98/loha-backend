@@ -1051,3 +1051,60 @@ class DeleteToken(APIView):
                 }
             }
             return Response(contents, status=status.HTTP_400_BAD_REQUEST)
+
+
+class RefundBankInfo(APIView):
+    @require_login
+    def get(self, request, result):
+        try:
+            res = result.data
+            print(type(res['meta']))
+            if "refund_holder" not in res['meta'].keys():
+                raise ObjectDoesNotExist
+            if "refund_bank" not in res['meta'].keys():
+                raise ObjectDoesNotExist
+            if "refund_account" not in res['meta'].keys():
+                raise ObjectDoesNotExist
+            contents = {
+                'refund_holder': res['meta']['refund_holder'],
+                'refund_bank': res['meta']['refund_bank'],
+                'refund_account': res['meta']['refund_account'],
+            }
+            return Response(contents)
+        except ObjectDoesNotExist:
+            contents = {
+                'error': {
+                    'message': '해당 유저의 환불계좌 정보가 존재하지 않습니다.'}
+            }
+            return Response(contents, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            print(e)
+            return Response("여기")
+
+    @require_login
+    def post(self, request, result):
+        try:
+            Customer = Clayful.Customer
+
+            payload = {
+                'meta': {
+                    'refund_holder': request.data['refund_holder'],
+                    'refund_bank': request.data['refund_bank'],
+                    'refund_account': request.data['refund_account'],
+                }
+            }
+            options = {'customer': request.headers.get('Custom-Token')}
+
+            Customer.update_me(payload, options)
+
+            contents = payload['meta']
+            return Response(contents)
+
+        except Exception as e:
+            print(e)
+            content = {
+                'error': {
+                    'message': '정보를 모두 입력해 주세요.'
+                }
+            }
+            return Response(content, status=status.HTTP_400_BAD_REQUEST)

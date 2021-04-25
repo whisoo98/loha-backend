@@ -38,44 +38,45 @@ def Refund(request):
         refund_id = request.data['params']['refundId']
         Order = Clayful.Order
 
-        send_log(f"환불 Request :\n {str(pprint.pformat(request.data))}")
-        send_log(f"Order_id: {order_id}")
-        send_log(f"Refund_id: {refund_id}")
-
         # 1. 환불 재고 동기화
         Order.restock_all_refund_items(order_id, refund_id, {})
         # 2. 환불 과정
         res_clayful = Order.get(order_id, {}).data
-        send_log(f"환불 Result: \n{str(pprint.pformat(res_clayful))}")
         refunds = res_clayful['refunds']
+
         is_vbank = False
+        refund_target = {}
         for refund in refunds:
             if refund['_id'] == refund_id:
-                if len(res_clayful['transactions']['vbanks'] > 0):
+                refund_target = refund
+                if len(res_clayful['transactions']['vbanks']) > 0:
                     is_vbank = True
-                    vbanks = res_clayful['transactions']['vbanks']
                 break
 
         # NOTICE: amount는 환불 규정에 따라서 다를 수 있음
-        amount = refunds['total']['price']['withTax']['raw']
-        reason = refunds['reason']
+        if refund_target:
+            amount = refund_target['total']['price']['withTax']['raw']
+            reason = refund_target['reason']
+        else:
+            raise Exception
 
         # 3. 1,2를 기반으로 아임포트에 환불요청
-        info = {
-            'amount': amount,  # 0이면 전액 취소
-            'reason': reason
-            # 'tax_free': payload.get('tax_free'),  # 0이면 0원 처리
-            # 'checksum': payload.get('checksum'),
-            ## NOTICE: 가상계좌 환불 미구현
-            # 'refund_holder': payload.get('refund_holder'),
-            # 'refund_bank': payload.get('refund_bank'),
-            # 'refund_account': payload.get('refund_account'),
-        }
-        if is_vbank is True:
-            info['refund_holder'] = vbanks['holder']
-            info['refund_bank'] = vbanks['code']
-            info['refund_account'] = vbanks['number']
-        res_imp = iamport.cancel(reason=reason, merchant_uid=order_id, kwargs=info)
+        # refund_holder: 환불 수령계좌 예금주, refund_bank: 환불 수령계좌 은행코드 , refund_account: 환불 수령계좌 번호
+        if is_vbank:
+            # 유저의 가상계좌 정보 받아오기
+            Customer = Clayful.Customer
+            options = {
+            }
+            user_id = res_clayful['customer']['_id']
+            result = Customer.get(user_id, options).data
+            refund_holder = result['meta']['refund_holder']
+            refund_bank = result['meta']['refund_bank']
+            refund_account = result['meta']['refund_account']
+
+            res_imp = iamport.cancel(reason=reason, merchant_uid=order_id, amount=amount, refund_holder=refund_holder,
+                                     refund_bank=refund_bank, refund_account=refund_account)
+        else:
+            res_imp = iamport.cancel(reason=reason, merchant_uid=order_id, amount=amount)
         # 환불처리문자
         return Response(res_imp)
     except ClayfulException as e:
