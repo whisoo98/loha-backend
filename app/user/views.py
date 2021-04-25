@@ -500,7 +500,7 @@ def kakao_callback(request):
             if result.data['action'] == 'register':
                 WishList = Clayful.WishList
                 payload = {
-                    'customer': result.data['_id'],
+                    'customer': result.data['customer'],
                     'name': 'product_wishlist',
                     'description': None
                 }
@@ -594,7 +594,7 @@ def naver_callback(request):
             if result.data['action'] == 'register':
                 WishList = Clayful.WishList
                 payload = {
-                    'customer': result.data['_id'],
+                    'customer': result.data['customer'],
                     'name': 'product_wishlist',
                     'description': None
                 }
@@ -677,7 +677,7 @@ def facebook_callback(request):
             if result.data['action'] == 'register':
                 WishList = Clayful.WishList
                 payload = {
-                    'customer': result.data['_id'],
+                    'customer': result.data['customer'],
                     'name': 'product_wishlist',
                     'description': None
                 }
