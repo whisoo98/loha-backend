@@ -108,8 +108,10 @@ def alarm_by_user_id(user_ids, info):
                 data={"Live": str(info['vod_id'])},
                 token=token,
             )
-            response.append(messaging.send(message))
-        print('{0} messages were sent successfully'.format(len(response)))
+            try:
+                messaging.send(message)
+            except Exception:
+                continue
 
     except FirebaseError as e:
         print(e.message)

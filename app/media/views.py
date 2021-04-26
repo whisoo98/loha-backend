@@ -128,24 +128,6 @@ def start_live(request, result):
                     print('error')
                     continue
 
-            # 알람 날리기
-            vod_id = request.data['media_id']
-            influencer_id = result['_id']
-
-            vod_user_id = list(LiveAlarm.objects.filter(vod_id=vod_id).values_list('user_id', flat=True))
-            follow_user_id = list(
-                InfluencerAlarm.objects.filter(influencer_id=influencer_id).values_list('user_id', flat=True))
-
-            user_id_union = set(vod_user_id) | set(follow_user_id)
-
-            info = {
-                'influencer': result['alias'],
-                'time': str(now_stream.started_at.hour) + ':' + str(now_stream.started_at.minute),
-                'vod_id': vod_id,
-                'image': MediaStream.objects.get(vod_id=vod_id).product_thumbnail
-            }
-            alarm_by_user_id(user_id_union, info)
-
             contents = {
                 "success": {
                     "message": "방송이 시작되었습니다.",
@@ -695,6 +677,49 @@ def add_view(request):
             'error': {
                 'message': '알 수 없는 오류',
                 'detail': e
+            }
+        }
+        return Response(contents, status=status.HTTP_400_BAD_REQUEST)
+
+
+# 라이브 알림 보내기
+@api_view(['POST'])
+@is_influencer
+def live_alarm(request, result):
+    try:
+        # 알람 날리기
+        now_stream = MediaStream.objects.get(
+            vod_id=request.data['media_id'], influencer_id=result['_id'])
+
+        vod_id = request.data['media_id']
+        influencer_id = result['_id']
+
+        vod_user_id = list(LiveAlarm.objects.filter(vod_id=vod_id).values_list('user_id', flat=True))
+        follow_user_id = list(
+            InfluencerAlarm.objects.filter(influencer_id=influencer_id).values_list('user_id', flat=True))
+
+        user_id_union = set(vod_user_id) | set(follow_user_id)
+
+        info = {
+            'influencer': result['alias'],
+            'time': str(now_stream.started_at.hour) + ':' + str(now_stream.started_at.minute),
+            'vod_id': vod_id,
+            'image': MediaStream.objects.get(vod_id=vod_id).product_thumbnail
+        }
+
+        alarm_by_user_id(user_id_union, info)
+
+        contents = {
+            "success": {
+                "message": "푸시 알림을 보냈습니다.",
+            }
+        }
+        return Response(contents, status=status.HTTP_202_ACCEPTED)
+    except Exception as e:
+        contents = {
+            "error": {
+                "message": "잘못된 요청입니다.",
+                "detail": e.message,
             }
         }
         return Response(contents, status=status.HTTP_400_BAD_REQUEST)

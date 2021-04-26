@@ -16,5 +16,6 @@ urlpatterns = [
     path('get/', get_live),
     path('hot/', get_hot_live),
     path('related/', get_related),
+    path('live_alarm/', live_alarm),
 ]
 
