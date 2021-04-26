@@ -183,7 +183,7 @@ def pay_info(request):
     try:
         iamport = Iamport(imp_key=getattr(settings, 'IAMPORT_REST_KEY', None),
                           imp_secret=getattr(settings, 'IAMPORT_SECRET_REST_KEY', None))
-        pay = iamport.find_by_merchant_uid(request.data['order_id'])
+        pay = iamport.find_by_merchant_uid(request.GET['order_id'])
         print(pay)
         return Response(pay, status=status.HTTP_200_OK)
     except Iamport.HttpError as e:
