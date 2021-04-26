@@ -17,8 +17,6 @@ from iamport import *
 from iamport.client import *
 import json, pprint, datetime
 from user.views import require_login
-from .models import MicroPayInfo
-from .serializers import MicroPayInfoSerializer
 
 
 @api_view(['GET', 'POST'])
