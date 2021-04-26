@@ -702,7 +702,7 @@ def live_alarm(request, result):
 
         info = {
             'influencer': result['alias'],
-            'time': str(now_stream.started_at.hour) + ':' + str(now_stream.started_at.minute),
+            'title' : now_stream.title,
             'vod_id': vod_id,
             'image': MediaStream.objects.get(vod_id=vod_id).product_thumbnail
         }

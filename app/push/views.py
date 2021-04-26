@@ -101,8 +101,8 @@ def alarm_by_user_id(user_ids, info):
         for token in set(registration_tokens):
             message = messaging.Message(
                 notification=messaging.Notification(
-                    title='Live 알림!',
-                    body='Influencer {}님의 방송이 {}에 시작됩니다!'.format(info['influencer'], info['time']),
+                    title=f'{info["influencer"]}님의 방송이 지금 시작됩니다!',
+                    body=info['title'],
                     image=str(info['image'])
                 ),
                 data={"Live": str(info['vod_id'])},
