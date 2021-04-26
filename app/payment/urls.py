@@ -20,4 +20,5 @@ from .views import *
 urlpatterns = [
     path('verify/',verify_payment),
     path('test/',test),
+    path('pay_info/', pay_info),
 ]
