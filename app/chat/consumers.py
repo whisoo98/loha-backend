@@ -2,7 +2,6 @@ from channels.generic.websocket import AsyncWebsocketConsumer, WebsocketConsumer
 from channels.exceptions import StopConsumer
 from asgiref.sync import async_to_sync
 import json
-import websockets
 import pprint
 from clayful import Clayful
 from clayful import ClayfulException
@@ -21,18 +20,19 @@ class ChatConsumer(AsyncWebsocketConsumer):
         try:
             now_room = await self.check_room()
             # add count of vod
-            now_room.vod_view_count += 1
+            now_room.vod_view_count+=1
             await self.add_count(now_room)
             await self.accept()
         except:
             await self.close()
+
 
     # FOR GOING OUT
     async def disconnect(self, close_code):
         try:
             # delete in RoomUser
             await self.delete_user()
-            message = f'{self.username}님이 나가셨습니다.'
+            message= f'{self.username}님이 나가셨습니다.'
             await self.channel_layer.group_send(
                 self.room_group_name,
                 {
@@ -88,20 +88,22 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 self.room_group_name,
                 {
                     'type': 'chat_message',
-                    'username': self.username,
+                    'username' : self.username,
                     'message': message
                 }
             )
 
+
     async def entry_message(self, event):
         # print(event)
         message = event['message']
-
+        
         # 인원수 증감
         if event['leave'] == 1:
             self.count -= 1
         elif self.id != event['id']:
             self.count += 1
+
 
         # Send message to WebSocket
         await self.send(text_data=json.dumps({
@@ -132,7 +134,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
     def check_room(self):
-        return MediaStream.objects.get(vod_id=self.room_name, status='live')
+        return MediaStream.objects.get(vod_id = self.room_name, status='live')
 
     @database_sync_to_async
     def make_new_user(self):
@@ -142,14 +144,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         )
         return now_user.id
 
+
     @database_sync_to_async
     def delete_user(self):
         return RoomUser.objects.get(pk=self.id).delete()
-
-
-async def send_end(vod_id):
-    async with websockets.connect(f"wss://byeolshowco.com/ws/chat/{vod_id}/") as websocket:
-        await websocket.send(
-            json.dumps({
-                'stat': 'end',
-            }))
