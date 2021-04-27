@@ -278,7 +278,9 @@ def update_info(request, result):
         payload = {
             'meta': {
                 'description': request.data['description'],
-                'tag': request.data['tag']
+                'tag': request.data['tag'],
+                'youtube': request.data['youtube'],
+                'instagram': request.data['instagram'],
             }
         }
         Customer.update_me(payload, options)
@@ -326,11 +328,21 @@ def get_info(request):
         else:
             res['live_vod'] = is_live[0].vod_id
 
+        print(res['meta'])
         # 프론트가 보기 편한 format으로 변경
         res['Follower'] = res['meta']['Follower']['raw']
         res['description'] = res['meta']['description']
         res['tag'] = res['meta']['tag']
         res['thumbnail_url'] = res['meta']['thumbnail_url']
+        if 'youtube' in res['meta'].keys():
+            res['youtube'] = res['meta']['youtube']
+        else:
+            res['youtube'] = ""
+        if 'instagram' in res['meta'].keys():
+            res['instagram'] = res['meta']['instagram']
+        else:
+            res['instagram'] = ""
+
         if not res['avatar']:
             pass
         else:
