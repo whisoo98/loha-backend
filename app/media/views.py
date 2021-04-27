@@ -11,6 +11,7 @@ from push.views import *
 from push import models
 from chat.models import *
 import hmac
+import asyncio
 import hashlib
 from django.db.models import Q
 from .serializers import *
@@ -25,6 +26,7 @@ import random
 import pprint
 import requests
 import datetime
+from chat.consumers import send_end
 
 import firebase_admin
 from firebase_admin import credentials, firestore, messaging, datetime
@@ -285,6 +287,7 @@ def end_vod(request, result):
                 'message': '방송 종료'
             }
         }
+        asyncio.get_event_loop().run_until_complete(send_end(request.data['media_id']))
         return Response(contents, status=status.HTTP_202_ACCEPTED)
     except ObjectDoesNotExist:
         contents = {
@@ -545,6 +548,8 @@ def mux_callback(request):
                 send_log("complete로 처리 완료!")
                 now_stream.status = 'completed'
             now_stream.save()
+
+            asyncio.get_event_loop().run_until_complete(send_end(request.data['media_id']))
 
             # TODO 알람 삭제
             # unset_alarm_to_live(vod_id=now_stream.void_id)

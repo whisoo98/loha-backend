@@ -23,6 +23,7 @@ RUN pip install firebase-admin
 RUN pip install -U Daphne
 RUN pip install coolsms_python_sdk
 RUN pip install python_telegram_bot
+RUN pip install websockets
 # redis
 # pip install pypiwin32
 
