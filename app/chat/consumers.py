@@ -80,15 +80,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     'message': message
                 }
             )
-        elif text_data_json['stat'] == 'end':
-            await self.channel_layer.group_send(
-                self.room_group_name,
-                {
-                    'type': 'live_end',
-                    'username': self.username,
-                    'message': "방송이 종료되었습니다."
-                }
-            )
         else:
             message = text_data_json['message']
 
@@ -129,14 +120,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
             'stat': 'chat',
             'message': message,
             'username': username
-        }))
-
-    async def live_end(self, event):
-        # Send message to WebSocket
-        await self.send(text_data=json.dumps({
-            'stat': 'end',
-            'message': "방송이 종료되었습니다.",
-            'username': "Byeolshow",
         }))
 
     @database_sync_to_async
