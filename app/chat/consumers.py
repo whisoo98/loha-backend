@@ -81,11 +81,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 }
             )
         elif text_data_json['stat'] == 'end':
-            await self.channel_layer.group_add(
-                self.room_group_name,
-                self.channel_name
-            )
-
             await self.channel_layer.group_send(
                 self.room_group_name,
                 {
