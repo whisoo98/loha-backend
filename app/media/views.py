@@ -26,6 +26,10 @@ import pprint
 import requests
 import datetime
 
+import firebase_admin
+from firebase_admin import credentials, firestore, messaging, datetime
+from firebase_admin.exceptions import FirebaseError
+
 
 class NoStreamKeyError(Exception):
     def __str__(self):
@@ -710,24 +714,7 @@ def live_alarm(request, result):
             'image': MediaStream.objects.get(vod_id=vod_id).product_thumbnail
         }
 
-        registration_tokens = []
-        for user_id in user_id_union:
-            registration_tokens += list(
-                UserToken.objects.filter(user_id=user_id).values_list('firebase_token', flat=True))
-        for token in set(registration_tokens):
-            message = messaging.Message(
-                notification=messaging.Notification(
-                    title=f'{info["influencer"]}님의 방송이 지금 시작됩니다!',
-                    body=info['title'],
-                    image=str(info['image'])
-                ),
-                data={"Live": str(info['vod_id'])},
-                token=token,
-            )
-            try:
-                messaging.send(message)
-            except Exception:
-                continue
+        alarm_by_user_id(user_id_union, info)
 
         contents = {
             "success": {
