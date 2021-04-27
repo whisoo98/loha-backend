@@ -89,32 +89,3 @@ def alarm_by_live(id, info):
 
     except Exception as e:
         print("알 수 없는 오류가 발생하였습니다.")
-
-
-def alarm_by_user_id(user_ids, info):
-    try:
-        registration_tokens = []
-        for user_id in user_ids:
-            registration_tokens += list(
-                UserToken.objects.filter(user_id=user_id).values_list('firebase_token', flat=True))
-        response = []
-        for token in set(registration_tokens):
-            message = messaging.Message(
-                notification=messaging.Notification(
-                    title=f'{info["influencer"]}님의 방송이 지금 시작됩니다!',
-                    body=info['title'],
-                    image=str(info['image'])
-                ),
-                data={"Live": str(info['vod_id'])},
-                token=token,
-            )
-            try:
-                messaging.send(message)
-            except Exception:
-                continue
-
-    except FirebaseError as e:
-        print(e.message)
-
-    except Exception as e:
-        print(e)

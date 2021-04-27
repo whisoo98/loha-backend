@@ -583,6 +583,9 @@ class Alarm(APIView):
                 now_stream = MediaStream.objects.get(vod_id=Live_id)
                 now_stream.push_count -= 1
                 now_stream.save()
+                # 상품 라이브 알림에서 삭제
+                unset_alarm_to_live(request.data.get('_id'), result.data['_id'])
+
                 Customer.pull_from_metafield(result.data['_id'], 'Live_id', {'value': Live_id}, {})
                 content = {
                     'status': False,
@@ -591,7 +594,7 @@ class Alarm(APIView):
                 return Response(content, status=status.HTTP_202_ACCEPTED)
             # Live예약
 
-            ##토큰을 저장해야함
+            # 상품 라이브 알림에 추가
             set_alarm_to_live(request.data.get('_id'), result.data['_id'])
             now_stream = MediaStream.objects.get(vod_id=Live_id)
             now_stream.push_count += 1
@@ -698,16 +701,33 @@ def live_alarm(request, result):
         follow_user_id = list(
             InfluencerAlarm.objects.filter(influencer_id=influencer_id).values_list('user_id', flat=True))
 
-        user_id_union = set(vod_user_id) | set(follow_user_id)
+        user_id_union = set(vod_user_id + follow_user_id)
 
         info = {
             'influencer': result['alias'],
-            'title' : now_stream.title,
+            'title': now_stream.title,
             'vod_id': vod_id,
             'image': MediaStream.objects.get(vod_id=vod_id).product_thumbnail
         }
 
-        alarm_by_user_id(user_id_union, info)
+        registration_tokens = []
+        for user_id in user_id_union:
+            registration_tokens += list(
+                UserToken.objects.filter(user_id=user_id).values_list('firebase_token', flat=True))
+        for token in set(registration_tokens):
+            message = messaging.Message(
+                notification=messaging.Notification(
+                    title=f'{info["influencer"]}님의 방송이 지금 시작됩니다!',
+                    body=info['title'],
+                    image=str(info['image'])
+                ),
+                data={"Live": str(info['vod_id'])},
+                token=token,
+            )
+            try:
+                messaging.send(message)
+            except Exception:
+                continue
 
         contents = {
             "success": {
@@ -719,7 +739,7 @@ def live_alarm(request, result):
         contents = {
             "error": {
                 "message": "잘못된 요청입니다.",
-                "detail": e.message,
+                "detail": str(e),
             }
         }
         return Response(contents, status=status.HTTP_400_BAD_REQUEST)
