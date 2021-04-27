@@ -25,6 +25,8 @@ import random
 import pprint
 import requests
 import datetime
+import asyncio
+from chat.consumers import send_end
 
 import firebase_admin
 from firebase_admin import credentials, firestore, messaging, datetime
@@ -285,6 +287,7 @@ def end_vod(request, result):
                 'message': '방송 종료'
             }
         }
+        asyncio.get_event_loop().run_until_complete(send_end(request.data['media_id']))
         return Response(contents, status=status.HTTP_202_ACCEPTED)
     except ObjectDoesNotExist:
         contents = {
@@ -548,6 +551,7 @@ def mux_callback(request):
 
             # TODO 알람 삭제
             # unset_alarm_to_live(vod_id=now_stream.void_id)
+            asyncio.get_event_loop().run_until_complete(send_end(stream_id))
             return Response("completed")
         return Response("OK")
     except ObjectDoesNotExist:
