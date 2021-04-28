@@ -10,10 +10,12 @@ from channels.auth import login
 from .models import *
 from media.models import MediaStream
 from channels.db import database_sync_to_async
+from media.log_telegram import send_log
 
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
+        send_log("connect!")
         self.room_name = self.scope['url_route']['kwargs']['room_name']
         self.room_group_name = 'chat_%s' % self.room_name
 
@@ -29,6 +31,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     # FOR GOING OUT
     async def disconnect(self, close_code):
+        send_log("disconnect!")
         try:
             # delete in RoomUser
             await self.delete_user()
@@ -55,6 +58,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
     # Receive message from WebSocket
     async def receive(self, text_data=None, bytes_data=None):
         text_data_json = json.loads(text_data)
+        send_log(str(text_data_json))
         if text_data_json['stat'] == 'entry':
             self.username = text_data_json['username']
 
