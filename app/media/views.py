@@ -1,3 +1,6 @@
+import time
+
+import websockets
 from django.shortcuts import redirect
 from rest_framework.views import Response
 from rest_framework import status
@@ -278,6 +281,10 @@ def end_vod(request, result):
         now_stream = MediaStream.objects.get(
             vod_id=request.data['media_id'], influencer_id=result['_id'])
         if now_stream.status != 'completed':
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            loop.run_until_complete(send_end(str(request.data['media_id'])))
+
             now_stream.status = 'close'
         now_stream.finished_at = datetime.datetime.now()
         now_stream.save()
@@ -287,7 +294,6 @@ def end_vod(request, result):
                 'message': '방송 종료'
             }
         }
-        asyncio.get_event_loop().run_until_complete(send_end(request.data['media_id']))
         return Response(contents, status=status.HTTP_202_ACCEPTED)
     except ObjectDoesNotExist:
         contents = {
@@ -302,7 +308,7 @@ def end_vod(request, result):
         contents = {
             'error': {
                 'message': '알 수 없는 오류',
-                'detail': e
+                'detail': str(e)
             }
         }
         return Response(contents, status=status.HTTP_400_BAD_REQUEST)
@@ -545,6 +551,9 @@ def mux_callback(request):
             now_stream.mux_asset_playback_id = request.data['data']['playback_ids'][0]['id']
             now_stream.finished_at = datetime.datetime.now()
             if now_stream.status != 'completed':
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                loop.run_until_complete(send_end(str(request.data['media_id'])))
                 send_log("complete로 처리 완료!")
                 now_stream.status = 'completed'
             now_stream.save()
