@@ -10,12 +10,10 @@ from channels.auth import login
 from .models import *
 from media.models import MediaStream
 from channels.db import database_sync_to_async
-from media.log_telegram import send_log
 
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        send_log("connect!")
         self.room_name = self.scope['url_route']['kwargs']['room_name']
         self.room_group_name = 'chat_%s' % self.room_name
 
@@ -31,7 +29,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     # FOR GOING OUT
     async def disconnect(self, close_code):
-        send_log("disconnect!")
         try:
             # delete in RoomUser
             await self.delete_user()
@@ -58,7 +55,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
     # Receive message from WebSocket
     async def receive(self, text_data=None, bytes_data=None):
         text_data_json = json.loads(text_data)
-        send_log(str(text_data_json))
         if text_data_json['stat'] == 'entry':
             self.username = text_data_json['username']
 
@@ -112,7 +108,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def entry_message(self, event):
         # print(event)
         message = event['message']
-        send_log(f"entry_mesage {message}")
 
         # 인원수 증감
         if event['leave'] == 1:
@@ -131,7 +126,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
         # print(event)
         message = event['message']
         username = event['username']
-        send_log(f"chat_message {username}: {message}")
         # Send message to WebSocket
         await self.send(text_data=json.dumps({
             'stat': 'chat',
@@ -141,12 +135,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     async def live_end(self, event):
         message = event['message']
-        send_log(f"end {message}")
         # Send message to WebSocket
         await self.send(text_data=json.dumps({
-            'stat': 'entry',
+            'stat': 'end',
             'message': message,
-            'count': self.count,
             'username': "Byeolshow",
         }))
 
