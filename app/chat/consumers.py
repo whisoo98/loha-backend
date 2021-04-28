@@ -112,6 +112,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def entry_message(self, event):
         # print(event)
         message = event['message']
+        send_log(f"entry_mesage {message}")
 
         # 인원수 증감
         if event['leave'] == 1:
@@ -130,6 +131,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         # print(event)
         message = event['message']
         username = event['username']
+        send_log(f"chat_message {username}: {message}")
         # Send message to WebSocket
         await self.send(text_data=json.dumps({
             'stat': 'chat',
@@ -139,6 +141,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     async def live_end(self, event):
         message = event['message']
+        send_log(f"end {message}")
         # Send message to WebSocket
         await self.send(text_data=json.dumps({
             'stat': 'entry',
