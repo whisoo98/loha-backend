@@ -119,6 +119,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await self.send(text_data=json.dumps({
             'stat': 'entry',
             'message': message,
+            'count': self.count,
             'username': "Byeolshow",
         }))
 
