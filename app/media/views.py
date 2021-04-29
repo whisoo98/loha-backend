@@ -507,7 +507,7 @@ def get_related(request):
             except:
                 pass
 
-        medias = MediaStream.objects.filter(vod_id__in=related_vod).order_by('?')
+        medias = MediaStream.objects.filter(vod_id__in=related_vod, status="completed").order_by('?')
         if len(medias) > 10:
             medias = medias[:10]
 
