@@ -553,14 +553,13 @@ def mux_callback(request):
             if now_stream.status != 'completed':
                 loop = asyncio.new_event_loop()
                 asyncio.set_event_loop(loop)
-                loop.run_until_complete(send_end(str(request.data['media_id'])))
+                loop.run_until_complete(send_end(stream_id))
                 send_log("complete로 처리 완료!")
                 now_stream.status = 'completed'
             now_stream.save()
 
             # TODO 알람 삭제
             # unset_alarm_to_live(vod_id=now_stream.void_id)
-            asyncio.get_event_loop().run_until_complete(send_end(stream_id))
             return Response("completed")
         return Response("OK")
     except ObjectDoesNotExist:
