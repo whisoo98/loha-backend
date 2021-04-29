@@ -19,5 +19,6 @@ from .views import *
 urlpatterns = [
     path('find_id/', find_id),
     path('get_certificate/', get_certificate),
-    path('reset_password/',reset_password)
+    path('reset_password/', reset_password),
+    path('forgot_change/', forgot_change),
 ]

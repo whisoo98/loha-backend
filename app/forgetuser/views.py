@@ -93,7 +93,7 @@ def get_certificate(request):
             'query': {
                 'raw': True,
                 'userId': request.data.get('userId'),
-                'fields': 'userId,email,social,name,country'
+                'fields': '_id,userId,email,social,name,country'
             }
         }
 
@@ -116,9 +116,11 @@ def get_certificate(request):
             'expiresIn': 259200,
             'scope': 'reset-password'
         }
-
-        result = Customer.request_verification_email(payload, options)
-        return Response(result.data)
+        contents = {
+            'customer_id': result.data[0]['_id']
+        }
+        Customer.request_verification_email(payload, options)
+        return Response(contents, status=status.HTTP_202_ACCEPTED)
 
     except Exception as e:
 
@@ -127,7 +129,7 @@ def get_certificate(request):
         # print(e.code)
         contents = {
             "error": {
-                "message": e
+                "message": str(e)
             }
         }
         return Response(contents, status=status.HTTP_400_BAD_REQUEST)
@@ -145,8 +147,8 @@ def reset_password(request):
             'debug_language': 'ko',
         })
         Customer = Clayful.Customer
-        
-        #임의의 문자열로 비밀번호 변경
+
+        # 임의의 문자열로 비밀번호 변경
         tmp_password = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(10))
         payload = {
             'secret': request.GET.get('secret', None),
@@ -177,3 +179,49 @@ def reset_password(request):
         }
         return Response(contents, status=status.HTTP_400_BAD_REQUEST)
 
+
+# 이메일에서 비밀번호 변경시 넘어가는 링크
+@api_view(['POST'])
+def forgot_change(request):
+    try:
+        Clayful.config({
+            'client': getattr(settings, 'CLAYFUL_SECRET_KEY', None),
+            'language': 'ko',
+            'currency': 'KRW',
+            'time_zone': 'Asia/Seoul',
+            'debug_language': 'ko',
+        })
+        Customer = Clayful.Customer
+
+        # 임의의 문자열로 비밀번호 변경
+        secret = request.data['secret']
+        customer_id = request.data['customer_id']
+        change_password = request.data['password']
+        payload = {
+            'secret': secret,
+            'password': change_password
+        }
+        result = Customer.reset_password(customer_id, payload)
+
+        if result.data['reset']:
+            contents = {
+                "success": {
+                    "message": "비밀번호가 변경되었습니다."
+                }
+            }
+            return Response(contents, status=status.HTTP_202_ACCEPTED)
+
+        contents = {
+            "error": {
+                "message": "알 수 없는 오류."
+            }
+        }
+        return Response(contents, status=status.HTTP_400_BAD_REQUEST)
+
+    except Exception as e:
+        contents = {
+            "error": {
+                "message": str(e)
+            }
+        }
+        return Response(contents, status=status.HTTP_400_BAD_REQUEST)
