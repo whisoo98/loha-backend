@@ -1,3 +1,6 @@
+import time
+
+import websockets
 from django.shortcuts import redirect
 from rest_framework.views import Response
 from rest_framework import status
@@ -25,6 +28,8 @@ import random
 import pprint
 import requests
 import datetime
+import asyncio
+from chat.consumers import send_end
 
 import firebase_admin
 from firebase_admin import credentials, firestore, messaging, datetime
@@ -276,6 +281,10 @@ def end_vod(request, result):
         now_stream = MediaStream.objects.get(
             vod_id=request.data['media_id'], influencer_id=result['_id'])
         if now_stream.status != 'completed':
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            loop.run_until_complete(send_end(str(request.data['media_id'])))
+
             now_stream.status = 'close'
         now_stream.finished_at = datetime.datetime.now()
         now_stream.save()
@@ -299,7 +308,7 @@ def end_vod(request, result):
         contents = {
             'error': {
                 'message': '알 수 없는 오류',
-                'detail': e
+                'detail': str(e)
             }
         }
         return Response(contents, status=status.HTTP_400_BAD_REQUEST)
@@ -542,6 +551,9 @@ def mux_callback(request):
             now_stream.mux_asset_playback_id = request.data['data']['playback_ids'][0]['id']
             now_stream.finished_at = datetime.datetime.now()
             if now_stream.status != 'completed':
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                loop.run_until_complete(send_end(now_stream.vod_id))
                 send_log("complete로 처리 완료!")
                 now_stream.status = 'completed'
             now_stream.save()
