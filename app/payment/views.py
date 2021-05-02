@@ -1,3 +1,5 @@
+import time
+
 from django.shortcuts import render, redirect
 from django.http.response import HttpResponse, JsonResponse
 from django.utils.decorators import method_decorator
@@ -48,12 +50,13 @@ def verify_payment(request):
             'query': {}
         }
         result = Order.get(merchant_uid, options).data
+        print(pprint.pformat(result))
         amount_to_be_paid = result['total']['price']['original']['raw']
 
         sms_key = getattr(settings, 'COOLSMS_API_KEY', None)
         sms_secret = getattr(settings, 'COOLSMS_API_SECRET', None)
 
-        if amount_paid == amount_to_be_paid:  # 결제 금액 일치
+        if int(amount_paid) == int(amount):  # 결제 금액 일치
             if status == 'ready':  # 가상계좌 발급
 
                 # 가상계좌 발급 안내 알람 발송 - 문자
@@ -83,14 +86,21 @@ def verify_payment(request):
                     'status': 'vbankIssued',
                     'message': '가상계좌 발급 성공',
                 }
-
-
             elif status == 'paid':
                 content = {
                     'status': 'success',
                     'message': '결제 성공',
                 }
         else:
+            iamport.cancel(reason="결제금액이 일치하지 않습니다.", merchant_uid=merchant_uid)
+
+            # Order = Clayful.Order
+            # payload = {
+            #     'by': 'store',
+            #     'reason': "결제금액이 일치하지 않습니다."
+            # }
+            # Order.cancel(merchant_uid, payload)
+            #
             content = {
                 'status': 'fail',
                 'message': '결제 금익 불일치'
