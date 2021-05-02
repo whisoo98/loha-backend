@@ -18,7 +18,7 @@ from django.contrib import admin
 from django.urls import path
 from .views import *
 
-
 urlpatterns = [
-    path('',catalog_list),
+    path('', catalog_list),
+    path('<str:catalog_id>/', Catalog.as_view()),
 ]
