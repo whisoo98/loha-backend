@@ -1,5 +1,3 @@
-import time
-
 from django.shortcuts import render, redirect
 from django.http.response import HttpResponse, JsonResponse
 from django.utils.decorators import method_decorator
@@ -94,13 +92,6 @@ def verify_payment(request):
         else:
             iamport.cancel(reason="결제금액이 일치하지 않습니다.", merchant_uid=merchant_uid)
 
-            # Order = Clayful.Order
-            # payload = {
-            #     'by': 'store',
-            #     'reason': "결제금액이 일치하지 않습니다."
-            # }
-            # Order.cancel(merchant_uid, payload)
-            #
             content = {
                 'status': 'fail',
                 'message': '결제 금익 불일치'
