@@ -1,4 +1,4 @@
-from django.shortcuts import render,redirect
+from django.shortcuts import render, redirect
 from django.views import View
 from django.http import JsonResponse, HttpResponse
 from django.conf import settings
@@ -6,10 +6,9 @@ from django.utils.decorators import method_decorator
 from rest_framework import request, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.decorators import api_view,parser_classes
+from rest_framework.decorators import api_view, parser_classes
 from rest_framework.parsers import JSONParser
 
-from coupon import models
 from user.views import require_login
 
 from clayful import Clayful, ClayfulException
@@ -18,6 +17,7 @@ import json
 import requests
 import pprint
 import datetime
+
 
 @api_view(['GET'])
 def manager_coupon_list(request):
@@ -34,20 +34,21 @@ def manager_coupon_list(request):
 
         options = {
             'query': {
-                'limit' : 120,
-                'page':request.GET.get('page',1)
+                'limit': 120,
+                'page': request.GET.get('page', 1)
             },
         }
         result = CCoupon.list(options)
         options = {
-            'query':{}
+            'query': {}
         }
         headers = result.headers
         data = result.data
         for coupon in data:
             if coupon['expiresAt'] is not None:
-                coupon['expiresAt']=coupon['expiresAt']['raw']
-                if datetime.datetime.strptime(coupon['expiresAt'],'%Y-%m-%dT%H:%M:%S.%fZ')<datetime.datetime.utcnow():
+                coupon['expiresAt'] = coupon['expiresAt']['raw']
+                if datetime.datetime.strptime(coupon['expiresAt'],
+                                              '%Y-%m-%dT%H:%M:%S.%fZ') < datetime.datetime.utcnow():
                     data.remove(coupon)
                     continue
             for discount in coupon['discount'].keys():
@@ -60,33 +61,42 @@ def manager_coupon_list(request):
                 if coupon['price'][price] is not None:
                     coupon['price'][price] = coupon['price'][price]['raw']
 
-
-            coupon['createdAt']=coupon['createdAt']['raw']
-            coupon['updatedAt']=coupon['updatedAt']['raw']
+            coupon['createdAt'] = coupon['createdAt']['raw']
+            coupon['updatedAt'] = coupon['updatedAt']['raw']
             coupon['Issued'] = False
 
-        Customer = Clayful.Customer
         if request.headers.get('Custom-Token') is not None:
-            result = Customer.get_me({'customer': request.headers['Custom-Token'], 'query': {}})
-            coupon_list = list(models.Coupon.objects.filter(user_id=result.data['_id']).all())
+            Customer = Clayful.Customer
+
+            options = {
+                'customer': request.headers.get('Custom-Token'),
+                'query': {
+                    'limit': 120,
+                    'fields': "_id"
+                },
+            }
+            result = Customer.list_coupons_for_me(options)
+            coupon_list = []
+            for customer_has in result.data:
+                coupon_list.append(customer_has["_id"])
+            print(coupon_list)
+
             for coupon in data:
                 target = coupon['_id']
-                for coupon_ele in coupon_list:
-                    if target == coupon_ele.coupon_id:
-                        coupon['Issued']=True
+                for coupon_id in coupon_list:
+                    if target == coupon_id:
+                        coupon['Issued'] = True
 
         return Response(data, status=status.HTTP_200_OK)
 
     except ClayfulException as e:
         print(e.code)
         print(e.message)
-        return Response(e.code+' ' +e.message, status=e.status)
+        return Response(e.code + ' ' + e.message, status=e.status)
 
     except Exception as e:
         print(e)
         return Response("알 수 없는 예외가 발생하였습니다.", status=status.HTTP_400_BAD_REQUEST)
-
-
 
 
 class Coupon(APIView):
@@ -106,12 +116,9 @@ class Coupon(APIView):
             Customer = Clayful.Customer
             customer_id = result.data['_id']
             payload = (request.data['payload'])
-            coupon_id = payload['coupon']
             options = {
             }
-            result = Customer.add_coupon(customer_id, payload, options) #고객에게 쿠폰 발급
-
-            models.Coupon.objects.create(user_id= customer_id,coupon_id=coupon_id)
+            result = Customer.add_coupon(customer_id, payload, options)  # 고객에게 쿠폰 발급
 
             return Response(result.data, status=status.HTTP_200_OK)
 
@@ -135,9 +142,9 @@ class Coupon(APIView):
                 },
             }
 
-            options['query']['limit']=120
-            #options['query']['limit']=3
-            options['query']['page']=request.GET.get('page',1)
+            options['query']['limit'] = 120
+            # options['query']['limit']=3
+            options['query']['page'] = request.GET.get('page', 1)
 
             result = Customer.list_coupons_for_me(options)
 
@@ -147,11 +154,12 @@ class Coupon(APIView):
             for coupon in data:
                 if coupon['expiresAt'] is not None:
                     coupon['expiresAt'] = coupon['expiresAt']['raw']
-                    if datetime.datetime.strptime(coupon['expiresAt'],'%Y-%m-%dT%H:%M:%S.%fZ')<datetime.datetime.utcnow():
+                    if datetime.datetime.strptime(coupon['expiresAt'],
+                                                  '%Y-%m-%dT%H:%M:%S.%fZ') < datetime.datetime.utcnow():
                         options = {
                             'customer': request.headers['Custom-Token'],
                         }
-                        Customer.delete_coupon_for_me(coupon['_id'],options)
+                        Customer.delete_coupon_for_me(coupon['_id'], options)
                         continue
 
             return Response(data, status=status.HTTP_200_OK)
@@ -175,10 +183,10 @@ class Coupon(APIView):
 
                 },
             }
-            
+
             for coupon_id in coupon_ids:
                 Customer.delete_coupon_for_me(coupon_id, options)
-                
+
             return Response("총 {}개 삭제되었습니다".format(len(coupon_ids)), status=status.HTTP_200_OK)
 
         except ClayfulException as e:
