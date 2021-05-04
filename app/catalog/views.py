@@ -43,9 +43,14 @@ def catalog_list(request):
 
         headers = result.headers
         data = result.data
+        # 별쇼 특별전은 카탈로그에 띄우지 않기
+
         for catalog in data:
-            catalog['createdAt'] = catalog['createdAt']['raw']
-            catalog['updatedAt'] = catalog['updatedAt']['raw']
+            if catalog['title'] == "별쇼 특별전":
+                data.remove(catalog)
+            else:
+                catalog['createdAt'] = catalog['createdAt']['raw']
+                catalog['updatedAt'] = catalog['updatedAt']['raw']
             '''
             if catalog['meta']['DeletedAt'] is not None:
                 Due = catalog['meta']['DeletedAt']=catalog['meta']['DeletedAt']['raw']
