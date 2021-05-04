@@ -1080,30 +1080,22 @@ class DeleteToken(APIView):
             return Response(contents, status=status.HTTP_400_BAD_REQUEST)
 
 
-class NoBankInfoException(Exception):
-    def __str__(self):
-        return "환불 계좌 정보가 존재하지 않습니다."
-
-
 class RefundBankInfo(APIView):
     @require_login
     def get(self, request, result):
         try:
             res = result.data
-            print(type(res['meta']))
             contents = {
                 'refund_holder': res['meta'].get('refund_holder', None),
                 'refund_bank': res['meta'].get('refund_bank', None),
                 'refund_account': res['meta'].get('refund_account', None)
             }
             return Response(contents)
-        except NoBankInfoException:
-            return Response({})
         except Exception as e:
             contents = {
                 'error': {
                     'message': '알 수 없는 오류가 발생했습니다.',
-                    'detail': e
+                    'detail': str(e)
                 }
             }
             return Response(contents, status=status.HTTP_400_BAD_REQUEST)
@@ -1128,7 +1120,6 @@ class RefundBankInfo(APIView):
             return Response(contents)
 
         except Exception as e:
-            print(e)
             content = {
                 'error': {
                     'message': '정보를 모두 입력해 주세요.'
