@@ -77,39 +77,40 @@ class Catalog(APIView):
     def get(self, request, catalog_id):
         try:
             Catalog = Clayful.Catalog
-
             options = {
                 'query': {
                     'fields': 'meta.ids'
                 }
             }
-
             result = Catalog.get(catalog_id, options).data
-
             collection_ids = result['meta']['ids']
 
-            options = {
-                'query': {
-                    'raw': True,
-                    'fields': 'meta',
-                    'collection': ",".join(collection_ids),
-                    'limit': 120,
+            my_vod = []
+            for collection_id in collection_ids:
+                options = {
+                    'query': {
+                        'raw': True,
+                        'fields': 'meta,name',
+                        'collection': collection_id,
+                        'limit': 120,
+                    }
                 }
-            }
-            Product = Clayful.Product
-            result = Product.list(options).data
-
-            print(collection_ids)
-
-            related_vod = []
-            for result_info in result:
-                related_vod += result_info['meta']['my_vod'][1:]
-
-            medias = MediaStream.objects.filter(vod_id__in=related_vod, status="completed").order_by('?')
-            if len(medias) > 10:
-                medias = medias[:10]
-
-            my_vod = MediaSerializerforClient(medias, many=True)
-            return Response(my_vod.data)
+                Product = Clayful.Product
+                result = Product.list(options).data
+                related_vod = result[0]['meta']['my_vod'][1:]
+                medias = MediaStream.objects.filter(vod_id__in=related_vod, status="completed").order_by('?')
+                if len(medias) > 10:
+                    medias = medias[:10]
+                Collection = Clayful.Collection
+                options = {
+                    'query': {
+                        'fields': 'name'
+                    }
+                }
+                result = Collection.get(collection_id, options).data
+                name = result['name']
+                vods = MediaSerializerforClient(medias, many=True).data
+                my_vod.append({'name': name, 'vods': vods})
+            return Response(my_vod)
         except Exception as e:
             return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
