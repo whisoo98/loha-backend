@@ -1091,16 +1091,10 @@ class RefundBankInfo(APIView):
         try:
             res = result.data
             print(type(res['meta']))
-            if "refund_holder" not in res['meta'].keys():
-                raise NoBankInfoException
-            if "refund_bank" not in res['meta'].keys():
-                raise NoBankInfoException
-            if "refund_account" not in res['meta'].keys():
-                raise NoBankInfoException
             contents = {
-                'refund_holder': res['meta']['refund_holder'],
-                'refund_bank': res['meta']['refund_bank'],
-                'refund_account': res['meta']['refund_account'],
+                'refund_holder': res['meta'].get('refund_holder', None),
+                'refund_bank': res['meta'].get('refund_bank', None),
+                'refund_account': res['meta'].get('refund_account', None)
             }
             return Response(contents)
         except NoBankInfoException:
