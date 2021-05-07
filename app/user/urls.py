@@ -24,7 +24,7 @@ urlpatterns = [
     path('auth/', Auth.as_view()),
     path('auth/kakao/login/', kakao_login),
     path('auth/kakao/callback/', kakao_callback),
-    path('auth/kakao/token', kakao_token),
+    path('auth/kakao/token/', kakao_token),
     path('auth/naver/login/', naver_login),
     path('auth/naver/callback/', naver_callback),
     path('auth/facebook/login/', facebook_login),
