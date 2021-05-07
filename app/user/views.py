@@ -567,7 +567,15 @@ def kakao_token(request):
             result = Customer.authenticate_by_3rd_party('kakao', payload)
             Customer.update(result.data['customer'], update_payload)
 
-        return Response(result)
+        content = {
+            "success": {
+                "message": "로그인 완료."
+            }
+        }
+        headers = {
+            "Custom-Token": result.data['token']
+        }
+        return Response(content, headers=headers)
     except Exception as e:
         content = {
             "error": {
