@@ -1080,7 +1080,7 @@ class DeleteToken(APIView):
             return Response(contents, status=status.HTTP_400_BAD_REQUEST)
 
 
-class RefundBankInfo(APIView):
+class RefundBank(APIView):
     @require_login
     def get(self, request, result):
         try:
