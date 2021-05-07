@@ -1,23 +1,15 @@
-from django.shortcuts import redirect
-from django.utils.decorators import method_decorator
-from django.http import HttpResponse
-from push.views import *
-from rest_framework.views import Response
-from rest_framework import status
-from rest_framework.views import APIView
-from rest_framework.decorators import api_view
+import requests
 from clayful import Clayful
 from django.conf import settings
-from django.db.models import Q
-from media.serializers import *
-from media.models import *
 from django.core.exceptions import ObjectDoesNotExist
-import json
-import requests
-import datetime
-from user.models import UserToken
+from django.shortcuts import redirect
+from rest_framework import status
+from rest_framework.decorators import api_view
+from rest_framework.views import Response
 
-import urllib
+from media.serializers import *
+from push.views import *
+from user.models import UserToken
 
 
 # 로그인 확인 decorator
@@ -535,6 +527,53 @@ def kakao_callback(request):
             print(e.message)
         except Exception as er:
             pass
+        return Response(content, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+def kakao_direct(request):
+    try:
+        kakao_access_token = request.data['kakao_access_token']
+        Customer = Clayful.Customer
+        payload = {'token': kakao_access_token}
+        result = Customer.authenticate_by_3rd_party('kakao', payload)
+        headers = {'Authorization': f'Bearer {kakao_access_token}'}
+        response = requests.get('https://kapi.kakao.com/v2/user/me', headers=headers)
+        user_data = response.json()
+
+        update_payload = {
+            'alias': user_data['kakao_account']['profile']['nickname'],
+            'name': {
+                'first': user_data['kakao_account']['profile']['nickname'],
+                'full': user_data['kakao_account']['profile']['nickname']
+            },
+            'groups': ['ZZ9HGQBGPLTA']
+        }
+        if user_data['kakao_account']['has_email']:
+            update_payload['email'] = user_data['kakao_account']['email']
+        if user_data['kakao_account']['phone_number']:
+            update_payload['mobile'] = user_data['kakao_account']['phone_number']
+        # 가입과 동시 로그인
+        if result.data['action'] == 'register':
+            WishList = Clayful.WishList
+            payload = {
+                'customer': result.data['customer'],
+                'name': 'product_wishlist',
+                'description': None
+            }
+            WishList.create(payload)
+
+            payload = {'token': kakao_access_token}
+            result = Customer.authenticate_by_3rd_party('kakao', payload)
+            Customer.update(result.data['customer'], update_payload)
+
+        return Response(result)
+    except Exception as e:
+        content = {
+            "error": {
+                "message": str(e)
+            }
+        }
         return Response(content, status=status.HTTP_400_BAD_REQUEST)
 
 
