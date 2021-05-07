@@ -531,7 +531,7 @@ def kakao_callback(request):
 
 
 @api_view(['POST'])
-def kakao_direct(request):
+def kakao_token(request):
     try:
         kakao_access_token = request.data['kakao_access_token']
         Customer = Clayful.Customer
