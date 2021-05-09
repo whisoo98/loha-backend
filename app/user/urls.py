@@ -13,7 +13,8 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.urls import path, include
+from django.urls import path
+
 from .views import *
 
 urlpatterns = [
@@ -27,8 +28,10 @@ urlpatterns = [
     path('auth/kakao/token/', kakao_token),
     path('auth/naver/login/', naver_login),
     path('auth/naver/callback/', naver_callback),
+    path('auth/naver/token/', naver_token),
     path('auth/facebook/login/', facebook_login),
     path('auth/facebook/callback/', facebook_callback),
+    path('auth/facebook/token/', facebook_token),
     path('service_agree/', ServiceAgree.as_view()),
     path('push_agree/', PushAgree.as_view()),
     path('upload_token/', UploadToken.as_view()),

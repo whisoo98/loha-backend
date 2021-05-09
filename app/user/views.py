@@ -681,6 +681,59 @@ def naver_callback(request):
         return Response(content, status=status.HTTP_400_BAD_REQUEST)
 
 
+@api_view(['POST'])
+def naver_token(request):
+    try:
+        Customer = Clayful.Customer
+        naver_access_token = request.data['naver_access_token']
+        payload = {'token': naver_access_token}
+        result = Customer.authenticate_by_3rd_party('naver', payload)
+
+        headers = {'Authorization': f'Bearer {naver_access_token}'}
+        response = requests.get('https://openapi.naver.com/v1/nid/me', headers=headers)
+        user_data = response.json()
+        update_payload = {
+            'alias': user_data['response']['nickname'],
+            'name': {
+                'first': user_data['response']['nickname'],
+                'full': user_data['response']['name']
+            },
+            'email': user_data['response']['email'],
+            'mobile': user_data['response']['mobile'],
+            'groups': ['ZZ9HGQBGPLTA']
+        }
+        # 가입과 동시에 로그인
+        if result.data['action'] == 'register':
+            WishList = Clayful.WishList
+            payload = {
+                'customer': result.data['customer'],
+                'name': 'product_wishlist',
+                'description': None
+            }
+            WishList.create(payload)
+
+            payload = {'token': naver_access_token}
+            result = Customer.authenticate_by_3rd_party('naver', payload)
+            Customer.update(result.data['customer'], update_payload)
+
+        content = {
+            "success": {
+                "message": "로그인 완료."
+            }
+        }
+        headers = {
+            "Custom-Token": result.data['token']
+        }
+        return Response(content, headers=headers)
+    except Exception as e:
+        content = {
+            "error": {
+                "message": str(e)
+            }
+        }
+        return Response(content, status=status.HTTP_400_BAD_REQUEST)
+
+
 # Facebook 소셜 로그인
 
 # 코드 발급
@@ -757,6 +810,44 @@ def facebook_callback(request):
             content['error']['detail'] = e.message
         except Exception as er:
             pass
+        return Response(content, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+def facebook_token(request):
+    try:
+        Customer = Clayful.Customer
+        facebook_access_token = request.data['facebook_access_token']
+        payload = {'token': facebook_access_token}
+        result = Customer.authenticate_by_3rd_party('facebook', payload)
+        # 가입과 동시에 로그인
+        if result.data['action'] == 'register':
+            WishList = Clayful.WishList
+            payload = {
+                'customer': result.data['customer'],
+                'name': 'product_wishlist',
+                'description': None
+            }
+            WishList.create(payload)
+
+            payload = {'token': facebook_access_token}
+            result = Customer.authenticate_by_3rd_party('facebook', payload)
+            Customer.update(result.data['customer'], {'groups': ['ZZ9HGQBGPLTA']})
+        content = {
+            "success": {
+                "message": "로그인 완료."
+            }
+        }
+        headers = {
+            "Custom-Token": result.data['token']
+        }
+        return Response(content, headers=headers)
+    except Exception as e:
+        content = {
+            "error": {
+                "message": str(e)
+            }
+        }
         return Response(content, status=status.HTTP_400_BAD_REQUEST)
 
 
