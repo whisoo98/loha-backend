@@ -1,3 +1,5 @@
+import re
+
 import requests
 from clayful import Clayful
 from django.conf import settings
@@ -551,8 +553,13 @@ def kakao_token(request):
         }
         if user_data['kakao_account']['has_email']:
             update_payload['email'] = user_data['kakao_account']['email']
-        if user_data['kakao_account']['phone_number']:
-            update_payload['mobile'] = user_data['kakao_account']['phone_number']
+        phone_number_raw = user_data['kakao_account'].get('phone_number', None)
+        if phone_number_raw:
+            phone_number_match = re.match("[+][8][2]\s+(?P<num>\d+[-]\d+[-]\d+)", phone_number_raw)
+            if phone_number_match:
+                update_payload['mobile'] = ("0" + phone_number_match.group("num")).replace("-", "")
+            else:
+                update_payload['mobile'] = phone_number_raw
         # 가입과 동시 로그인
         if result.data['action'] == 'register':
             WishList = Clayful.WishList
