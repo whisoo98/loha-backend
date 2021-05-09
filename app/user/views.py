@@ -643,7 +643,7 @@ def naver_callback(request):
                     'full': user_data['response']['name']
                 },
                 'email': user_data['response']['email'],
-                'mobile': user_data['response']['mobile'],
+                'mobile': user_data['response']['mobile'].replace("-", ""),
                 'groups': ['ZZ9HGQBGPLTA']
             }
             # 가입과 동시에 로그인
@@ -706,7 +706,7 @@ def naver_token(request):
                 'full': user_data['response']['name']
             },
             'email': user_data['response']['email'],
-            'mobile': user_data['response']['mobile'],
+            'mobile': user_data['response']['mobile'].replace("-", ""),
             'groups': ['ZZ9HGQBGPLTA']
         }
         # 가입과 동시에 로그인
