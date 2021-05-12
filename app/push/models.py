@@ -13,5 +13,5 @@ class LiveAlarm(models.Model):
     user_id = models.TextField()
 
 
-class LiveAgree(models.Model):
+class LiveNotAgree(models.Model):
     user_id = models.TextField()

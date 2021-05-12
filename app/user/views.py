@@ -1277,7 +1277,7 @@ class LiveAgreeView(APIView):
     @require_login
     def get(self, request, result):
         try:
-            live_push_agree = LiveAgree.objects.filter(user_id=result.data['_id']).exists()
+            live_push_agree = not LiveNotAgree.objects.filter(user_id=result.data['_id']).exists()
             contents = {
                 "success": {
                     "live_push_agree": live_push_agree
@@ -1296,13 +1296,13 @@ class LiveAgreeView(APIView):
     @require_login
     def post(self, request, result):
         try:
-            live_push_set = LiveAgree.objects.filter(user_id=result.data['_id'])
+            live_push_set = LiveNotAgree.objects.filter(user_id=result.data['_id'])
             if live_push_set.exists():
                 live_push_set.delete()
-                live_push_agree = False
-            else:
-                LiveAgree.objects.create(user_id=result.data['_id'])
                 live_push_agree = True
+            else:
+                LiveNotAgree.objects.create(user_id=result.data['_id'])
+                live_push_agree = False
 
             contents = {
                 "success": {
