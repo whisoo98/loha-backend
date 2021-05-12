@@ -698,9 +698,11 @@ def live_alarm(request, result):
         vod_user_id = list(LiveAlarm.objects.filter(vod_id=vod_id).values_list('user_id', flat=True))
         follow_user_id = list(
             InfluencerAlarm.objects.filter(influencer_id=influencer_id).values_list('user_id', flat=True))
-        live_not_agree_user_id = list(LiveNotAgree.objects.all())
+        live_not_agree_user_id = list(LiveNotAgree.objects.all().values_list('user_id', flat=True))
+        print("not agree", live_not_agree_user_id)
 
         user_id_union = set(vod_user_id + follow_user_id) - set(live_not_agree_user_id)
+        print(user_id_union)
 
         info = {
             'influencer': result['alias'],
