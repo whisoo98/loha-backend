@@ -1,23 +1,17 @@
-from django.shortcuts import redirect
-from django.utils.decorators import method_decorator
-from django.http import HttpResponse
-from push.views import *
-from rest_framework.views import Response
-from rest_framework import status
-from rest_framework.views import APIView
-from rest_framework.decorators import api_view
+import re
+
+import requests
 from clayful import Clayful
 from django.conf import settings
-from django.db.models import Q
-from media.serializers import *
-from media.models import *
 from django.core.exceptions import ObjectDoesNotExist
-import json
-import requests
-import datetime
-from user.models import UserToken
+from django.shortcuts import redirect
+from rest_framework import status
+from rest_framework.decorators import api_view
+from rest_framework.views import Response
 
-import urllib
+from media.serializers import *
+from push.views import *
+from user.models import UserToken
 
 
 # 로그인 확인 decorator
@@ -538,6 +532,66 @@ def kakao_callback(request):
         return Response(content, status=status.HTTP_400_BAD_REQUEST)
 
 
+@api_view(['POST'])
+def kakao_token(request):
+    try:
+        kakao_access_token = request.data['kakao_access_token']
+        Customer = Clayful.Customer
+        payload = {'token': kakao_access_token}
+        result = Customer.authenticate_by_3rd_party('kakao', payload)
+        headers = {'Authorization': f'Bearer {kakao_access_token}'}
+        response = requests.get('https://kapi.kakao.com/v2/user/me', headers=headers)
+        user_data = response.json()
+
+        update_payload = {
+            'alias': user_data['kakao_account']['profile']['nickname'],
+            'name': {
+                'first': user_data['kakao_account']['profile']['nickname'],
+                'full': user_data['kakao_account']['profile']['nickname']
+            },
+            'groups': ['ZZ9HGQBGPLTA']
+        }
+        if user_data['kakao_account']['has_email']:
+            update_payload['email'] = user_data['kakao_account']['email']
+        phone_number_raw = user_data['kakao_account'].get('phone_number', None)
+        if phone_number_raw:
+            phone_number_match = re.match("[+][8][2]\s+(?P<num>\d+[-]\d+[-]\d+)", phone_number_raw)
+            if phone_number_match:
+                update_payload['mobile'] = ("0" + phone_number_match.group("num")).replace("-", "")
+            else:
+                update_payload['mobile'] = phone_number_raw
+        # 가입과 동시 로그인
+        if result.data['action'] == 'register':
+            WishList = Clayful.WishList
+            payload = {
+                'customer': result.data['customer'],
+                'name': 'product_wishlist',
+                'description': None
+            }
+            WishList.create(payload)
+
+            payload = {'token': kakao_access_token}
+            result = Customer.authenticate_by_3rd_party('kakao', payload)
+            Customer.update(result.data['customer'], update_payload)
+
+        content = {
+            "success": {
+                "message": "로그인 완료."
+            }
+        }
+        headers = {
+            "Custom-Token": result.data['token']
+        }
+        return Response(content, headers=headers)
+    except Exception as e:
+        content = {
+            "error": {
+                "message": str(e)
+            }
+        }
+        return Response(content, status=status.HTTP_400_BAD_REQUEST)
+
+
 # Naver 소셜 로그인
 
 # 코드 발급
@@ -589,7 +643,7 @@ def naver_callback(request):
                     'full': user_data['response']['name']
                 },
                 'email': user_data['response']['email'],
-                'mobile': user_data['response']['mobile'],
+                'mobile': user_data['response']['mobile'].replace("-", ""),
                 'groups': ['ZZ9HGQBGPLTA']
             }
             # 가입과 동시에 로그인
@@ -631,6 +685,59 @@ def naver_callback(request):
         except Exception as er:
             pass
 
+        return Response(content, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+def naver_token(request):
+    try:
+        Customer = Clayful.Customer
+        naver_access_token = request.data['naver_access_token']
+        payload = {'token': naver_access_token}
+        result = Customer.authenticate_by_3rd_party('naver', payload)
+
+        headers = {'Authorization': f'Bearer {naver_access_token}'}
+        response = requests.get('https://openapi.naver.com/v1/nid/me', headers=headers)
+        user_data = response.json()
+        update_payload = {
+            'alias': user_data['response']['nickname'],
+            'name': {
+                'first': user_data['response']['nickname'],
+                'full': user_data['response']['name']
+            },
+            'email': user_data['response']['email'],
+            'mobile': user_data['response']['mobile'].replace("-", ""),
+            'groups': ['ZZ9HGQBGPLTA']
+        }
+        # 가입과 동시에 로그인
+        if result.data['action'] == 'register':
+            WishList = Clayful.WishList
+            payload = {
+                'customer': result.data['customer'],
+                'name': 'product_wishlist',
+                'description': None
+            }
+            WishList.create(payload)
+
+            payload = {'token': naver_access_token}
+            result = Customer.authenticate_by_3rd_party('naver', payload)
+            Customer.update(result.data['customer'], update_payload)
+
+        content = {
+            "success": {
+                "message": "로그인 완료."
+            }
+        }
+        headers = {
+            "Custom-Token": result.data['token']
+        }
+        return Response(content, headers=headers)
+    except Exception as e:
+        content = {
+            "error": {
+                "message": str(e)
+            }
+        }
         return Response(content, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -710,6 +817,44 @@ def facebook_callback(request):
             content['error']['detail'] = e.message
         except Exception as er:
             pass
+        return Response(content, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+def facebook_token(request):
+    try:
+        Customer = Clayful.Customer
+        facebook_access_token = request.data['facebook_access_token']
+        payload = {'token': facebook_access_token}
+        result = Customer.authenticate_by_3rd_party('facebook', payload)
+        # 가입과 동시에 로그인
+        if result.data['action'] == 'register':
+            WishList = Clayful.WishList
+            payload = {
+                'customer': result.data['customer'],
+                'name': 'product_wishlist',
+                'description': None
+            }
+            WishList.create(payload)
+
+            payload = {'token': facebook_access_token}
+            result = Customer.authenticate_by_3rd_party('facebook', payload)
+            Customer.update(result.data['customer'], {'groups': ['ZZ9HGQBGPLTA']})
+        content = {
+            "success": {
+                "message": "로그인 완료."
+            }
+        }
+        headers = {
+            "Custom-Token": result.data['token']
+        }
+        return Response(content, headers=headers)
+    except Exception as e:
+        content = {
+            "error": {
+                "message": str(e)
+            }
+        }
         return Response(content, status=status.HTTP_400_BAD_REQUEST)
 
 
