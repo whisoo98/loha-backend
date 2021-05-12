@@ -1271,3 +1271,51 @@ class RefundBank(APIView):
                 }
             }
             return Response(content, status=status.HTTP_400_BAD_REQUEST)
+
+
+class LiveAgreeView(APIView):
+    @require_login
+    def get(self, request, result):
+        try:
+            live_push_agree = LiveAgree.objects.filter(user_id=result.data['_id']).exists()
+            contents = {
+                "success": {
+                    "live_push_agree": live_push_agree
+                }
+            }
+            return Response(contents)
+        except Exception as e:
+            print(e)
+            contents = {
+                "error": {
+                    "message": "잘못된 요청입니다."
+                }
+            }
+            return Response(contents, status=status.HTTP_400_BAD_REQUEST)
+
+    @require_login
+    def post(self, request, result):
+        try:
+            live_push_set = LiveAgree.objects.filter(user_id=result.data['_id'])
+            if live_push_set.exists():
+                live_push_set.delete()
+                live_push_agree = False
+            else:
+                LiveAgree.objects.create(user_id=result.data['_id'])
+                live_push_agree = True
+
+            contents = {
+                "success": {
+                    "live_push_agree": live_push_agree
+                }
+            }
+            return Response(contents)
+
+        except Exception as e:
+            print(e)
+            contents = {
+                "error": {
+                    "message": "잘못된 요청입니다."
+                }
+            }
+            return Response(contents, status=status.HTTP_400_BAD_REQUEST)
