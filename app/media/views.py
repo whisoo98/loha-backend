@@ -9,7 +9,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 from rest_framework import status
 from rest_framework.decorators import api_view
-from rest_framework.views import Response
+from rest_framework.views import Response, APIView
 
 from chat.consumers import send_end
 from influencer.views import is_influencer
