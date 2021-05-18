@@ -1,39 +1,21 @@
-import time
-
-import websockets
-from django.shortcuts import redirect
-from rest_framework.views import Response
-from rest_framework import status
-from rest_framework.views import APIView
-from rest_framework.decorators import api_view
-from influencer.views import is_influencer
-from .models import *
-from push import models
-from push.models import *
-from push.views import *
-from push import models
-from chat.models import *
-import hmac
-import hashlib
-from django.db.models import Q
-from .serializers import *
-from user.views import require_login
-from clayful import Clayful, ClayfulException
-from chat.models import *
-from django.core.exceptions import ObjectDoesNotExist
-from django.core.exceptions import MultipleObjectsReturned
-from django.conf import settings
-import json
-import random
-import pprint
-import requests
-import datetime
 import asyncio
-from chat.consumers import send_end
+import pprint
 
-import firebase_admin
-from firebase_admin import credentials, firestore, messaging, datetime
-from firebase_admin.exceptions import FirebaseError
+import requests
+from clayful import Clayful, ClayfulException
+from django.conf import settings
+from django.core.exceptions import MultipleObjectsReturned
+from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import Q
+from rest_framework import status
+from rest_framework.decorators import api_view
+from rest_framework.views import Response, APIView
+
+from chat.consumers import send_end
+from influencer.views import is_influencer
+from push.views import *
+from user.views import require_login
+from .serializers import *
 
 
 class NoStreamKeyError(Exception):
@@ -716,8 +698,11 @@ def live_alarm(request, result):
         vod_user_id = list(LiveAlarm.objects.filter(vod_id=vod_id).values_list('user_id', flat=True))
         follow_user_id = list(
             InfluencerAlarm.objects.filter(influencer_id=influencer_id).values_list('user_id', flat=True))
+        live_not_agree_user_id = list(LiveNotAgree.objects.all().values_list('user_id', flat=True))
+        print("not agree", live_not_agree_user_id)
 
-        user_id_union = set(vod_user_id + follow_user_id)
+        user_id_union = set(vod_user_id + follow_user_id) - set(live_not_agree_user_id)
+        print(user_id_union)
 
         info = {
             'influencer': result['alias'],
