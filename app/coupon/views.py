@@ -60,6 +60,7 @@ def manager_coupon_list(request):
         Customer = Clayful.Customer
         if request.headers.get('Custom-Token') is not None:
             result = Customer.get_me({'customer': request.headers['Custom-Token'], 'query': {}})
+            print(Coupon.objects.all())
             coupon_list = list(Coupon.objects.filter(user_id=result.data['_id']).all())
             for coupon in data:
                 target = coupon['_id']
@@ -79,7 +80,7 @@ def manager_coupon_list(request):
         return Response("알 수 없는 예외가 발생하였습니다.", status=status.HTTP_400_BAD_REQUEST)
 
 
-class Coupon(APIView):
+class CouponViewSet(APIView):
 
     def __init__(self):
         Clayful.config({
