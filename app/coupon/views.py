@@ -1,22 +1,14 @@
-from django.shortcuts import render, redirect
-from django.views import View
-from django.http import JsonResponse, HttpResponse
-from django.conf import settings
-from django.utils.decorators import method_decorator
-from rest_framework import request, status
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from rest_framework.decorators import api_view, parser_classes
-from rest_framework.parsers import JSONParser
-
-from user.views import require_login
+import datetime
 
 from clayful import Clayful, ClayfulException
+from django.conf import settings
+from rest_framework import status
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
-import json
-import requests
-import pprint
-import datetime
+from user.views import require_login
+from .models import Coupon
 
 
 @api_view(['GET'])
@@ -65,26 +57,14 @@ def manager_coupon_list(request):
             coupon['updatedAt'] = coupon['updatedAt']['raw']
             coupon['Issued'] = False
 
+        Customer = Clayful.Customer
         if request.headers.get('Custom-Token') is not None:
-            Customer = Clayful.Customer
-
-            options = {
-                'customer': request.headers.get('Custom-Token'),
-                'query': {
-                    'limit': 120,
-                    'fields': "_id"
-                },
-            }
-            result = Customer.list_coupons_for_me(options)
-            coupon_list = []
-            for customer_has in result.data:
-                coupon_list.append(customer_has["_id"])
-            print(coupon_list)
-
+            result = Customer.get_me({'customer': request.headers['Custom-Token'], 'query': {}})
+            coupon_list = list(Coupon.objects.filter(user_id=result.data['_id']).all())
             for coupon in data:
                 target = coupon['_id']
-                for coupon_id in coupon_list:
-                    if target == coupon_id:
+                for coupon_ele in coupon_list:
+                    if target == coupon_ele.coupon_id:
                         coupon['Issued'] = True
 
         return Response(data, status=status.HTTP_200_OK)
@@ -116,9 +96,11 @@ class Coupon(APIView):
             Customer = Clayful.Customer
             customer_id = result.data['_id']
             payload = (request.data['payload'])
+            coupon_id = payload['coupon']
             options = {
             }
             result = Customer.add_coupon(customer_id, payload, options)  # 고객에게 쿠폰 발급
+            Coupon.objects.create(user_id=customer_id, coupon_id=coupon_id)
 
             return Response(result.data, status=status.HTTP_200_OK)
 
