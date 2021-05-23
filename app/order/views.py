@@ -364,7 +364,7 @@ class OrderAPI(APIView):#주문 가져오기 수정
             return Response(data)
 
         except ClayfulException as e:
-            return Response(e.code + ' ' + e.message, status=e.status)
+            return Response(str(e.code) + ' ' + str(e.message), status=e.status)
 
         except Exception as e:
             print(e)
