@@ -1,15 +1,11 @@
-import websockets
-from channels.generic.websocket import AsyncWebsocketConsumer, WebsocketConsumer
-from channels.exceptions import StopConsumer
-from asgiref.sync import async_to_sync
 import json
-import pprint
-from clayful import Clayful
-from clayful import ClayfulException
-from channels.auth import login
-from .models import *
-from media.models import MediaStream
+
+import websockets
 from channels.db import database_sync_to_async
+from channels.generic.websocket import AsyncWebsocketConsumer
+
+from media.models import MediaStream
+from .models import *
 
 
 class ChatConsumer(AsyncWebsocketConsumer):
@@ -32,17 +28,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
         try:
             # delete in RoomUser
             await self.delete_user()
-            message = f'{self.username}님이 나가셨습니다.'
-            await self.channel_layer.group_send(
-                self.room_group_name,
-                {
-                    'type': 'entry_message',
-                    'username': self.username,
-                    'id': self.id,
-                    'leave': 1,
-                    'message': message
-                }
-            )
 
             # Leave room group
             await self.channel_layer.group_discard(
