@@ -68,7 +68,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 self.room_group_name,
                 {
                     'type': 'entry_message',
-                    'username': "USERIN",
+                    'username': "Byeolshow",
                     'count': self.count,
                     'id': self.id,
                     'leave': 0,
@@ -84,7 +84,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 {
                     'type': 'live_end',
                     'message': message,
-                    'username': "LIVEEND",
+                    'username': "Byeolshow",
                 }
             )
         else:
@@ -135,7 +135,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await self.send(text_data=json.dumps({
             'stat': 'end',
             'message': message,
-            'username': "LIVEEND",
+            'username': "Byeolshow",
         }))
 
     @database_sync_to_async
@@ -169,5 +169,5 @@ async def send_end(vod_id):
             json.dumps({
                 'stat': 'end',
                 'message': "방송이 종료되었습니다.",
-                'username': "LIVEEND",
+                'username': "Byeolshow",
             }))
