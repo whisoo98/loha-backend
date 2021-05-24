@@ -1,18 +1,9 @@
-import firebase_admin
-from firebase_admin import credentials, firestore, messaging, datetime
+from firebase_admin import messaging
 from firebase_admin.exceptions import FirebaseError
-from .models import *
+
 from user.models import UserToken
-from django.http import HttpResponse
-from rest_framework.status import *
-from rest_framework.request import Request
-from rest_framework.views import APIView
-import clayful
+from .models import *
 
-
-# Create your views here.
-#TODO:라이브 예약에 대한 구현
-#TODO:알람 푸시에 대한 구현
 
 # 인플루언서 팔로우할 때 알람 설정
 def set_alarm_to_influencer(influencer_id, user_id):
@@ -21,7 +12,7 @@ def set_alarm_to_influencer(influencer_id, user_id):
 
 # 인플루언서 언팔할 때 알람 설정 취소
 def unset_alarm_to_influencer(influencer_id, user_id):
-    InfluencerAlarm.objects.filter(influencer_id=influencer_id, user_id=user_id).all().delete()
+    InfluencerAlarm.objects.filter(influencer_id=influencer_id, user_id=user_id).delete()
 
 
 # 라이브 알람 설정할 때 알람 설정
@@ -32,9 +23,9 @@ def set_alarm_to_live(vod_id, user_id):
 # 라이브 알람 설정 취소
 def unset_alarm_to_live(vod_id, user_id=None):
     if user_id is None:  # 방송이 종료되면 모두 삭제
-        LiveAlarm.objects.fileter(vod_id=vod_id).all().delete()
+        LiveAlarm.objects.fileter(vod_id=vod_id).delete()
     else:  # 한 사람이 삭제
-        LiveAlarm.objects.filter(vod_id=vod_id, user_id=user_id).all().delete()
+        LiveAlarm.objects.filter(vod_id=vod_id, user_id=user_id).delete()
 
 
 # 인플루언서 팔로우에 대한 알람 보내기
