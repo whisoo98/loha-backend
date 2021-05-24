@@ -1,5 +1,3 @@
-import pprint
-
 from clayful import Clayful, ClayfulException
 from django.conf import settings
 from iamport.client import *
@@ -40,7 +38,6 @@ def verify_payment(request):
             'query': {}
         }
         result = Order.get(merchant_uid, options).data
-        print(pprint.pformat(result))
         amount_to_be_paid = result['total']['price']['original']['raw']
 
         sms_key = getattr(settings, 'COOLSMS_API_KEY', None)
@@ -100,12 +97,8 @@ def verify_payment(request):
         return Response(content)
 
     except ClayfulException as e:
-        print(e)
-        print(e.code)
-        print(e.message)
         return Response(e.code + ' ' + e.message, status=e.status)
     except Exception as e:
-        print(e)
         return Response("에러발생")
 
 

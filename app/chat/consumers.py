@@ -45,7 +45,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 self.channel_name
             )
         except:
-            print('error on WS')
+            pass
 
     # Receive message from WebSocket
     async def receive(self, text_data=None, bytes_data=None):
@@ -119,7 +119,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
         }))
 
     async def chat_message(self, event):
-        # print(event)
         message = event['message']
         username = event['username']
         # Send message to WebSocket

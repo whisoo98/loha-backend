@@ -102,9 +102,5 @@ def alarm_by_user_id(user_ids, info):
                 messaging.send(message)
             except Exception:
                 continue
-
-    except FirebaseError as e:
-        print(e.message)
-
     except Exception as e:
-        print(e)
+        pass

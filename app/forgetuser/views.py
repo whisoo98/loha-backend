@@ -119,8 +119,6 @@ def get_certificate(request):
     except Exception as e:
 
         # Error case
-        print(e)
-        # print(e.code)
         contents = {
             "error": {
                 "message": str(e)

@@ -34,9 +34,7 @@ def collection_list(request):
             name = category['name']
             if name == '인플루엔서' or name == '별쇼 특별전':
                 data.remove(category)
-
         return Response(data)
 
     except Exception as e:
-        print(e)
         return Response("카테고리를 불러오지 못했습니다.")

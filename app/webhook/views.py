@@ -68,18 +68,12 @@ def Refund(request):
         # 환불처리문자
         return Response(res_imp)
     except ClayfulException as e:
-        print(e.code)
-        print(e.message)
         send_log(f"{e.code} {e.message}")
         return Response(e.code + ' ' + e.message, status=e.status)
     except Iamport.ResponseError as e:
-        print(e.code)
-        print(e.message)
         send_log(f"{e.code} {e.message}")
         return Response(e.code + ' ' + e.message)
     except Iamport.HttpError as http_error:
-        print(http_error.code)
-        print(http_error.reason)
         send_log(f"{http_error.code} {http_error.reason}")
         return Response("에러 발생")
 

@@ -276,7 +276,6 @@ class CartAPI(APIView):
         except ClayfulException as e:
             return Response(e.code + ' ' + e.message, status=e.status)
         except Exception as e:
-            print(e)
             return Response("알 수 없는 예외가 발생했습니다.", status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request):  # 고객이 본인 장바구니 비우기
@@ -295,9 +294,6 @@ class CartAPI(APIView):
             return Response(e.code + ' ' + e.message, status=e.status)
 
         except Exception as e:
-
-            print(e)
-
             return Response("알 수 없는 예외가 발생했습니다.", status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -346,16 +342,10 @@ class CartItemAPI(APIView):
 
             return Response(result, status=status.HTTP_200_OK)
 
-
-
         except ClayfulException as e:
-
             return Response(e.code + ' ' + e.message, status=e.status)
 
         except Exception as e:
-
-            print(e)
-
             return Response("알 수 없는 예외가 발생했습니다.", status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request):  # 자신의 장바구니에서 물품 수정
@@ -370,16 +360,10 @@ class CartItemAPI(APIView):
                 result.append(Cart.update_item_for_me(payload['item_id'], payload['payload'], options).data)
             return Response(result, status=status.HTTP_200_OK)
 
-
-
         except ClayfulException as e:
-
             return Response(e.code + ' ' + e.message, status=e.status)
 
         except Exception as e:
-
-            print(e)
-
             return Response("알 수 없는 예외가 발생했습니다.", status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request):  # 자신의 장바구니에서 선택 품목삭제
@@ -395,16 +379,10 @@ class CartItemAPI(APIView):
 
             return Response("모두 삭제하였습니다.", status=status.HTTP_200_OK)
 
-
-
         except ClayfulException as e:
-
             return Response(e.code + ' ' + e.message, status=e.status)
 
         except Exception as e:
-
-            print(e)
-
             return Response("알 수 없는 예외가 발생했습니다.", status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -433,7 +411,6 @@ class CartCheckoutAPI(APIView):
             return Response(e.code + ' ' + e.message, status=e.status)
 
         except Exception as e:
-            print(e)
             return Response("알 수 없는 예외가 발생했습니다.", status=status.HTTP_400_BAD_REQUEST)
 
 

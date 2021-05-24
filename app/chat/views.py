@@ -4,8 +4,6 @@ from django.shortcuts import render
 from django.utils.safestring import mark_safe
 
 
-# Create your views here.
-
 def index(request):
     return render(request, 'chat/index.html', {})
 
@@ -14,7 +12,6 @@ def index(request):
 def room(request, room_name):
     stream_id = room_name
 
-    # pprint.pprint(room_name)
     return render(request, 'chat/room.html', {
         'room_name_json': mark_safe(json.dumps(stream_id)),
         'username': mark_safe(json.dumps(request.user.username))
