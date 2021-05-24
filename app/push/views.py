@@ -23,7 +23,7 @@ def set_alarm_to_live(vod_id, user_id):
 # 라이브 알람 설정 취소
 def unset_alarm_to_live(vod_id, user_id=None):
     if user_id is None:  # 방송이 종료되면 모두 삭제
-        LiveAlarm.objects.fileter(vod_id=vod_id).delete()
+        LiveAlarm.objects.filter(vod_id=vod_id).delete()
     else:  # 한 사람이 삭제
         LiveAlarm.objects.filter(vod_id=vod_id, user_id=user_id).delete()
 
