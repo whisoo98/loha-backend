@@ -1,26 +1,16 @@
-from django.shortcuts import redirect
-from rest_framework.views import Response
-from rest_framework import status
-from rest_framework.views import APIView
-from rest_framework.decorators import api_view
+import requests
 from clayful import Clayful
 from django.conf import settings
-
-# for vod
-from media.models import *
-from django.db.models import Q
-from media.serializers import *
 from django.core.exceptions import ObjectDoesNotExist
+# for vod
+from django.db.models import Q
+from rest_framework import status
+from rest_framework.decorators import api_view
+from rest_framework.views import Response
+
+from media.serializers import *
 from product.views import set_raw
-import json
-import pprint
-import requests
-import datetime
 
-import urllib
-
-
-# Create your views here.
 
 class AuthorizationError(Exception):
     def __str__(self):

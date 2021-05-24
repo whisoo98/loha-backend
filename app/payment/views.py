@@ -1,22 +1,14 @@
-from django.shortcuts import render, redirect
-from django.http.response import HttpResponse, JsonResponse
-from django.utils.decorators import method_decorator
-from django.conf import settings
-from rest_framework import status
+import pprint
 
+from clayful import Clayful, ClayfulException
+from django.conf import settings
+from iamport.client import *
+from rest_framework import status
 from rest_framework.decorators import api_view, parser_classes
-from rest_framework.views import Response, APIView
 from rest_framework.parsers import JSONParser
-from rest_framework.authentication import SessionAuthentication
-from rest_framework.request import Request
-from rest_framework.status import *
+from rest_framework.views import Response
 from sdk.api.message import Message
 from sdk.exceptions import CoolsmsException
-from clayful import Clayful, ClayfulException
-from iamport import *
-from iamport.client import *
-import json, pprint, datetime
-from user.views import require_login
 
 
 @api_view(['GET', 'POST'])

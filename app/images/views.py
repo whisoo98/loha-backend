@@ -1,13 +1,10 @@
-from django.shortcuts import redirect
-from rest_framework.views import Response
+from clayful import Clayful
 from rest_framework import status
 from rest_framework.views import APIView
-from clayful import Clayful
-from django.conf import settings
+from rest_framework.views import Response
+
 from user.views import require_login
-import json
-import requests
-import datetime
+
 
 class Images(APIView):
 
@@ -151,7 +148,7 @@ class Images(APIView):
 # 인플루엔서 썸네일
 
 class ThumbnailImages(APIView):
-    
+
     # 이미지 추가 및 변경
     @require_login
     def post(self, request, result):

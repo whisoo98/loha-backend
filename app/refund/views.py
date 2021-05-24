@@ -1,22 +1,11 @@
-from django.shortcuts import render
-from django.views.generic import ListView, DetailView
-from django.views.generic.edit import FormView
-from django.views import View
-from django.http import JsonResponse, HttpResponse,Http404
-from django.conf import settings
-
-from rest_framework.status import *
-from rest_framework import mixins
-from rest_framework.decorators import api_view,parser_classes
-from rest_framework.parsers import JSONParser
-from rest_framework.response import Response
-from rest_framework.views import APIView
 import json
-import requests
-from clayful import Clayful, ClayfulException
-import datetime
 
-# Create your views here.
+from clayful import Clayful, ClayfulException
+from django.conf import settings
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework.status import *
+
 
 @api_view(['POST'])
 def request_refund_for_me_api(request, order_id):
@@ -47,6 +36,7 @@ def request_refund_for_me_api(request, order_id):
 
     except Exception as e:
         return Response("알 수 없는 오류가 발생하였습니다.", status=HTTP_400_BAD_REQUEST)
+
 
 @api_view(['POST'])
 def cancel_refund_for_me_api(request, order_id, refund_id):
@@ -123,4 +113,3 @@ def cancel_refund_for_me_api(request, order_id, refund_id):
 #
 #         except Exception as e:
 #             return Response("알 수 없는 오류가 발생하였습니다.", status=HTTP_400_BAD_REQUEST)
-

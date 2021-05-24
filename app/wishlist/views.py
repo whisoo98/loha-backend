@@ -1,14 +1,10 @@
-from django.shortcuts import render
-
-# Create your views here.
-
-from rest_framework.views import Response
+from clayful import Clayful
+from django.conf import settings
 from rest_framework import status
 from rest_framework.views import APIView
-from django.conf import settings
-from clayful import Clayful
+from rest_framework.views import Response
+
 from user.views import require_login
-import json
 
 
 # 좋아요 상품 목록 확인
