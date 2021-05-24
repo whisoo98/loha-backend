@@ -526,7 +526,8 @@ def mux_callback(request):
                 now_stream.status = 'completed'
             now_stream.save()
 
-            unset_alarm_to_live(vod_id=now_stream.void_id)
+            unset_alarm_to_live(vod_id=now_stream.vod_id)
+
             return Response("completed")
         return Response("OK")
     except ObjectDoesNotExist:
