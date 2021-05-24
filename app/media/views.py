@@ -75,7 +75,7 @@ def reserve_live(request, result):
     except Exception as e:
         contents = {
             "error": {
-                "message": e
+                "message": str(e)
             }
         }
         return Response(contents, status=status.HTTP_400_BAD_REQUEST)
@@ -307,7 +307,7 @@ def get_today_live_schedule(request):
         contents = {
             'error': {
                 'message': '알 수 없는 오류',
-                'detail': e
+                'detail': str(e)
             }
         }
         return Response(contents, status=status.HTTP_400_BAD_REQUEST)
@@ -328,7 +328,7 @@ def get_today_ready_schedule(request):
         contents = {
             'error': {
                 'message': '알 수 없는 오류',
-                'detail': e
+                'detail': str(e)
             }
         }
         return Response(contents, status=status.HTTP_400_BAD_REQUEST)
@@ -359,7 +359,7 @@ def get_future_schedule(request):
         contents = {
             'error': {
                 'message': '알 수 없는 오류',
-                'detail': e
+                'detail': str(e)
             }
         }
         return Response(contents, status=status.HTTP_400_BAD_REQUEST)
@@ -379,7 +379,7 @@ def get_ready_schedule(request):
         contents = {
             'error': {
                 'message': '알 수 없는 오류',
-                'detail': e
+                'detail': str(e)
             }
         }
         return Response(contents, status=status.HTTP_400_BAD_REQUEST)
@@ -398,7 +398,7 @@ def get_hot_live(request):
         contents = {
             'error': {
                 'message': '알 수 없는 오류',
-                'detail': e
+                'detail': str(e)
             }
         }
         return Response(contents, status=status.HTTP_400_BAD_REQUEST)
@@ -434,7 +434,7 @@ def get_live(request):
         contents = {
             'error': {
                 'message': '알 수 없는 오류',
-                'detail': e
+                'detail': str(e)
             }
         }
         return Response(contents, status=status.HTTP_400_BAD_REQUEST)
@@ -489,7 +489,7 @@ def get_related(request):
         contents = {
             'error': {
                 'message': '알 수 없는 오류',
-                'detail': e
+                'detail': str(e)
             }
         }
         return Response(contents, status=status.HTTP_400_BAD_REQUEST)
@@ -549,7 +549,7 @@ def mux_callback(request):
         contents = {
             'error': {
                 'message': '알 수 없는 오류',
-                'detail': e
+                'detail': str(e)
             }
         }
         return Response(contents, status=status.HTTP_400_BAD_REQUEST)
@@ -657,7 +657,7 @@ def add_view(request):
         contents = {
             'error': {
                 'message': '알 수 없는 오류',
-                'detail': e
+                'detail': str(e)
             }
         }
         return Response(contents, status=status.HTTP_400_BAD_REQUEST)
