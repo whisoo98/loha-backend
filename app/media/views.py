@@ -1,4 +1,5 @@
 import asyncio
+import datetime
 import pprint
 
 import requests
@@ -227,8 +228,7 @@ def delete_my_vod(request, result):
 
         now_stream.delete()
 
-        # TODO 알람 삭제
-        # unset_alarm_to_live(vod_id = request.data['media_id'])
+        unset_alarm_to_live(vod_id=request.data['media_id'])
 
         contents = {
             'success': {
@@ -286,7 +286,6 @@ def end_vod(request, result):
         return Response(contents, status=status.HTTP_400_BAD_REQUEST)
 
     except Exception as e:
-        print(e)
         contents = {
             'error': {
                 'message': '알 수 없는 오류',
@@ -309,7 +308,6 @@ def get_today_live_schedule(request):
     except ObjectDoesNotExist:
         return Response([], status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
-        print(e)
         contents = {
             'error': {
                 'message': '알 수 없는 오류',
@@ -331,7 +329,6 @@ def get_today_ready_schedule(request):
     except ObjectDoesNotExist:
         return Response([], status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
-        print(e)
         contents = {
             'error': {
                 'message': '알 수 없는 오류',
@@ -363,7 +360,6 @@ def get_future_schedule(request):
         }
         return Response(contents)
     except Exception as e:
-        print(e)
         contents = {
             'error': {
                 'message': '알 수 없는 오류',
@@ -384,7 +380,6 @@ def get_ready_schedule(request):
     except ObjectDoesNotExist:
         return Response([], status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
-        print(e)
         contents = {
             'error': {
                 'message': '알 수 없는 오류',
@@ -404,7 +399,6 @@ def get_hot_live(request):
     except ObjectDoesNotExist:
         return Response([], status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
-        print(e)
         contents = {
             'error': {
                 'message': '알 수 없는 오류',
@@ -441,7 +435,6 @@ def get_live(request):
         }
         return Response(contents, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
-        print(e)
         contents = {
             'error': {
                 'message': '알 수 없는 오류',
@@ -450,8 +443,6 @@ def get_live(request):
         }
         return Response(contents, status=status.HTTP_400_BAD_REQUEST)
 
-
-# TODO OPEN SPECIAL byeolshow
 
 # related byeolshow (같은 콜렉션 상품들의 영상)
 @api_view(["GET"])
@@ -499,7 +490,6 @@ def get_related(request):
     except ObjectDoesNotExist:
         return Response([], status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
-        print(e)
         contents = {
             'error': {
                 'message': '알 수 없는 오류',
@@ -540,8 +530,7 @@ def mux_callback(request):
                 now_stream.status = 'completed'
             now_stream.save()
 
-            # TODO 알람 삭제
-            # unset_alarm_to_live(vod_id=now_stream.void_id)
+            unset_alarm_to_live(vod_id=now_stream.void_id)
             return Response("completed")
         return Response("OK")
     except ObjectDoesNotExist:
@@ -560,7 +549,6 @@ def mux_callback(request):
         }
         return Response(contents, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
-        print(e)
         contents = {
             'error': {
                 'message': '알 수 없는 오류',
@@ -613,10 +601,8 @@ class Alarm(APIView):
             }
             return Response(contents, status=status.HTTP_400_BAD_REQUEST)
         except ClayfulException as e:
-            print(e)
             return Response(e.code + ' ' + e.message, status=e.status)
         except Exception as e:
-            print(e)
             return Response('알 수 없는 오류가 발생하였습니다.', status=status.HTTP_400_BAD_REQUEST)
 
     @require_login
@@ -640,10 +626,8 @@ class Alarm(APIView):
             }
             return Response(contents, status=status.HTTP_400_BAD_REQUEST)
         except ClayfulException as e:
-            print(e)
             return Response(e.code + ' ' + e.message, status=e.status)
         except Exception as e:
-            print(e)
             return Response("알 수 없는 오류가 발생하였습니다.", status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -673,7 +657,6 @@ def add_view(request):
         return Response(contents, status=status.HTTP_400_BAD_REQUEST)
 
     except Exception as e:
-        print(e)
         contents = {
             'error': {
                 'message': '알 수 없는 오류',
@@ -699,10 +682,8 @@ def live_alarm(request, result):
         follow_user_id = list(
             InfluencerAlarm.objects.filter(influencer_id=influencer_id).values_list('user_id', flat=True))
         live_not_agree_user_id = list(LiveNotAgree.objects.all().values_list('user_id', flat=True))
-        print("not agree", live_not_agree_user_id)
 
         user_id_union = set(vod_user_id + follow_user_id) - set(live_not_agree_user_id)
-        print(user_id_union)
 
         info = {
             'influencer': result['alias'],
