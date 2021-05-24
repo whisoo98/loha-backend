@@ -85,8 +85,8 @@ class Catalog(APIView):
             for info in result:
                 related_vods += info['meta']['my_vod'][1:]
             medias = MediaStream.objects.filter(vod_id__in=related_vods, status="completed").order_by('?')
-            if len(medias) > 10:
-                medias = medias[:10]
+            if len(medias) > 5:
+                medias = medias[:5]
             my_vod = {'title': special_catalog[0]['title'], 'vods': MediaSerializerforClient(medias, many=True).data}
             return Response(my_vod)
         except Exception as e:
