@@ -73,7 +73,6 @@ def reserve_live(request, result):
         return Response(contents, status=status.HTTP_202_ACCEPTED)
 
     except Exception as e:
-        print(e)
         contents = {
             "error": {
                 "message": e
@@ -117,7 +116,6 @@ def start_live(request, result):
                     }
                     Product.push_to_metafield(product, "my_vod", payload)
                 except Exception:
-                    print('error')
                     continue
 
             contents = {
@@ -201,7 +199,6 @@ def edit_my_vod(request, result):
         }
         return Response(contents, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
-        print(e)
         contents = {
             'error': {
                 'message': '알 수 없는 오류',
@@ -245,11 +242,10 @@ def delete_my_vod(request, result):
         return Response(contents, status=status.HTTP_400_BAD_REQUEST)
 
     except Exception as e:
-        print(e)
         contents = {
             'error': {
                 'message': '알 수 없는 오류',
-                'detail': e
+                'detail': str(e)
             }
         }
         return Response(contents, status=status.HTTP_400_BAD_REQUEST)
