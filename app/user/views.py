@@ -1069,59 +1069,6 @@ class vod_like(APIView):
             return Response(contents, status=status.HTTP_400_BAD_REQUEST)
 
 
-class ServiceAgree(APIView):
-    @require_login
-    def get(self, request, result):
-        try:
-            is_service = result.data['meta']['service_agree']
-            contents = {
-                "success": {
-                    "service_agree": is_service
-                }
-            }
-            return Response(contents)
-        except Exception as e:
-            print(e)
-            contents = {
-                "error": {
-                    "message": "잘못된 요청입니다."
-                }
-            }
-            return Response(contents, status=status.HTTP_400_BAD_REQUEST)
-
-    @require_login
-    def post(self, request, result):
-        try:
-            is_service = not result.data['meta']['service_agree']
-
-            Customer = Clayful.Customer
-            payload = {
-                'meta': {
-                    "service_agree": is_service,
-                }
-            }
-            options = {'customer': request.headers.get('Custom-Token')}
-            result = Customer.update_me(payload, options)
-            headers = result.headers
-            data = result.data
-
-            contents = {
-                "success": {
-                    "service_agree": is_service
-                }
-            }
-            return Response(contents)
-
-        except Exception as e:
-            print(e)
-            contents = {
-                "error": {
-                    "message": "잘못된 요청입니다."
-                }
-            }
-            return Response(contents, status=status.HTTP_400_BAD_REQUEST)
-
-
 class PushAgree(APIView):
     @require_login
     def get(self, request, result):
