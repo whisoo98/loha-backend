@@ -222,4 +222,6 @@ EMAIL_HOST_PASSWORD = get_secret('EMAIL_HOST_PASSWORD') or None
 EMAIL_PORT = get_secret('EMAIL_PORT') or None
 EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+# 비동기 처리 허용
 os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = "true"
