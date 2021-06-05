@@ -1,4 +1,3 @@
-import asyncio
 import datetime
 import pprint
 
@@ -689,7 +688,7 @@ def live_alarm(request, result):
             'image': MediaStream.objects.get(vod_id=vod_id).product_thumbnail
         }
 
-        alarm_by_user_id(user_id_union, info)
+        asyncio.run(alarm_by_user_id(user_id_union, info))
 
         contents = {
             "success": {

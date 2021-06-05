@@ -1,5 +1,8 @@
+import asyncio
+
 from firebase_admin import messaging
 from firebase_admin.exceptions import FirebaseError
+from firebase_admin.messaging import UnregisteredError
 
 from user.models import UserToken
 from .models import *
@@ -82,25 +85,26 @@ def alarm_by_live(id, info):
         print("알 수 없는 오류가 발생하였습니다.")
 
 
-def alarm_by_user_id(user_ids, info):
+async def alarm_by_user_id(user_ids, info):
+    registration_tokens = UserToken.objects.filter(user_id__in=user_ids).values_list('firebase_token', flat=True)
+    futures = [
+        asyncio.ensure_future(send_message(token, info)) for token in set(registration_tokens)
+    ]
+    await asyncio.gather(*futures)
+
+
+async def send_message(token, info):
+    message = messaging.Message(
+        notification=messaging.Notification(
+            title=f'{info["influencer"]}님의 방송이 지금 시작됩니다!',
+            body=info['title'],
+            image=str(info['image'])
+        ),
+        data={"Live": str(info['vod_id'])},
+        token=token,
+    )
+    loop = asyncio.get_event_loop()
     try:
-        registration_tokens = []
-        for user_id in user_ids:
-            registration_tokens += list(
-                UserToken.objects.filter(user_id=user_id).values_list('firebase_token', flat=True))
-        for token in set(registration_tokens):
-            message = messaging.Message(
-                notification=messaging.Notification(
-                    title=f'{info["influencer"]}님의 방송이 지금 시작됩니다!',
-                    body=info['title'],
-                    image=str(info['image'])
-                ),
-                data={"Live": str(info['vod_id'])},
-                token=token,
-            )
-            try:
-                messaging.send(message)
-            except Exception:
-                continue
-    except Exception as e:
-        pass
+        await loop.run_in_executor(None, messaging.send, message)
+    except UnregisteredError:
+        return
