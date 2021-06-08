@@ -12,6 +12,8 @@ class HealthCheckMiddleware:
         response = self.get_response(request)
         return response
 '''
+
+
 class HealthCheckMiddleware(MiddlewareMixin):
     def process_request(self, request):
         if request.META["PATH_INFO"] == "/ping/":

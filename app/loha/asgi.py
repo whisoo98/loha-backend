@@ -1,6 +1,5 @@
 import os
 
-from django.conf.urls import url
 from django.core.asgi import get_asgi_application
 
 # Fetch Django ASGI application early to ensure AppRegistry is populated
@@ -9,7 +8,6 @@ from django.core.asgi import get_asgi_application
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "loha.settings")
 django_asgi_app = get_asgi_application()
 
-from channels.auth import AuthMiddlewareStack
 from channels.sessions import SessionMiddlewareStack
 from channels.routing import ProtocolTypeRouter, URLRouter
 

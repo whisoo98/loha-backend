@@ -1,4 +1,5 @@
-from django.urls import path, include
+from django.urls import path
+
 from .views import *
 
 urlpatterns = [
@@ -18,4 +19,3 @@ urlpatterns = [
     path('related/', get_related),
     path('live_alarm/', live_alarm),
 ]
-

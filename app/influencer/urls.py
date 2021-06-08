@@ -15,11 +15,12 @@ Including another URLconf
 """
 
 from django.urls import path
+
 from .views import *
 
 urlpatterns = [
     path('streamkey/', get_stream_key),
-    path('streamkey_nevermind/', get_stream_key_nevermind), #테스트용
+    path('streamkey_nevermind/', get_stream_key_nevermind),  # 테스트용
     path('list/live/', live_influencer),
     path('list/<str:sort_by>/', list_influencer),
     path('myvod/', get_my_vod),
@@ -27,5 +28,5 @@ urlpatterns = [
     path('myproduct/', get_my_product),
     path('info/', get_info),
     path('update/', update_info),
-    path('reset/',reset_stream_key),
+    path('reset/', reset_stream_key),
 ]

@@ -9,10 +9,12 @@ https://docs.djangoproject.com/en/2.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.2/ref/settings/
 """
+import json
+import os
+
 import firebase_admin
-from firebase_admin import credentials
-import os, json
 from django.core.exceptions import ImproperlyConfigured
+from firebase_admin import credentials
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -23,13 +25,15 @@ secret_file = os.path.join(BASE_DIR, 'secrets.json')
 with open(secret_file) as f:
     secrets = json.loads(f.read())
 
+
 # Keep secret keys in secrets.json
 def get_secret(setting, secrets=secrets):
     try:
         return secrets[setting]
     except KeyError:
-            error_msg = "Set the {0} environment variable".format(setting)
-            return None
+        error_msg = "Set the {0} environment variable".format(setting)
+        return None
+
 
 cred_path = os.path.join(BASE_DIR, "serviceAccountKey.json")
 cred = credentials.Certificate(cred_path)
@@ -44,24 +48,24 @@ SECRET_KEY = get_secret("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = int(get_secret("DEBUG"))
 
-#SECRET_KEY
+# SECRET_KEY
 # IAMPORT
-IAMPORT_CODE=get_secret('IAMPORT_CODE')
-IAMPORT_REST_KEY=get_secret('IAMPORT_REST_KEY')
-IAMPORT_SECRET_REST_KEY=get_secret('IAMPORT_SECRET_REST_KEY')
+IAMPORT_CODE = get_secret('IAMPORT_CODE')
+IAMPORT_REST_KEY = get_secret('IAMPORT_REST_KEY')
+IAMPORT_SECRET_REST_KEY = get_secret('IAMPORT_SECRET_REST_KEY')
 # CLAYFUL
-CLAYFUL_SECRET_KEY=get_secret('CLAYFUL_SECRET_KEY')
+CLAYFUL_SECRET_KEY = get_secret('CLAYFUL_SECRET_KEY')
 # KAKAO
-KAKAO_APP_ID=get_secret('KAKAO_APP_ID')
-KAKAO_REST_API=get_secret('KAKAO_REST_API')
-KAKAO_ADMIN_KEY=get_secret('KAKAO_ADMIN_KEY')
+KAKAO_APP_ID = get_secret('KAKAO_APP_ID')
+KAKAO_REST_API = get_secret('KAKAO_REST_API')
+KAKAO_ADMIN_KEY = get_secret('KAKAO_ADMIN_KEY')
 # NAVER
-NAVER_CLIENT_ID=get_secret('NAVER_CLIENT_ID')
-NAVER_SECRET_KEY=get_secret('NAVER_SECRET_KEY')
+NAVER_CLIENT_ID = get_secret('NAVER_CLIENT_ID')
+NAVER_SECRET_KEY = get_secret('NAVER_SECRET_KEY')
 
 # FACEBOOK
-FACEBOOK_CLIENT_ID=get_secret('FACEBOOK_CLIENT_ID')
-FACEBOOK_SECRET_KEY=get_secret('FACEBOOK_SECRET_KEY')
+FACEBOOK_CLIENT_ID = get_secret('FACEBOOK_CLIENT_ID')
+FACEBOOK_SECRET_KEY = get_secret('FACEBOOK_SECRET_KEY')
 
 # MUX
 MUX_CLIENT_ID = get_secret('MUX_CLIENT_ID')
@@ -138,7 +142,6 @@ TEMPLATES = [
     },
 ]
 
-
 WSGI_APPLICATION = 'loha.wsgi.application'
 
 ASGI_APPLICATION = 'loha.asgi.application'
@@ -166,7 +169,6 @@ DATABASES = {
     }
 }
 
-
 # Password validation
 # https://docs.djangoproject.com/en/2.2/ref/settings/#auth-password-validators
 
@@ -184,7 +186,6 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
-
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/
@@ -207,13 +208,11 @@ USE_TZ = False
 STATIC_ROOT = os.path.abspath('./static')
 STATIC_URL = '/static/'
 
-
 # 창 닫으면 로그아웃
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
 # Datetime format
 DATETIME_FORMAT = 'Y-m-d H:i:s'
-
 
 # Send Email
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -223,3 +222,6 @@ EMAIL_HOST_PASSWORD = get_secret('EMAIL_HOST_PASSWORD') or None
 EMAIL_PORT = get_secret('EMAIL_PORT') or None
 EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+# 비동기 처리 허용
+os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = "true"

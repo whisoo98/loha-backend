@@ -1,18 +1,12 @@
-import firebase_admin
-from firebase_admin import credentials, firestore, messaging, datetime
+import asyncio
+
+from firebase_admin import messaging
 from firebase_admin.exceptions import FirebaseError
-from .models import *
+from firebase_admin.messaging import UnregisteredError
+
 from user.models import UserToken
-from django.http import HttpResponse
-from rest_framework.status import *
-from rest_framework.request import Request
-from rest_framework.views import APIView
-import clayful
+from .models import *
 
-
-# Create your views here.
-#TODO:라이브 예약에 대한 구현
-#TODO:알람 푸시에 대한 구현
 
 # 인플루언서 팔로우할 때 알람 설정
 def set_alarm_to_influencer(influencer_id, user_id):
@@ -21,7 +15,7 @@ def set_alarm_to_influencer(influencer_id, user_id):
 
 # 인플루언서 언팔할 때 알람 설정 취소
 def unset_alarm_to_influencer(influencer_id, user_id):
-    InfluencerAlarm.objects.filter(influencer_id=influencer_id, user_id=user_id).all().delete()
+    InfluencerAlarm.objects.filter(influencer_id=influencer_id, user_id=user_id).delete()
 
 
 # 라이브 알람 설정할 때 알람 설정
@@ -32,9 +26,9 @@ def set_alarm_to_live(vod_id, user_id):
 # 라이브 알람 설정 취소
 def unset_alarm_to_live(vod_id, user_id=None):
     if user_id is None:  # 방송이 종료되면 모두 삭제
-        LiveAlarm.objects.fileter(vod_id=vod_id).all().delete()
+        LiveAlarm.objects.filter(vod_id=vod_id).delete()
     else:  # 한 사람이 삭제
-        LiveAlarm.objects.filter(vod_id=vod_id, user_id=user_id).all().delete()
+        LiveAlarm.objects.filter(vod_id=vod_id, user_id=user_id).delete()
 
 
 # 인플루언서 팔로우에 대한 알람 보내기
@@ -91,29 +85,26 @@ def alarm_by_live(id, info):
         print("알 수 없는 오류가 발생하였습니다.")
 
 
-def alarm_by_user_id(user_ids, info):
+async def alarm_by_user_id(user_ids, info):
+    registration_tokens = UserToken.objects.filter(user_id__in=user_ids).values_list('firebase_token', flat=True)
+    futures = [
+        asyncio.ensure_future(send_message(token, info)) for token in set(registration_tokens)
+    ]
+    await asyncio.gather(*futures)
+
+
+async def send_message(token, info):
+    message = messaging.Message(
+        notification=messaging.Notification(
+            title=f'{info["influencer"]}님의 방송이 지금 시작됩니다!',
+            body=info['title'],
+            image=str(info['image'])
+        ),
+        data={"Live": str(info['vod_id'])},
+        token=token,
+    )
+    loop = asyncio.get_event_loop()
     try:
-        registration_tokens = []
-        for user_id in user_ids:
-            registration_tokens += list(
-                UserToken.objects.filter(user_id=user_id).values_list('firebase_token', flat=True))
-        for token in set(registration_tokens):
-            message = messaging.Message(
-                notification=messaging.Notification(
-                    title=f'{info["influencer"]}님의 방송이 지금 시작됩니다!',
-                    body=info['title'],
-                    image=str(info['image'])
-                ),
-                data={"Live": str(info['vod_id'])},
-                token=token,
-            )
-            try:
-                messaging.send(message)
-            except Exception:
-                continue
-
-    except FirebaseError as e:
-        print(e.message)
-
-    except Exception as e:
-        print(e)
+        await loop.run_in_executor(None, messaging.send, message)
+    except UnregisteredError:
+        return

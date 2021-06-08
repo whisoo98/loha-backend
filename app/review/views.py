@@ -1,19 +1,11 @@
-from django.shortcuts import render,redirect
-from django.views import View
-from django.http import JsonResponse, HttpResponse
-from django.conf import settings
-
-from rest_framework import request
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from rest_framework.status import *
-from rest_framework.decorators import api_view,parser_classes
-from rest_framework.parsers import JSONParser
 import pprint
+
 from clayful import Clayful, ClayfulException
-import json
-import requests
-import base64
+from django.conf import settings
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework.status import *
+from rest_framework.views import APIView
 
 
 class ReviewAPI(APIView):
@@ -24,6 +16,7 @@ class ReviewAPI(APIView):
         'time_zone': 'Asia/Seoul',
         'debug_language': 'ko',
     })
+
     def post(self, request):
         try:
             Review = Clayful.Review
@@ -33,12 +26,12 @@ class ReviewAPI(APIView):
             }
             payload = (request.data)
             img_list = []
-            if len(request.FILES.getlist('images'))>0:
-                img_list = request.FILES.getlist('images') #이미지 리스트
+            if len(request.FILES.getlist('images')) > 0:
+                img_list = request.FILES.getlist('images')  # 이미지 리스트
                 img_payload = {
                     'model': (None, 'Review'),
                     'application': (None, 'images'),
-                    #'file': ('image.jpg', request.data['images'], 'image/jpeg')
+                    # 'file': ('image.jpg', request.data['images'], 'image/jpeg')
                 }
                 img_id = []
                 for img in img_list:
@@ -47,7 +40,7 @@ class ReviewAPI(APIView):
                         img,
                         'image/jpeg'
                     )
-                    img_id.append(Image.create_for_me(img_payload,options).data['_id'])
+                    img_id.append(Image.create_for_me(img_payload, options).data['_id'])
                 payload['images'] = img_id
             result = Review.create_for_me(payload, options)
             headers = result.headers
@@ -58,7 +51,7 @@ class ReviewAPI(APIView):
             print(e)
             print(e.message)
             print(e.code)
-            return Response(e.code+ ' ' + e.message, status=e.status)
+            return Response(e.code + ' ' + e.message, status=e.status)
 
         except Exception as e:
             print(e)
@@ -71,7 +64,7 @@ class ReviewAPI(APIView):
 
             options = {
                 'query': {
-                    'fields':'-helped,-flagged,-rating,-totalComment,-commentedAt'
+                    'fields': '-helped,-flagged,-rating,-totalComment,-commentedAt'
                 },
             }
 
@@ -79,21 +72,21 @@ class ReviewAPI(APIView):
 
             headers = result.headers
             data = result.data
-            data['publishedAt']=data['publishedAt']['raw']
-            data['createdAt']=data['createdAt']['raw']
-            data['updatedAt']=data['updatedAt']['raw']
-            data['product']['price']['original']=data['product']['price']['original']['raw']
-            data['product']['price']['sale']=data['product']['price']['sale']['raw']
-            data['product']['discount']['discounted']=data['product']['discount']['discounted']['raw']
+            data['publishedAt'] = data['publishedAt']['raw']
+            data['createdAt'] = data['createdAt']['raw']
+            data['updatedAt'] = data['updatedAt']['raw']
+            data['product']['price']['original'] = data['product']['price']['original']['raw']
+            data['product']['price']['sale'] = data['product']['price']['sale']['raw']
+            data['product']['discount']['discounted'] = data['product']['discount']['discounted']['raw']
             if data['product']['discount']['value'] is not None:
-                data['product']['discount']['value']=data['product']['discount']['value']['raw']
+                data['product']['discount']['value'] = data['product']['discount']['value']['raw']
 
             return Response(data)
         except ClayfulException as e:
             print(e)
             print(e.code)
             print(e.message)
-            return Response(e.code+' ' +e.message, status=e.status)
+            return Response(e.code + ' ' + e.message, status=e.status)
 
         except Exception as e:
             print(e)
@@ -133,17 +126,16 @@ class ReviewAPI(APIView):
 
             before = Review.get_published(review_id, {}).data
 
-
-            if len(request.FILES.getlist('images'))==0:
+            if len(request.FILES.getlist('images')) == 0:
                 pprint.pprint(payload)
-                payload['images']=[]
-                res = Review.update_for_me(review_id,payload,options)
+                payload['images'] = []
+                res = Review.update_for_me(review_id, payload, options)
                 return Response(res.data)
             else:
                 img_list = request.FILES.getlist('images')
                 before_img = before['images']
                 for img in before_img:
-                    Image.delete_for_me(img['_id'],options)
+                    Image.delete_for_me(img['_id'], options)
 
                 after = []
                 img_payload = {
@@ -176,8 +168,9 @@ class ReviewAPI(APIView):
             print(e)
             return Response("알 수 없는 오류가 발생하였습니다.", status=HTTP_400_BAD_REQUEST)
 
+
 @api_view(['GET'])
-def review_list_published_api(request,product_id):
+def review_list_published_api(request, product_id):
     Clayful.config({
         'client': getattr(settings, 'CLAYFUL_SECRET_KEY', None),
         'language': 'ko',
@@ -190,11 +183,11 @@ def review_list_published_api(request,product_id):
 
         options = {
             'query': {
-                'product':product_id,
+                'product': product_id,
                 'limit': 120,
-                #'limit': 3,
+                # 'limit': 3,
                 'page': request.GET.get('page', 1),
-                'fields':'-commentedAt,-flagged,-helped,-rating,-totalComment'
+                'fields': '-commentedAt,-flagged,-helped,-rating,-totalComment'
             },
         }
         result = Review.list_published(options)
@@ -221,8 +214,9 @@ def review_list_published_api(request,product_id):
         print(e)
         return Response("알 수 없는 오류가 발생하였습니다.")
 
+
 @api_view(['GET'])
-def review_list_published_for_me_api(request,customer_id):
+def review_list_published_for_me_api(request, customer_id):
     Clayful.config({
         'client': getattr(settings, 'CLAYFUL_SECRET_KEY', None),
         'language': 'ko',
@@ -235,11 +229,11 @@ def review_list_published_for_me_api(request,customer_id):
 
         options = {
             'query': {
-                'fields':'-commentedAt,-flagged,-helped,-rating,-totalComment',
+                'fields': '-commentedAt,-flagged,-helped,-rating,-totalComment',
                 'limit': 120,
-                #'limit': 3,
+                # 'limit': 3,
                 'page': request.GET.get('page', 1),
-                'customer':customer_id,
+                'customer': customer_id,
             },
         }
         result = Review.list_published(options)

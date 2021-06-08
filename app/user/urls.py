@@ -32,7 +32,6 @@ urlpatterns = [
     path('auth/facebook/login/', facebook_login),
     path('auth/facebook/callback/', facebook_callback),
     path('auth/facebook/token/', facebook_token),
-    path('service_agree/', ServiceAgree.as_view()),
     path('push_agree/', PushAgree.as_view()),
     path('upload_token/', UploadToken.as_view()),
     path('delete_token/', DeleteToken.as_view()),

@@ -1,22 +1,12 @@
-from django.shortcuts import render, redirect
-from django.http.response import HttpResponse, JsonResponse
-from django.utils.decorators import method_decorator
+from clayful import Clayful, ClayfulException
 from django.conf import settings
+from iamport.client import *
 from rest_framework import status
-
 from rest_framework.decorators import api_view, parser_classes
-from rest_framework.views import Response, APIView
 from rest_framework.parsers import JSONParser
-from rest_framework.authentication import SessionAuthentication
-from rest_framework.request import Request
-from rest_framework.status import *
+from rest_framework.views import Response
 from sdk.api.message import Message
 from sdk.exceptions import CoolsmsException
-from clayful import Clayful, ClayfulException
-from iamport import *
-from iamport.client import *
-import json, pprint, datetime
-from user.views import require_login
 
 
 @api_view(['GET', 'POST'])
@@ -48,7 +38,6 @@ def verify_payment(request):
             'query': {}
         }
         result = Order.get(merchant_uid, options).data
-        print(pprint.pformat(result))
         amount_to_be_paid = result['total']['price']['original']['raw']
 
         sms_key = getattr(settings, 'COOLSMS_API_KEY', None)
@@ -108,12 +97,8 @@ def verify_payment(request):
         return Response(content)
 
     except ClayfulException as e:
-        print(e)
-        print(e.code)
-        print(e.message)
         return Response(e.code + ' ' + e.message, status=e.status)
     except Exception as e:
-        print(e)
         return Response("에러발생")
 
 

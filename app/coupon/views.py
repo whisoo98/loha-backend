@@ -36,13 +36,20 @@ def manager_coupon_list(request):
         }
         headers = result.headers
         data = result.data
-        for coupon in data:
+
+        def check_coupon_valid_time(coupon):
             if coupon['expiresAt'] is not None:
                 coupon['expiresAt'] = coupon['expiresAt']['raw']
                 if datetime.datetime.strptime(coupon['expiresAt'],
                                               '%Y-%m-%dT%H:%M:%S.%fZ') < datetime.datetime.utcnow():
-                    data.remove(coupon)
-                    continue
+                    return False
+                else:
+                    return True
+            else:
+                return True
+
+        data[:] = [coupon for coupon in data if check_coupon_valid_time(coupon)]
+        for coupon in data:
             for discount in coupon['discount'].keys():
                 if coupon['discount'][discount] is not None and discount != 'type':
                     coupon['discount'][discount] = coupon['discount'][discount]['raw']
