@@ -21,4 +21,5 @@ from .views import *
 urlpatterns = [
     path('', catalog_list),
     path('special/', Special.as_view()),
+    path('magazine/', Magazine.as_view()),
 ]

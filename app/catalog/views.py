@@ -29,13 +29,11 @@ def catalog_list(request):
         }
         result = Catalog.list(options)
         data = result.data
-        # 별쇼 특별전은 카탈로그에 띄우지 않기
+        data[:] = [catalog for catalog in data if catalog['meta']['Type'] not in ['special', 'magazine']]
+        # 별쇼 특별전과 매거진 카탈로그에 띄우지 않기
         for catalog in data:
-            if catalog['meta']['Type'] == "special":
-                data.remove(catalog)
-            else:
-                catalog['createdAt'] = catalog['createdAt']['raw']
-                catalog['updatedAt'] = catalog['updatedAt']['raw']
+            catalog['createdAt'] = catalog['createdAt']['raw']
+            catalog['updatedAt'] = catalog['updatedAt']['raw']
             '''
             if catalog['meta']['DeletedAt'] is not None:
                 Due = catalog['meta']['DeletedAt']=catalog['meta']['DeletedAt']['raw']
@@ -63,10 +61,7 @@ class Special(APIView):
             result = Catalog.list(options)
             data = result.data
 
-            special_catalog = []
-            for catalog in data:
-                if catalog['meta']['Type'] == "special":
-                    special_catalog.append(catalog)
+            special_catalog = [catalog for catalog in data if catalog['meta']['Type'] == "special"]
 
             collection_ids = special_catalog[0]['meta']['ids']
 
@@ -88,5 +83,53 @@ class Special(APIView):
                 medias = medias[:5]
             my_vod = {'title': special_catalog[0]['title'], 'vods': MediaSerializerforClient(medias, many=True).data}
             return Response(my_vod)
+        except Exception as e:
+            return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
+
+
+class Magazine(APIView):
+    def get(self, request):
+        try:
+            Catalog = Clayful.Catalog
+            options = {
+                'query': {
+                    'limit': 7
+                },
+            }
+
+            result = Catalog.list(options)
+            data = result.data
+
+            magazines = [catalog for catalog in data if catalog['meta']['Type'] == "magazine"]
+            if not magazines:
+                return Response([])
+
+            magazine_responses = []
+            for magazine in magazines:
+                collection_ids = magazine['meta']['ids']
+
+                options = {
+                    'query': {
+                        'raw': True,
+                        'fields': 'meta,name',
+                        'collection': ",".join(collection_ids),
+                        'limit': 120,
+                    }
+                }
+                Product = Clayful.Product
+                result = Product.list(options).data
+
+                title = magazine['title']
+                description = magazine['description']
+                sub_description = magazine['meta']['sub_description']
+
+                contents = {
+                    "title": title,
+                    "description": description,
+                    "sub_description": sub_description,
+                    "products": result
+                }
+                magazine_responses.append(contents)
+            return Response(magazine_responses)
         except Exception as e:
             return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
