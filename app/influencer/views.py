@@ -139,7 +139,6 @@ def get_stream_key_nevermind(request, result):  # 테스트용. 기존키 여부
             }
         }
 
-        print(result)
         ready_medias = MediaStream.objects.filter(influencer_id=result['_id'])
         ready_medias.update(mux_livestream_playback_id=mux_data['data']['playback_ids'][0]['id'],
                             mux_livestream_id=mux_data['data']['id'])
@@ -184,10 +183,13 @@ def reset_stream_key(request, result):
             return Response(contents, status=status.HTTP_400_BAD_REQUEST)
 
         # 존재한다면 Mux로부터 재발급 요청
+        data = '{ "reduced_latency": true}'
         mux_response = requests.post(
             f"https://api.mux.com/video/v1/live-streams/{result['meta']['Stream_id']}/reset-stream-key", auth=(
                 getattr(settings, 'MUX_CLIENT_ID', None),
-                getattr(settings, 'MUX_SECRET_KEY', None)))
+                getattr(settings, 'MUX_SECRET_KEY', None)),
+            data=data
+        )
         mux_data = mux_response.json()
 
         # Clayful에 수정
