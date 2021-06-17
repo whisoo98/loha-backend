@@ -24,7 +24,7 @@ def catalog_list(request):
 
         options = {
             'query': {
-                'limit': 7
+                'limit': 120
             },
         }
         result = Catalog.list(options)
