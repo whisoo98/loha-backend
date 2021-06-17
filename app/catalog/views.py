@@ -50,7 +50,7 @@ def catalog_list(request):
         return Response("알 수 없는 예외가 발생했습니다.", status=HTTP_400_BAD_REQUEST)
 
 
-class Catalog(APIView):
+class Special(APIView):
     def get(self, request):
         try:
             Catalog = Clayful.Catalog
