@@ -1,6 +1,7 @@
 import asyncio
 import time
 
+
 from firebase_admin import messaging
 from firebase_admin.exceptions import FirebaseError
 from firebase_admin.messaging import UnregisteredError
@@ -91,7 +92,9 @@ async def alarm_by_user_id(user_ids, info):
     futures = [
         asyncio.ensure_future(send_message(token, info)) for token in set(registration_tokens)
     ]
+    
     time.sleep(30)
+
     await asyncio.gather(*futures)
 
 
