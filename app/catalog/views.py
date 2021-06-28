@@ -108,28 +108,20 @@ class Magazine(APIView):
             for magazine in magazines:
                 collection_ids = magazine['meta']['ids']
 
-                options = {
-                    'query': {
-                        'raw': True,
-                        'fields': 'meta,name',
-                        'collection': ",".join(collection_ids),
-                        'limit': 120,
-                    }
-                }
-                Product = Clayful.Product
-                result = Product.list(options).data
-
                 title = magazine['title']
                 description = magazine['description']
+                items = magazine['items']
                 sub_description = magazine['meta']['sub_description']
 
                 contents = {
                     "title": title,
                     "description": description,
+                    "items": items,
                     "sub_description": sub_description,
-                    "products": result
+                    "collection_ids": collection_ids
                 }
                 magazine_responses.append(contents)
+
             return Response(magazine_responses)
         except Exception as e:
             return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
