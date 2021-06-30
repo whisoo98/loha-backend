@@ -30,10 +30,8 @@ def collection_list(request):
         result = Collection.list(options)
         data = result.data
 
-        for category in data:
-            name = category['name']
-            if name == '인플루엔서' or name == '별쇼 특별전':
-                data.remove(category)
+        data[:] = [collection for collection in data if collection['name'] not in ['인플루엔서', '매거진']]
+
         return Response(data)
 
     except Exception as e:
