@@ -63,6 +63,33 @@ def is_active(token):
         print(e.code)
 
 
+class Active(APIView):
+    def get(self, request):
+        try:
+            Customer = Clayful.Customer
+            options = {
+                'customer': request.headers.get('Custom-Token'),
+                'query': {
+                    'fields': 'meta.active'
+                },
+            }
+
+            result = Customer.get_me(options)
+
+            contents = {
+                "active": result.data['meta']['active']
+            }
+
+            return Response(contents)
+        except Exception as e:
+            content = {
+                'error': {
+                    'message': str(e)
+                }
+            }
+            return Response(content, status=status.HTTP_400_BAD_REQUEST)
+
+
 class Unsubcribe(APIView):
     @require_login
     def post(self, request, result):
