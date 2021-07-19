@@ -18,7 +18,7 @@ services:
   django: &django
     build: ./app
     container_name: "django-server"
-    command: bash -c "gunicorn -b 0.0.0.0:8000 loha.wsgi:application"
+    command: bash -c "gunicorn -b 0.0.0.0:8000 loha.wsgi:application -w 4 --threads 4"
     depends_on:
       - redis
     links:
