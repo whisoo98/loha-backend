@@ -553,3 +553,40 @@ class FulfillAPI(APIView):  # 배송 생성 수정 삭제
 
         except Exception as e:
             return Response("알 수 없는 오류가 발생하였습니다.", status=HTTP_400_BAD_REQUEST)
+
+
+@api_view(["DELETE"])
+def delete_order_history(request, order_id):
+    try:
+        Order = Clayful.Order
+
+        options = {
+            'customer': request.headers['Custom-Token'],
+        }
+
+        result = Order.get_for_me(order_id, options)
+
+        if result.status == 200:
+            DeletedOrder.objects.create(order_id=order_id)
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        else:
+            content = {
+                "error": {
+                    "message": "인증에 실패했습니다."
+                }
+            }
+            return Response(content, status=status.HTTP_409_CONFLICT)
+    except IntegrityError:
+        content = {
+            "error": {
+                "message": "이미 삭제 처리된 주문입니다."
+            }
+        }
+        return Response(content, status=status.HTTP_409_CONFLICT)
+    except Exception as e:
+        content = {
+            "error": {
+                "message": str(e)
+            }
+        }
+        return Response(content, status=status.HTTP_400_BAD_REQUEST)
