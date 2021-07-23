@@ -45,6 +45,80 @@ def require_login(func):
     return wrapper
 
 
+# 회원 active 여부 확인
+def is_active(token):
+    try:
+        Customer = Clayful.Customer
+
+        options = {
+            'customer': token
+        }
+
+        result = Customer.get_me(options)
+
+        return result.data['meta']['active']
+
+
+    except Exception as e:
+        print(e.code)
+
+
+class Active(APIView):
+    def get(self, request):
+        try:
+            Customer = Clayful.Customer
+            options = {
+                'customer': request.headers.get('Custom-Token'),
+                'query': {
+                    'fields': 'meta.active'
+                },
+            }
+
+            result = Customer.get_me(options)
+
+            contents = {
+                "active": result.data['meta']['active']
+            }
+
+            return Response(contents)
+        except Exception as e:
+            content = {
+                'error': {
+                    'message': str(e)
+                }
+            }
+            return Response(content, status=status.HTTP_400_BAD_REQUEST)
+
+
+class Unsubcribe(APIView):
+    @require_login
+    def post(self, request, result):
+        try:
+            Customer = Clayful.Customer
+            payload = {
+                'meta': {
+                    'active': False,
+                }
+            }
+            options = {'customer': request.headers.get('Custom-Token')}
+
+            Customer.update_me(payload, options)
+
+            contents = {
+                "success": {
+                    "active": False
+                }
+            }
+            return Response(contents)
+        except Exception as e:
+            content = {
+                'error': {
+                    'message': str(e)
+                }
+            }
+            return Response(content, status=status.HTTP_400_BAD_REQUEST)
+
+
 # 닉네임 중복 확인
 @api_view(['POST'])
 def check_name(request):
@@ -388,6 +462,14 @@ class Auth(APIView):
             # header에 정보 전송
             header = {'Custom-Token': response.data['token']}
 
+            if not is_active(response.data['token']):
+                content = {
+                    'error': {
+                        'message': '탈퇴한 회원입니다.'
+                    }
+                }
+                return Response(content, status=status.HTTP_409_CONFLICT)
+
             content = {
                 'success': {
                     'message': '로그인 완료.'
@@ -577,6 +659,14 @@ def kakao_token(request):
             result = Customer.authenticate_by_3rd_party('kakao', payload)
             Customer.update(result.data['customer'], update_payload)
 
+        if not is_active(result.data['token']):
+            content = {
+                'error': {
+                    'message': '탈퇴한 회원입니다.'
+                }
+            }
+            return Response(content, status=status.HTTP_409_CONFLICT)
+
         content = {
             "success": {
                 "message": "로그인 완료."
@@ -726,6 +816,14 @@ def naver_token(request):
             result = Customer.authenticate_by_3rd_party('naver', payload)
             Customer.update(result.data['customer'], update_payload)
 
+        if not is_active(result.data['token']):
+            content = {
+                'error': {
+                    'message': '탈퇴한 회원입니다.'
+                }
+            }
+            return Response(content, status=status.HTTP_409_CONFLICT)
+
         content = {
             "success": {
                 "message": "로그인 완료."
@@ -843,6 +941,15 @@ def facebook_token(request):
             payload = {'token': facebook_access_token}
             result = Customer.authenticate_by_3rd_party('facebook', payload)
             Customer.update(result.data['customer'], {'groups': ['ZZ9HGQBGPLTA']})
+
+        if not is_active(result.data['token']):
+            content = {
+                'error': {
+                    'message': '탈퇴한 회원입니다.'
+                }
+            }
+            return Response(content, status=status.HTTP_409_CONFLICT)
+
         content = {
             "success": {
                 "message": "로그인 완료."

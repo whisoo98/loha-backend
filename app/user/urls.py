@@ -37,4 +37,6 @@ urlpatterns = [
     path('delete_token/', DeleteToken.as_view()),
     path('refund_bank/', RefundBank.as_view()),
     path('live-agree/', LiveAgreeView.as_view()),
+    path('unsubscribe/', Unsubcribe.as_view()),
+    path('active/', Active.as_view()),
 ]

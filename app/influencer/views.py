@@ -123,7 +123,7 @@ def get_stream_key_nevermind(request, result):  # 테스트용. 기존키 여부
     try:
         # Mux에서 스트림키 생성
         headers = {'Content-Type': 'application/json'}
-        data = '{ "playback_policy": "public", "new_asset_settings": { "playback_policy": "public" } }'
+        data = '{ "reduced_latency": true, "playback_policy": "public", "new_asset_settings": { "playback_policy": "public" } }'
         # "per_title_encode": True
         # "reduced_latency" : True -> 방송 딜레이 줄이기
         mux_response = requests.post('https://api.mux.com/video/v1/live-streams', headers=headers, data=data, auth=(

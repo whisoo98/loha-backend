@@ -3,7 +3,6 @@ import time
 
 from firebase_admin import messaging
 from firebase_admin.exceptions import FirebaseError
-from firebase_admin.messaging import UnregisteredError
 
 from user.models import UserToken
 from .models import *
@@ -108,5 +107,5 @@ async def send_message(token, info):
     loop = asyncio.get_event_loop()
     try:
         await loop.run_in_executor(None, messaging.send, message)
-    except UnregisteredError:
+    except:
         return
