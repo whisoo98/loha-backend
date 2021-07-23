@@ -259,7 +259,7 @@ def order_list_api(request):  # 본인의 주문 내역 list
         data = result.data
 
         order_ids = [order['_id'] for order in data]
-        deleted_order_ids = list(DeletedOrder.objects.filter(order_id__in=order_ids).values_list("order_id", flat=True))
+        deleted_order_ids = set(DeletedOrder.objects.filter(order_id__in=order_ids).values_list("order_id", flat=True))
 
         data[:] = [order for order in data if order['_id'] not in deleted_order_ids]
 
