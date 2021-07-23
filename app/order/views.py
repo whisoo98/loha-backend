@@ -3,10 +3,14 @@ import json
 
 from clayful import Clayful, ClayfulException
 from django.conf import settings
+from django.db.utils import IntegrityError
+from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.status import *
 from rest_framework.views import APIView
+
+from .models import DeletedOrder
 
 
 def set_raw(order):
@@ -252,8 +256,13 @@ def order_list_api(request):  # 본인의 주문 내역 list
             },
         }
         result = Order.list_for_me(options)
-        headers = result.headers
         data = result.data
+
+        order_ids = [order['_id'] for order in data]
+        deleted_order_ids = list(DeletedOrder.objects.filter(order_id__in=order_ids).values_list("order_id", flat=True))
+
+        data[:] = [order for order in data if order['_id'] not in deleted_order_ids]
+
         for order in data:
             order = set_raw(order)
 
