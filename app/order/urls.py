@@ -22,5 +22,6 @@ urlpatterns = [
     path('cancel/<str:order_id>/', cancel_for_me_api),
     path('<str:order_id>/', OrderAPI.as_view()),
     path('<str:order_id>/receivemark/', OrderMarkReceiveAPI.as_view()),
-    path('fulfill/<str:order_id>/', FulfillAPI.as_view())
+    path('fulfill/<str:order_id>/', FulfillAPI.as_view()),
+    path('history/<str:order_id>/', delete_order_history),
 ]
