@@ -517,12 +517,6 @@ def mux_callback(request):
             now_stream.mux_asset_id = request.data['data']['id']
             now_stream.mux_asset_playback_id = request.data['data']['playback_ids'][0]['id']
             now_stream.finished_at = datetime.datetime.now()
-            if now_stream.status != 'completed':
-                loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(loop)
-                loop.run_until_complete(send_end(now_stream.vod_id))
-                send_log("complete로 처리 완료!")
-                now_stream.status = 'completed'
             now_stream.save()
 
             unset_alarm_to_live(vod_id=now_stream.vod_id)
