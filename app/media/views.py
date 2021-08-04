@@ -262,7 +262,7 @@ def end_vod(request, result):
             asyncio.set_event_loop(loop)
             loop.run_until_complete(send_end(str(request.data['media_id'])))
 
-            now_stream.status = 'close'
+            now_stream.status = 'completed'
         now_stream.finished_at = datetime.datetime.now()
         now_stream.save()
 
