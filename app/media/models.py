@@ -1,7 +1,9 @@
 from django.db import models
-
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 # Create your models here.
+from push.models import LiveAlarm, InfluencerAlarm, LiveNotAgree
 
 
 class MediaStream(models.Model):
@@ -31,7 +33,7 @@ class MediaStream(models.Model):
 
     # for streaming
     # view -> consumer 에서 관리
-    status = models.CharField(max_length=20, default='ready')  # ready, live, compelete
+    status = models.CharField(max_length=20, default='ready')  # ready, live, close, completed
     started_at = models.DateTimeField(null=True)  # 방송 시작
     updated_at = models.DateTimeField(auto_now=True)  # 업데이트 날짜
     finished_at = models.DateTimeField(null=True)  # 방송 종료
@@ -43,3 +45,12 @@ class MediaStream(models.Model):
 
     class Meta:
         unique_together = (('vod_id', 'influencer_id'),)
+
+
+@receiver(post_save, sender=MediaStream)
+def post_save_vod(instance: MediaStream, created, **kwargs):
+    if created:
+        return
+    if instance.mux_asset_id and instance.mux_asset_playback_id and instance.status == "close":
+        instance.status = "completed"
+        instance.save()
