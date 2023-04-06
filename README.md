@@ -145,3 +145,7 @@ $ sudo docker-compose -f docker-compose.prod.yml up -d --build
 ### 7. django 파일 변경할 때
 
 django 파일을 변경하려면 올라와 있는 app 폴더안의 내용만 수정해주면 됩니다.
+
+### 8. Design 참고
+
+https://app.zeplin.io/project/60093e33bc67b7a3f8a63eaf/dashboard
